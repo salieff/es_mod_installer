@@ -1,0 +1,56 @@
+#ifndef ESMODMODEL_H
+#define ESMODMODEL_H
+
+#include <QAbstractListModel>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include "esmodelement.h"
+
+class ESModModel : public QAbstractListModel
+{
+    Q_OBJECT
+public:
+    enum ModRoles
+    {
+        TitleRole = Qt::UserRole + 1,
+        UriRole,
+        PathRole,
+        FilesRole,
+        StateRole,
+        ProgressRole
+    };
+
+    ESModModel(QNetworkAccessManager *mgr, QObject *parent = 0);
+    virtual ~ESModModel();
+
+    void setBusyIndicator(QObject *bus);
+
+    void addModElement(ESModElement *element);
+    int rowCount(const QModelIndex & parent = QModelIndex()) const;
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+
+public slots:
+    void ESModIndexDownloaded();
+    void ESModIndexError(QNetworkReply::NetworkError code);
+
+    void Download(int ind);
+    void Abort(int ind);
+    void Retry(int ind);
+    void Update(int ind);
+    void Delete(int ind);
+
+    void elementChanged(int ind = -1);
+
+protected:
+    QHash<int, QByteArray> roleNames() const;
+
+private:
+    bool LoadLocalModsDB(QList<ESModElement *> &l);
+    void SaveLocalModsDB();
+
+    QList<ESModElement *> m_elements;
+    QNetworkAccessManager *m_NetMgr;
+    QObject *m_busyIndicator;
+};
+
+#endif // ESMODMODEL_H

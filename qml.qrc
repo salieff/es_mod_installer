@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>icons/abort.png</file>
+        <file>icons/download.png</file>
+        <file>icons/reload.png</file>
+        <file>icons/trash.png</file>
+        <file>icons/update.png</file>
+        <file>Delegate.qml</file>
+    </qresource>
+</RCC>
