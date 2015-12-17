@@ -15,6 +15,8 @@ public:
     bool open(QString name);
     void abort();
     bool aborted();
+    void fail();
+    bool failed();
     void close();
     void write(QByteArray &arr);
 
@@ -31,6 +33,7 @@ private:
     QFile m_file;
     bool m_closeFlag;
     bool m_abortFlag;
+    bool m_failedFlag;
 };
 
 #endif // ASYNCFILEWRITER_H

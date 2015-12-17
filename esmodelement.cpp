@@ -6,8 +6,12 @@
 ESModElement::ESModElement(QNetworkAccessManager *mgr, QObject *parent)
     : QObject(parent),
       title(QStringLiteral("Test sample mod name (Ru,Eng,Spa) [окончен] {99,9 Mb, 1979.01.09}")),
-      state(Available),
+      state(Unknown),
       progress(100),
+      size(0),
+      timestamp(0),
+      m_localSize(0),
+      m_localTimestamp(0),
       m_NetMgr(mgr),
       m_currDownloadIndex(0)
 {
@@ -24,6 +28,10 @@ ESModElement::ESModElement(State s, int p, QNetworkAccessManager *mgr, QObject *
       title(QStringLiteral("Test sample mod name (Ru,Eng,Spa) [окончен] {99,9 Mb, 1979.01.09}")),
       state(s),
       progress(p),
+      size(0),
+      timestamp(0),
+      m_localSize(0),
+      m_localTimestamp(0),
       m_NetMgr(mgr),
       m_currDownloadIndex(0)
 {
@@ -44,6 +52,7 @@ QString ESModElement::StateName() const
 #define DECLARE_STATE_NAME(arg) case arg: return #arg; break;
     switch (state)
     {
+    DECLARE_STATE_NAME(Unknown);
     DECLARE_STATE_NAME(Available);
     DECLARE_STATE_NAME(Downloading);
     DECLARE_STATE_NAME(Unpacking);
@@ -64,6 +73,10 @@ void ESModElement::Download()
 
     if (files.empty() || uri.isEmpty())
         return;
+
+    // Make shure previous async operations already done
+    m_currDownloadFile.wait();
+    m_asyncUnzipper.wait();
 
     if (!QDir().mkpath(path))
     {
@@ -110,7 +123,8 @@ void ESModElement::Retry()
 
 void ESModElement::Update()
 {
-
+    Delete();
+    Download();
 }
 
 void ESModElement::Delete()
@@ -122,6 +136,70 @@ void ESModElement::Delete()
     }
 
     m_localFiles.clear();
+    m_localSize = 0;
+    m_localTimestamp = 0;
+}
+
+void ESModElement::RequestHeaders()
+{
+    if (files.empty() || uri.isEmpty())
+    {
+        state = Installed;
+        emit stateChanged();
+        return;
+    }
+
+    m_currDownloadIndex = 0;
+    QNetworkReply *rep = m_NetMgr->head(QNetworkRequest(QUrl(uri + files[m_currDownloadIndex])));
+    connect(rep, SIGNAL(finished()), this, SLOT(headerReceived()));
+}
+
+void ESModElement::headerReceived()
+{
+    QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
+
+    if (rep->error() == QNetworkReply::NoError)
+    {
+        double len = rep->header(QNetworkRequest::ContentLengthHeader).toDouble();
+        double tim = rep->header(QNetworkRequest::LastModifiedHeader).toDateTime().toTime_t();
+
+        size += len;
+        if (tim > timestamp)
+            timestamp = tim;
+
+        ++m_currDownloadIndex;
+        if (m_currDownloadIndex >= files.count())
+        {
+            if (m_localFiles.empty())
+            {
+                state = Available;
+            }
+            else
+            {
+                if (timestamp > m_localTimestamp)
+                    state = InstalledHasUpdate;
+                else
+                    state = InstalledAvailable;
+            }
+            emit stateChanged();
+        }
+        else
+        {
+            QNetworkReply *new_rep = m_NetMgr->head(QNetworkRequest(QUrl(uri + files[m_currDownloadIndex])));
+            connect(new_rep, SIGNAL(finished()), this, SLOT(headerReceived()));
+        }
+    }
+    else
+    {
+        if (m_localFiles.empty())
+            state = Available;
+        else
+            state = InstalledAvailable;
+
+        emit stateChanged();
+    }
+
+    rep->deleteLater();
 }
 
 void ESModElement::fileDownloaded()
@@ -133,6 +211,10 @@ void ESModElement::fileDownloaded()
         QByteArray data = rep->readAll();
         m_currDownloadFile.write(data);
     }
+    else if (rep->error() != QNetworkReply::OperationCanceledError)
+    {
+        m_currDownloadFile.fail();
+    }
 
     rep->deleteLater();
     m_currDownloadFile.close();
@@ -141,8 +223,8 @@ void ESModElement::fileDownloaded()
 void ESModElement::fileError(QString strErr)
 {
     Q_UNUSED(strErr)
-    state = Failed;
-    emit stateChanged();
+    //    state = Failed;
+    //    emit stateChanged();
 }
 
 void ESModElement::fileClosed()
@@ -150,17 +232,19 @@ void ESModElement::fileClosed()
     // FIXME: Is it necessary?
     m_currDownloadFile.wait();
 
-    if (m_currDownloadFile.aborted())
+    if (state != Downloading || m_currDownloadFile.aborted() || m_currDownloadFile.failed())
     {
         Delete();
-        state = Available;
-        emit stateChanged();
-        return;
-    }
-
-    if (state != Downloading)
-    {
-        Delete();
+        if (m_currDownloadFile.aborted())
+        {
+            state = Available;
+            emit stateChanged();
+        }
+        if (m_currDownloadFile.failed())
+        {
+            state = Failed;
+            emit stateChanged();
+        }
         return;
     }
 
@@ -225,19 +309,24 @@ void ESModElement::zipListUnpacked()
     tmp_localFiles << m_asyncUnzipper.getUnpackedFileList();
     m_localFiles.swap(tmp_localFiles);
 
-    if (m_asyncUnzipper.aborted())
+    if (state != Unpacking || m_asyncUnzipper.aborted() || m_asyncUnzipper.failed())
     {
         Delete();
-        state = Available;
-        emit stateChanged();
+        if (m_asyncUnzipper.aborted())
+        {
+            state = Available;
+            emit stateChanged();
+        }
+        if (m_asyncUnzipper.failed())
+        {
+            state = Failed;
+            emit stateChanged();
+        }
         return;
     }
 
-    if (state != Unpacking)
-    {
-        Delete();
-        return;
-    }
+    m_localTimestamp = timestamp;
+    m_localSize = size;
 
     state = InstalledAvailable;
     emit stateChanged();
@@ -245,11 +334,12 @@ void ESModElement::zipListUnpacked()
 
 void ESModElement::downloadError(QNetworkReply::NetworkError err)
 {
-    if (err == QNetworkReply::OperationCanceledError)
-        return;
+    Q_UNUSED(err)
+    //    if (err == QNetworkReply::OperationCanceledError)
+    //        return;
 
-    state = Failed;
-    emit stateChanged();
+    //    state = Failed;
+    //    emit stateChanged();
 }
 
 void ESModElement::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
@@ -265,8 +355,8 @@ void ESModElement::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 void ESModElement::unpackError(QString strErr)
 {
     Q_UNUSED(strErr)
-    state = Failed;
-    emit stateChanged();
+    //    state = Failed;
+    //    emit stateChanged();
 }
 
 void ESModElement::unpackProgress(int p)
@@ -298,6 +388,8 @@ QJsonObject ESModElement::SerializeToDB()
     QJsonObject obj;
     obj["title"] = title;
     obj["files"] = arr;
+    obj["size"] = m_localSize;
+    obj["timestamp"] = m_localTimestamp;
 
     return obj;
 }
@@ -305,11 +397,11 @@ QJsonObject ESModElement::SerializeToDB()
 void ESModElement::DeserializeFromDB(QJsonObject obj)
 {
     title = obj["title"].toString();
+    m_localSize = obj["size"].toDouble();
+    m_localTimestamp = obj["timestamp"].toDouble();
 
     QJsonArray arr = obj["files"].toArray();
     m_localFiles.clear();
     for (int i = 0; i < arr.size(); ++i)
         m_localFiles << arr[i].toString();
-
-    state = Installed;
 }

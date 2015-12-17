@@ -77,6 +77,14 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         return element->progress;
         break;
 
+    case SizeRole:
+        return element->size;
+        break;
+
+    case TimestampRole:
+        return element->timestamp;
+        break;
+
     default:
         break;
     }
@@ -93,6 +101,8 @@ QHash<int, QByteArray> ESModModel::roleNames() const
     roles[FilesRole] = "files";
     roles[StateRole] = "modstate";
     roles[ProgressRole] = "progress";
+    roles[SizeRole] = "modsize";
+    roles[TimestampRole] = "timestamp";
     return roles;
 }
 
@@ -151,8 +161,9 @@ void ESModModel::ESModIndexDownloaded()
                 for (int j = 0; j < local_elements.size(); ++j)
                     if (local_elements[j]->title == el->title)
                     {
-                        el->state = ESModElement::InstalledAvailable;
                         el->m_localFiles = local_elements[j]->m_localFiles;
+                        el->m_localSize = local_elements[j]->m_localSize;
+                        el->m_localTimestamp = local_elements[j]->m_localTimestamp;
                         delete local_elements[j];
                         local_elements.removeAt(j);
                     }
@@ -164,6 +175,9 @@ void ESModModel::ESModIndexDownloaded()
 
     for (int j = 0; j < local_elements.size(); ++j)
         addModElement(local_elements[j]);
+
+    foreach (ESModElement *el, m_elements)
+        el->RequestHeaders();
 
     rep->deleteLater();
 }
@@ -200,7 +214,8 @@ void ESModModel::Retry(int ind)
 
 void ESModModel::Update(int ind)
 {
-    printf("[%s] %d\n", __PRETTY_FUNCTION__, ind);
+    // printf("[%s] %d\n", __PRETTY_FUNCTION__, ind);
+    m_elements[ind]->Update();
 }
 
 void ESModModel::Delete(int ind)

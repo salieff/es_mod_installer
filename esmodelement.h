@@ -16,6 +16,7 @@ class ESModElement : public QObject
     Q_OBJECT
 public:
     enum State {
+        Unknown,
         Available,
         Downloading,
         Unpacking,
@@ -37,6 +38,8 @@ public:
     void Update();
     void Delete();
 
+    void RequestHeaders();
+
     QJsonObject SerializeToDB();
     void DeserializeFromDB(QJsonObject obj);
 
@@ -47,10 +50,15 @@ public:
 
     State state;
     int progress;
+    double size;
+    double timestamp;
 
     QStringList m_localFiles;
+    double m_localSize;
+    double m_localTimestamp;
 
 public slots:
+    void headerReceived();
     void fileDownloaded();
     void fileClosed();
     void fileError(QString strErr);

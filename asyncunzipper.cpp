@@ -8,7 +8,8 @@ AsyncUnzipper::AsyncUnzipper(QObject *parent)
       m_totalSize(0),
       m_unpackedSize(0),
       m_progress(0),
-      m_abortFlag(false)
+      m_abortFlag(false),
+      m_failedFlag(false)
 {
 
 }
@@ -22,6 +23,7 @@ bool AsyncUnzipper::UnzipList(QStringList ziplist, QString destdir)
     m_zipList = ziplist;
     m_destDir = destdir;
     m_abortFlag = false;
+    m_failedFlag = false;
 
     start();
     return true;
@@ -31,6 +33,13 @@ void AsyncUnzipper::abort()
 {
     m_abortMutex.lock();
     m_abortFlag = true;
+    m_abortMutex.unlock();
+}
+
+void AsyncUnzipper::fail()
+{
+    m_abortMutex.lock();
+    m_failedFlag = true;
     m_abortMutex.unlock();
 }
 
@@ -44,6 +53,7 @@ void AsyncUnzipper::run()
     if (!calculateTotalSize())
     {
         emit error("Can't calculate total size");
+        fail();
         return;
     }
 
@@ -52,6 +62,7 @@ void AsyncUnzipper::run()
         if (!unpackZip(zipFile))
         {
             emit error("Can't unpack " + zipFile);
+            fail();
             break;
         }
 
@@ -158,6 +169,7 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
         {
             unzRet = -1;
             emit error(file.errorString());
+            fail();
             break;
         }
         else
@@ -185,6 +197,17 @@ bool AsyncUnzipper::aborted()
 
     m_abortMutex.lock();
     ret = m_abortFlag;
+    m_abortMutex.unlock();
+
+    return ret;
+}
+
+bool AsyncUnzipper::failed()
+{
+    bool ret;
+
+    m_abortMutex.lock();
+    ret = m_failedFlag;
     m_abortMutex.unlock();
 
     return ret;

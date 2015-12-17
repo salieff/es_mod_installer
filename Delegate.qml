@@ -5,12 +5,7 @@ Rectangle {
     anchors.horizontalCenter: parent.horizontalCenter
     width: parent.width;
     property int margin: 10
-    height: {
-        if (delegateText.implicitHeight > delegateImage.implicitHeight)
-            delegateText.implicitHeight + 2 * margin
-        else
-            delegateImage.implicitHeight + 2 * margin
-    }
+    height: Math.max(delegateText.implicitHeight, delegateImage.implicitHeight) + 2 * margin
     radius: 15
     color: "darkslategrey"
     border.width: 2
@@ -31,7 +26,9 @@ Rectangle {
         height: parent.height - parent.border.width * 2
         radius: parent.radius - parent.border.width
         color: {
-            if (modstate == "Available")
+            if (modstate == "Unknown")
+                "darkslategrey"
+            else if (modstate == "Available")
                 "#0000e0"
             else if (modstate == "Downloading")
                 "#0000e0"
@@ -46,6 +43,8 @@ Rectangle {
             else if (modstate == "Installed")
                 "#608060"
         }
+
+        visible: (modstate != "Unknown") ? true : false
     }
 
     Rectangle {
@@ -65,6 +64,8 @@ Rectangle {
             GradientStop { position: .8;   color: "#11FFFFFF" }
             GradientStop { position: 1;    color: "#55FFFFFF" }
         }
+
+        visible: (modstate != "Unknown") ? true : false
     }
 
     RowLayout {
@@ -76,7 +77,9 @@ Rectangle {
         Image {
             id: delegateImage
             source: {
-                if (modstate == "Available")
+                if (modstate == "Unknown")
+                    "icons/download.png"
+                else if (modstate == "Available")
                     "icons/download.png"
                 else if (modstate == "Downloading")
                     "icons/abort.png"
@@ -91,6 +94,8 @@ Rectangle {
                 else if (modstate == "Installed")
                     "icons/trash.png"
             }
+
+            visible: (modstate != "Unknown") ? true : false
 
             MouseArea {
                 anchors.fill: parent

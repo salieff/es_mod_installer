@@ -14,6 +14,8 @@ public:
     bool UnzipList(QStringList ziplist, QString destdir);
     void abort();
     bool aborted();
+    void fail();
+    bool failed();
 
     QStringList getUnpackedFileList();
 
@@ -37,6 +39,7 @@ private:
     QStringList m_unpackedFiles;
 
     bool m_abortFlag;
+    bool m_failedFlag;
     QMutex m_abortMutex;
 };
 

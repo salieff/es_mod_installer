@@ -3,7 +3,8 @@
 AsyncFileWriter::AsyncFileWriter(QObject *parent)
     : QThread(parent),
       m_closeFlag(false),
-      m_abortFlag(false)
+      m_abortFlag(false),
+      m_failedFlag(false)
 {
 }
 
@@ -12,6 +13,7 @@ bool AsyncFileWriter::open(QString name)
     m_bufferMutex.lock();
     m_closeFlag = false;
     m_abortFlag = false;
+    m_failedFlag = false;
     m_file.setFileName(name);
     bool ret = m_file.open(QIODevice::WriteOnly);
     m_bufferMutex.unlock();
@@ -46,6 +48,24 @@ bool AsyncFileWriter::aborted()
 
     m_bufferMutex.lock();
     ret = m_abortFlag;
+    m_bufferMutex.unlock();
+
+    return ret;
+}
+
+void AsyncFileWriter::fail()
+{
+    m_bufferMutex.lock();
+    m_failedFlag = true;
+    m_bufferMutex.unlock();
+}
+
+bool AsyncFileWriter::failed()
+{
+    bool ret;
+
+    m_bufferMutex.lock();
+    ret = m_failedFlag;
     m_bufferMutex.unlock();
 
     return ret;
@@ -87,6 +107,10 @@ void AsyncFileWriter::run()
 
         // printf("[%s] %d\n", __PRETTY_FUNCTION__, arr.size());
         if (m_file.write(arr) < 0)
+        {
             emit error(m_file.errorString());
+            fail();
+            break;
+        }
     }
 }

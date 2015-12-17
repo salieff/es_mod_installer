@@ -17,7 +17,9 @@ public:
         PathRole,
         FilesRole,
         StateRole,
-        ProgressRole
+        ProgressRole,
+        SizeRole,
+        TimestampRole
     };
 
     ESModModel(QNetworkAccessManager *mgr, QObject *parent = 0);
