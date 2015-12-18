@@ -11,7 +11,9 @@
 
 ESModModel::ESModModel(QNetworkAccessManager *mgr, QObject *parent)
     : QAbstractListModel(parent),
-      m_NetMgr(mgr)
+      m_NetMgr(mgr),
+      m_busyIndicator(NULL),
+      m_appTitleText(NULL)
 {
     QNetworkReply *rep = m_NetMgr->get(QNetworkRequest(QUrl(ES_MOD_INDEX_URL)));
     connect(rep, SIGNAL(finished()), this, SLOT(ESModIndexDownloaded()));
@@ -28,6 +30,11 @@ void ESModModel::setBusyIndicator(QObject *bus)
 
     if (m_busyIndicator)
         m_busyIndicator->setProperty("running", true);
+}
+
+void ESModModel::setAppTitleText(QObject *txt)
+{
+    m_appTitleText = txt;
 }
 
 void ESModModel::addModElement(ESModElement *element)
@@ -142,6 +149,11 @@ void ESModModel::ESModIndexDownloaded()
         else
         {
             QJsonObject obj = doc.object();
+
+            QString appTitle = obj["appTitle"].toString();
+            if (m_appTitleText != NULL && !appTitle.isEmpty())
+                m_appTitleText->setProperty("text", appTitle);
+
             QJsonArray arr = obj["packs"].toArray();
             for (int i = 0; i < arr.size(); ++i)
             {

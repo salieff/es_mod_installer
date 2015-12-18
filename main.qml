@@ -7,6 +7,7 @@ ApplicationWindow {
     width: 720
     height: 900
     title: qsTr("ES Manager")
+
     ColumnLayout {
         anchors.fill: parent
 
@@ -25,42 +26,17 @@ ApplicationWindow {
         }
     }
     */
-        Rectangle {
-            id: appTitle
-            Layout.fillWidth: true
-            anchors.top: parent.top
-            height: appTitleText.implicitHeight
-            Text {
-                id: appTitleText
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    verticalCenter: parent.verticalCenter
-                }
-                horizontalAlignment: Text.AlignHCenter
-                font.pixelSize: 35
-                wrapMode: Text.Wrap
-                //style: Text.Sunken
-                //color: "white"
-                //styleColor: "black"
-                text: "Установщик дополнений для Everlasting Summer"
-            }
-        }
-
 
         ListView {
             Layout.fillWidth: true
             anchors.top: appTitle.bottom
             anchors.bottom: parent.bottom
-            // height: 800
-            // orientation: ListView.Vertical
             model: esModel
             delegate: Delegate {}
-            //anchors.fill: parent
-            //anchors.bottom: parent.bottom
             anchors.margins: 10
-            clip: true
+            // clip: true
             spacing: 5
+            maximumFlickVelocity: 5000
 
             remove: Transition {
                 NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 400 }
@@ -79,6 +55,54 @@ ApplicationWindow {
                 width: 200
                 height: 200
                 running: false;
+            }
+        }
+
+        Rectangle {
+            id: appTitle
+            anchors.top: parent.top
+            anchors.topMargin: -radius
+            Layout.fillWidth: true
+            Layout.minimumHeight: Math.max(appTitleText.implicitHeight, helpImage.height) + radius*4
+            radius: 10
+
+            gradient: Gradient {
+                GradientStop { position: 0; color: "#FFFFFF" }
+                GradientStop { position: 1; color: "#A0A0A0" }
+            }
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: 10
+                spacing: 10
+
+                Text {
+                    id: appTitleText
+                    objectName: "appTitleText"
+                    Layout.fillWidth: true
+                    /*
+                    anchors {
+                        bottom: parent.bottom
+                        bottomMargin: parent.radius
+                    }
+                    */
+                    horizontalAlignment: Text.AlignHCenter
+                    font.pixelSize: 35
+                    wrapMode: Text.Wrap
+                    style: Text.Raised
+                    styleColor: "white"
+                    text: "ES mod manager"
+                }
+
+                Image {
+                    id: helpImage
+                    //anchors.right: parent.right
+                    source: "icons/info.png"
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: { }
+                    }
+                }
             }
         }
     }

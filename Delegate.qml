@@ -3,25 +3,22 @@ import QtQuick.Layouts 1.2
 
 Rectangle {
     anchors.horizontalCenter: parent.horizontalCenter
-    width: parent.width;
-    property int margin: 10
+    width: parent.width - margin * 2;
     height: Math.max(delegateText.implicitHeight, delegateImage.implicitHeight) + 2 * margin
     radius: 15
-    color: "darkslategrey"
     border.width: 2
     border.color: "#22000000"
+    color: "darkslategrey"
+
+    property int margin: 10
 
     Rectangle {
-        property int koeff: {
-            if (modstate == "Downloading" || modstate == "Unpacking")
-                progress
-            else
-                100
+        property int koeff: (modstate == "Downloading" || modstate == "Unpacking") ? progress : 100
+        anchors {
+            verticalCenter: parent.verticalCenter
+            left: parent.left
+            leftMargin: parent.border.width
         }
-
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.left: parent.left
-        anchors.leftMargin: parent.border.width
         width: (parent.width - parent.border.width * 2) * koeff / 100
         height: parent.height - parent.border.width * 2
         radius: parent.radius - parent.border.width
@@ -69,13 +66,16 @@ Rectangle {
     }
 
     RowLayout {
-        id: layout
         anchors.fill: parent
         anchors.margins: parent.margin
         spacing: 10
 
         Image {
             id: delegateImage
+            anchors {
+                verticalCenter: parent.verticalCenter
+                left: parent.left
+            }
             source: {
                 if (modstate == "Unknown")
                     "icons/download.png"
@@ -130,6 +130,10 @@ Rectangle {
 
         Image {
             id: delegateImage2
+            anchors {
+                verticalCenter: parent.verticalCenter
+                right: parent.right
+            }
             source: "icons/trash.png"
             visible: (modstate == "InstalledHasUpdate") ? true : false
             MouseArea {

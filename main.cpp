@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 
     QNetworkAccessManager mgr;
 #ifndef ANDROID
-    mgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+    // mgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
     ESModModel esmodel(&mgr);
 
@@ -22,13 +22,15 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
     esmodel.setBusyIndicator(engine.rootObjects().first()->findChild<QObject *>("viewBusyIndicator"));
+    esmodel.setAppTitleText(engine.rootObjects().first()->findChild<QObject *>("appTitleText"));
 
-/*
 #ifdef ANDROID
-    QQuickWindow *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
-    window->showFullScreen();
+    //QQuickWindow *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    //window->showMaximized();
+#else
+    //window->resize(720, 900);
+    //window->show();
 #endif
-*/
 
     return app.exec();
 }

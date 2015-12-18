@@ -26,6 +26,7 @@ public:
     virtual ~ESModModel();
 
     void setBusyIndicator(QObject *bus);
+    void setAppTitleText(QObject *txt);
 
     void addModElement(ESModElement *element);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
@@ -53,6 +54,7 @@ private:
     QList<ESModElement *> m_elements;
     QNetworkAccessManager *m_NetMgr;
     QObject *m_busyIndicator;
+    QObject *m_appTitleText;
 };
 
 #endif // ESMODMODEL_H

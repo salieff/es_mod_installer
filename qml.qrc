@@ -7,5 +7,6 @@
         <file>icons/trash.png</file>
         <file>icons/update.png</file>
         <file>Delegate.qml</file>
+        <file>icons/info.png</file>
     </qresource>
 </RCC>
