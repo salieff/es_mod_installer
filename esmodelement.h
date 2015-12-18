@@ -3,12 +3,9 @@
 
 #include <QString>
 #include <QStringList>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QFile>
 #include <QJsonObject>
 
-#include "asyncfilewriter.h"
+#include "asyncdownloader.h"
 #include "asyncunzipper.h"
 
 class ESModElement : public QObject
@@ -26,15 +23,12 @@ public:
         Installed
     };
 
-    ESModElement(QNetworkAccessManager *mgr, QObject *parent = 0);
-    ESModElement(State s, int p, QNetworkAccessManager *mgr, QObject *parent = 0);
-    virtual ~ESModElement();
+    ESModElement(QObject *parent = NULL, State s = Unknown, int p = 100);
 
     QString StateName() const;
 
     void Download();
     void Abort();
-    void Retry();
     void Update();
     void Delete();
 
@@ -58,25 +52,22 @@ public:
     double m_localTimestamp;
 
 public slots:
-    void headerReceived();
-    void fileDownloaded();
-    void fileClosed();
-    void fileError(QString strErr);
     void zipListUnpacked();
-    void downloadError(QNetworkReply::NetworkError err);
-    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-    void unpackError(QString strErr);
     void unpackProgress(int p);
-    void readData();
+
+private slots:
+    void headersReceived();
+    void filesDownloaded();
+    void downloadProgress(int p);
 
 signals:
     void stateChanged();
-    void stopDownload();
+
+// private signals:
+    void abortProcessing();
 
 private:
-    QNetworkAccessManager *m_NetMgr;
-    int m_currDownloadIndex;
-    AsyncFileWriter m_currDownloadFile;
+    AsyncDownloader m_asyncDownloader;
     AsyncUnzipper m_asyncUnzipper;
 };
 

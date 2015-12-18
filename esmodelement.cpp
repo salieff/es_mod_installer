@@ -3,27 +3,7 @@
 
 #include "esmodelement.h"
 
-ESModElement::ESModElement(QNetworkAccessManager *mgr, QObject *parent)
-    : QObject(parent),
-      title(QStringLiteral("Test sample mod name (Ru,Eng,Spa) [окончен] {99,9 Mb, 1979.01.09}")),
-      state(Unknown),
-      progress(100),
-      size(0),
-      timestamp(0),
-      m_localSize(0),
-      m_localTimestamp(0),
-      m_NetMgr(mgr),
-      m_currDownloadIndex(0)
-{
-    connect(&m_currDownloadFile, SIGNAL(finished()), this, SLOT(fileClosed()));
-    connect(&m_currDownloadFile, SIGNAL(error(QString)), this, SLOT(fileError(QString)));
-
-    connect(&m_asyncUnzipper, SIGNAL(finished()), this, SLOT(zipListUnpacked()));
-    connect(&m_asyncUnzipper, SIGNAL(progress(int)), this, SLOT(unpackProgress(int)));
-    connect(&m_asyncUnzipper, SIGNAL(error(QString)), this, SLOT(unpackError(QString)));
-}
-
-ESModElement::ESModElement(State s, int p, QNetworkAccessManager *mgr, QObject *parent)
+ESModElement::ESModElement(QObject *parent, State s, int p)
     : QObject(parent),
       title(QStringLiteral("Test sample mod name (Ru,Eng,Spa) [окончен] {99,9 Mb, 1979.01.09}")),
       state(s),
@@ -31,20 +11,16 @@ ESModElement::ESModElement(State s, int p, QNetworkAccessManager *mgr, QObject *
       size(0),
       timestamp(0),
       m_localSize(0),
-      m_localTimestamp(0),
-      m_NetMgr(mgr),
-      m_currDownloadIndex(0)
+      m_localTimestamp(0)
 {
-    connect(&m_currDownloadFile, SIGNAL(finished()), this, SLOT(fileClosed()));
-    connect(&m_currDownloadFile, SIGNAL(error(QString)), this, SLOT(fileError(QString)));
+    connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
+    connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
+    connect(&m_asyncDownloader, SIGNAL(headersReady()), this, SLOT(headersReceived()));
+    connect(this, SIGNAL(abortProcessing()), &m_asyncDownloader, SLOT(abort()));
 
     connect(&m_asyncUnzipper, SIGNAL(finished()), this, SLOT(zipListUnpacked()));
     connect(&m_asyncUnzipper, SIGNAL(progress(int)), this, SLOT(unpackProgress(int)));
-    connect(&m_asyncUnzipper, SIGNAL(error(QString)), this, SLOT(unpackError(QString)));
-}
-
-ESModElement::~ESModElement()
-{
+    connect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()));
 }
 
 QString ESModElement::StateName() const
@@ -63,7 +39,7 @@ QString ESModElement::StateName() const
     }
 #undef DECLARE_STATE_NAME
 
-    return "Unknown";
+    return "###???###";
 }
 
 void ESModElement::Download()
@@ -75,50 +51,21 @@ void ESModElement::Download()
         return;
 
     // Make shure previous async operations already done
-    m_currDownloadFile.wait();
+    m_asyncDownloader.wait();
     m_asyncUnzipper.wait();
 
-    if (!QDir().mkpath(path))
-    {
+    if (!m_asyncDownloader.downloadFileList(uri, files, path))
         state = Failed;
-        emit stateChanged();
-        return;
-    }
+    else
+        state = Downloading;
 
-    m_currDownloadIndex = 0;
     progress = 0;
-    if (!m_currDownloadFile.open(path + files[m_currDownloadIndex]))
-    {
-        state = Failed;
-        emit stateChanged();
-        return;
-    }
-
-    m_localFiles << path + files[m_currDownloadIndex];
-
-    state = Downloading;
     emit stateChanged();
-
-    QNetworkReply *rep = m_NetMgr->get(QNetworkRequest(QUrl(uri + files[m_currDownloadIndex])));
-    connect(rep, SIGNAL(finished()), this, SLOT(fileDownloaded()));
-    connect(rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(downloadError(QNetworkReply::NetworkError)));
-    connect(rep, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(downloadProgress(qint64, qint64)));
-    connect(rep, SIGNAL(readyRead()), this, SLOT(readData()));
-
-    connect(&m_currDownloadFile, SIGNAL(error(QString)), rep, SLOT(abort()));
-    connect(this, SIGNAL(stopDownload()), rep, SLOT(abort()));
 }
 
 void ESModElement::Abort()
 {
-    emit stopDownload();
-    m_currDownloadFile.abort();
-    m_asyncUnzipper.abort();
-}
-
-void ESModElement::Retry()
-{
-
+    emit abortProcessing();
 }
 
 void ESModElement::Update()
@@ -154,47 +101,19 @@ void ESModElement::RequestHeaders()
         return;
     }
 
-    m_currDownloadIndex = 0;
-    QNetworkReply *rep = m_NetMgr->head(QNetworkRequest(QUrl(uri + files[m_currDownloadIndex])));
-    connect(rep, SIGNAL(finished()), this, SLOT(headerReceived()));
+    // Make shure previous async operations already done
+    m_asyncDownloader.wait();
+    m_asyncUnzipper.wait();
+
+    m_asyncDownloader.downloadFileList(uri, files, path, true);
 }
 
-void ESModElement::headerReceived()
+void ESModElement::headersReceived()
 {
-    QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
+    if (state != Unknown)
+        return;
 
-    if (rep->error() == QNetworkReply::NoError)
-    {
-        double len = rep->header(QNetworkRequest::ContentLengthHeader).toDouble();
-        double tim = rep->header(QNetworkRequest::LastModifiedHeader).toDateTime().toTime_t();
-
-        size += len;
-        if (tim > timestamp)
-            timestamp = tim;
-
-        ++m_currDownloadIndex;
-        if (m_currDownloadIndex >= files.count())
-        {
-            if (m_localFiles.empty())
-            {
-                state = Available;
-            }
-            else
-            {
-                if (timestamp > m_localTimestamp)
-                    state = InstalledHasUpdate;
-                else
-                    state = InstalledAvailable;
-            }
-            emit stateChanged();
-        }
-        else
-        {
-            QNetworkReply *new_rep = m_NetMgr->head(QNetworkRequest(QUrl(uri + files[m_currDownloadIndex])));
-            connect(new_rep, SIGNAL(finished()), this, SLOT(headerReceived()));
-        }
-    }
-    else
+    if (m_asyncDownloader.aborted() || m_asyncDownloader.failed())
     {
         if (m_localFiles.empty())
             state = Available;
@@ -204,97 +123,19 @@ void ESModElement::headerReceived()
         emit stateChanged();
     }
 
-    rep->deleteLater();
-}
-
-void ESModElement::fileDownloaded()
-{
-    QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
-
-    if (rep->error() == QNetworkReply::NoError)
+    m_asyncDownloader.getHeadersData(size, timestamp);
+    if (m_localFiles.empty())
     {
-        QByteArray data = rep->readAll();
-        m_currDownloadFile.write(data);
+        state = Available;
     }
-    else if (rep->error() != QNetworkReply::OperationCanceledError)
+    else
     {
-        m_currDownloadFile.fail();
-    }
-
-    rep->deleteLater();
-    m_currDownloadFile.close();
-}
-
-void ESModElement::fileError(QString strErr)
-{
-    Q_UNUSED(strErr)
-    //    state = Failed;
-    //    emit stateChanged();
-}
-
-void ESModElement::fileClosed()
-{
-    // FIXME: Is it necessary?
-    m_currDownloadFile.wait();
-
-    if (state != Downloading || m_currDownloadFile.aborted() || m_currDownloadFile.failed())
-    {
-        Delete();
-        if (m_currDownloadFile.aborted())
-        {
-            state = Available;
-            emit stateChanged();
-        }
-        if (m_currDownloadFile.failed())
-        {
-            state = Failed;
-            emit stateChanged();
-        }
-        return;
-    }
-
-    ++m_currDownloadIndex;
-    if (m_currDownloadIndex >= files.count())
-    {
-        QStringList zipList;
-        foreach (const QString &zipFile, files)
-        {
-            if (!zipFile.endsWith(".zip", Qt::CaseInsensitive))
-                continue;
-            zipList << path + zipFile;
-        }
-
-        if (m_asyncUnzipper.UnzipList(zipList, path))
-        {
-            progress = 0;
-            state = Unpacking;
-        }
+        if (timestamp > m_localTimestamp)
+            state = InstalledHasUpdate;
         else
-        {
-            state = Failed;
-        }
-
-        emit stateChanged();
-        return;
+            state = InstalledAvailable;
     }
-
-    if (!m_currDownloadFile.open(path + files[m_currDownloadIndex]))
-    {
-        state = Failed;
-        emit stateChanged();
-        return;
-    }
-
-    m_localFiles << path + files[m_currDownloadIndex];
-
-    QNetworkReply *rep = m_NetMgr->get(QNetworkRequest(QUrl(uri + files[m_currDownloadIndex])));
-    connect(rep, SIGNAL(finished()), this, SLOT(fileDownloaded()));
-    connect(rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(downloadError(QNetworkReply::NetworkError)));
-    connect(rep, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(downloadProgress(qint64, qint64)));
-    connect(rep, SIGNAL(readyRead()), this, SLOT(readData()));
-
-    connect(&m_currDownloadFile, SIGNAL(error(QString)), rep, SLOT(abort()));
-    connect(this, SIGNAL(stopDownload()), rep, SLOT(abort()));
+    emit stateChanged();
 }
 
 void ESModElement::zipListUnpacked()
@@ -311,7 +152,7 @@ void ESModElement::zipListUnpacked()
         tmp_localFiles << m_localFiles[i];
     }
 
-    tmp_localFiles << m_asyncUnzipper.getUnpackedFileList();
+    tmp_localFiles << m_asyncUnzipper.unpackedFiles();
     m_localFiles.swap(tmp_localFiles);
 
     if (state != Unpacking || m_asyncUnzipper.aborted() || m_asyncUnzipper.failed())
@@ -337,58 +178,67 @@ void ESModElement::zipListUnpacked()
     emit stateChanged();
 }
 
-void ESModElement::downloadError(QNetworkReply::NetworkError err)
-{
-    Q_UNUSED(err)
-    //    if (err == QNetworkReply::OperationCanceledError)
-    //        return;
-
-    //    state = Failed;
-    //    emit stateChanged();
-}
-
-void ESModElement::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
-{
-    int new_progress = (m_currDownloadIndex * 100 / files.count()) + bytesReceived * 100 / (bytesTotal * files.count());
-    if (progress != new_progress)
-    {
-        progress = new_progress;
-        emit stateChanged();
-    }
-}
-
-void ESModElement::unpackError(QString strErr)
-{
-    Q_UNUSED(strErr)
-    //    state = Failed;
-    //    emit stateChanged();
-}
-
 void ESModElement::unpackProgress(int p)
 {
-    if (progress != p)
-    {
-        progress = p;
-        emit stateChanged();
-    }
+    if (progress == p)
+        return;
+
+    progress = p;
+    emit stateChanged();
 }
 
-void ESModElement::readData()
+void ESModElement::filesDownloaded()
 {
-    QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
+    m_localFiles = m_asyncDownloader.downloadedFiles();
 
-    QByteArray data = rep->readAll();
-    m_currDownloadFile.write(data);
-    // printf("[%s] %d [%lld]\n", __PRETTY_FUNCTION__, data.size(), m_currDownloadFile.bytesToWrite());
+    if (state != Downloading || m_asyncDownloader.aborted() || m_asyncDownloader.failed())
+    {
+        Delete();
+        if (m_asyncDownloader.aborted())
+        {
+            state = Available;
+            emit stateChanged();
+        }
+        if (m_asyncDownloader.failed())
+        {
+            state = Failed;
+            emit stateChanged();
+        }
+        return;
+    }
+
+    QStringList zipList;
+    foreach (const QString &zipFile, files)
+        if (zipFile.endsWith(".zip", Qt::CaseInsensitive))
+            zipList << path + zipFile;
+
+    if (m_asyncUnzipper.unzipList(zipList, path))
+    {
+        progress = 0;
+        state = Unpacking;
+    }
+    else
+    {
+        state = Failed;
+    }
+
+    emit stateChanged();
+}
+
+void ESModElement::downloadProgress(int p)
+{
+    if (progress == p)
+        return;
+
+    progress = p;
+    emit stateChanged();
 }
 
 QJsonObject ESModElement::SerializeToDB()
 {
     QJsonArray arr;
     foreach (const QString &fname, m_localFiles)
-    {
         arr << fname;
-    }
 
     QJsonObject obj;
     obj["title"] = title;

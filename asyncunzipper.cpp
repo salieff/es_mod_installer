@@ -11,10 +11,9 @@ AsyncUnzipper::AsyncUnzipper(QObject *parent)
       m_abortFlag(false),
       m_failedFlag(false)
 {
-
 }
 
-bool AsyncUnzipper::UnzipList(QStringList ziplist, QString destdir)
+bool AsyncUnzipper::unzipList(QStringList ziplist, QString destdir)
 {
     m_totalSize = 0;
     m_unpackedSize = 0;
@@ -29,6 +28,22 @@ bool AsyncUnzipper::UnzipList(QStringList ziplist, QString destdir)
     return true;
 }
 
+bool AsyncUnzipper::aborted()
+{
+    bool ret;
+
+    m_abortMutex.lock();
+    ret = m_abortFlag;
+    m_abortMutex.unlock();
+
+    return ret;
+}
+
+bool AsyncUnzipper::failed()
+{
+    return m_failedFlag;
+}
+
 void AsyncUnzipper::abort()
 {
     m_abortMutex.lock();
@@ -36,14 +51,7 @@ void AsyncUnzipper::abort()
     m_abortMutex.unlock();
 }
 
-void AsyncUnzipper::fail()
-{
-    m_abortMutex.lock();
-    m_failedFlag = true;
-    m_abortMutex.unlock();
-}
-
-QStringList AsyncUnzipper::getUnpackedFileList()
+QStringList AsyncUnzipper::unpackedFiles()
 {
     return m_unpackedFiles;
 }
@@ -52,8 +60,7 @@ void AsyncUnzipper::run()
 {
     if (!calculateTotalSize())
     {
-        emit error("Can't calculate total size");
-        fail();
+        m_failedFlag = true;
         return;
     }
 
@@ -61,8 +68,7 @@ void AsyncUnzipper::run()
     {
         if (!unpackZip(zipFile))
         {
-            emit error("Can't unpack " + zipFile);
-            fail();
+            m_failedFlag = true;
             break;
         }
 
@@ -96,8 +102,6 @@ bool AsyncUnzipper::calculateTotalSize()
                 continue;
 
             m_totalSize += finfo.uncompressed_size;
-
-            // printf("[%s %lld] %s (%lu, %lu)\n", zipFile.toLocal8Bit().data(), m_totalSize, fname, finfo.compressed_size, finfo.uncompressed_size);
         } while (unzGoToNextFile(ufd) == UNZ_OK);
 
         if (unzClose(ufd) != UNZ_OK)
@@ -140,7 +144,6 @@ bool AsyncUnzipper::unpackZip(QString zipFile)
 
         if (aborted())
             break;
-
     } while (unzGoToNextFile(ufd) == UNZ_OK);
 
     if (unzClose(ufd) != UNZ_OK)
@@ -168,47 +171,29 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
         if (!file.write(buf, unzRet))
         {
             unzRet = -1;
-            emit error(file.errorString());
-            fail();
+            m_failedFlag = true;
             break;
         }
         else
         {
             m_unpackedSize += unzRet;
-            int new_progress = m_unpackedSize * 100 / m_totalSize;
-            if (m_progress != new_progress)
+            if (m_totalSize > 0)
             {
-                m_progress = new_progress;
-                emit progress(m_progress);
+                int new_progress = m_unpackedSize * 100 / m_totalSize;
+                if (m_progress != new_progress)
+                {
+                    m_progress = new_progress;
+                    emit progress(m_progress);
+                }
             }
         }
 
         if (aborted())
             break;
+
+        QThread::msleep(500);
     }
 
     file.close();
     return (unzRet >= 0);
-}
-
-bool AsyncUnzipper::aborted()
-{
-    bool ret;
-
-    m_abortMutex.lock();
-    ret = m_abortFlag;
-    m_abortMutex.unlock();
-
-    return ret;
-}
-
-bool AsyncUnzipper::failed()
-{
-    bool ret;
-
-    m_abortMutex.lock();
-    ret = m_failedFlag;
-    m_abortMutex.unlock();
-
-    return ret;
 }

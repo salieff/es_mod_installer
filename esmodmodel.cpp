@@ -6,7 +6,8 @@
 
 #include "esmodmodel.h"
 
-#define ES_MOD_INDEX_URL "https://raw.githubusercontent.com/Oziabr/ESmanager/master/project.json"
+// #define ES_MOD_INDEX_URL "https://raw.githubusercontent.com/Oziabr/ESmanager/master/project.json"
+#define ES_MOD_INDEX_URL "http://191.ru/es/project.json"
 #define ES_MOD_DB_PATH "/sdcard/Android/data/su.sovietgames.everlasting_summer/files/.esmanager_installed.db"
 
 ESModModel::ESModModel(QNetworkAccessManager *mgr, QObject *parent)
@@ -125,13 +126,13 @@ void ESModModel::ESModIndexDownloaded()
     if (rep->error() == QNetworkReply::NoError)
     {
         /*
-        addModElement(new ESModElement(ESModElement::Available, 100, m_NetMgr, this));
-        addModElement(new ESModElement(ESModElement::Downloading, 70, m_NetMgr, this));
-        addModElement(new ESModElement(ESModElement::Unpacking, 70, m_NetMgr, this));
-        addModElement(new ESModElement(ESModElement::Failed, 100, m_NetMgr, this));
-        addModElement(new ESModElement(ESModElement::InstalledAvailable, 100, m_NetMgr, this));
-        addModElement(new ESModElement(ESModElement::InstalledHasUpdate, 100, m_NetMgr, this));
-        addModElement(new ESModElement(ESModElement::Installed, 100, m_NetMgr, this));
+        addModElement(new ESModElement(ESModElement::Available, 100, this));
+        addModElement(new ESModElement(ESModElement::Downloading, 70, this));
+        addModElement(new ESModElement(ESModElement::Unpacking, 70, this));
+        addModElement(new ESModElement(ESModElement::Failed, 100, this));
+        addModElement(new ESModElement(ESModElement::InstalledAvailable, 100, this));
+        addModElement(new ESModElement(ESModElement::InstalledHasUpdate, 100, this));
+        addModElement(new ESModElement(ESModElement::Installed, 100, this));
         */
 
         QByteArray data = rep->readAll();
@@ -157,7 +158,7 @@ void ESModModel::ESModIndexDownloaded()
             QJsonArray arr = obj["packs"].toArray();
             for (int i = 0; i < arr.size(); ++i)
             {
-                ESModElement *el = new ESModElement(m_NetMgr, this);
+                ESModElement *el = new ESModElement(this);
 
                 el->title = arr[i].toObject()["title"].toString().trimmed();
                 el->uri = arr[i].toObject()["uri"].toString().trimmed();
@@ -207,8 +208,8 @@ void ESModModel::ESModIndexError(QNetworkReply::NetworkError code)
 
 void ESModModel::Download(int ind)
 {
-    // printf("[%s] %d\n", __PRETTY_FUNCTION__, ind);
     m_elements[ind]->Download();
+    // printf("[%s] %d\n", __PRETTY_FUNCTION__, ind);
 }
 
 void ESModModel::Abort(int ind)
@@ -307,7 +308,7 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
     QJsonArray arr = obj["packs"].toArray();
     for (int i = 0; i < arr.size(); ++i)
     {
-        ESModElement *el = new ESModElement(m_NetMgr, this);
+        ESModElement *el = new ESModElement(this);
         el->DeserializeFromDB(arr[i].toObject());
         l << el;
     }

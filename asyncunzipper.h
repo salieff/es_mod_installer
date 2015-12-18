@@ -10,18 +10,18 @@ class AsyncUnzipper : public QThread
 {
     Q_OBJECT
 public:
-    AsyncUnzipper(QObject * parent = 0);
-    bool UnzipList(QStringList ziplist, QString destdir);
-    void abort();
-    bool aborted();
-    void fail();
-    bool failed();
+    explicit AsyncUnzipper(QObject * parent = 0);
 
-    QStringList getUnpackedFileList();
+    bool unzipList(QStringList ziplist, QString destdir);
+    bool aborted();
+    bool failed();
+    QStringList unpackedFiles();
 
 signals:
     void progress(int p);
-    void error(QString s);
+
+public slots:
+    void abort();
 
 protected:
     virtual void run();

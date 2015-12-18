@@ -5,7 +5,6 @@ QT += qml quick widgets
 SOURCES += main.cpp \
     esmodelement.cpp \
     esmodmodel.cpp \
-    asyncfilewriter.cpp \
     minizip/ioapi.c \
     minizip/unzip.c \
     zlib/adler32.c \
@@ -23,7 +22,8 @@ SOURCES += main.cpp \
     zlib/trees.c \
     zlib/uncompr.c \
     zlib/zutil.c \
-    asyncunzipper.cpp
+    asyncunzipper.cpp \
+    asyncdownloader.cpp
 
 RESOURCES += qml.qrc
 
@@ -36,7 +36,6 @@ include(deployment.pri)
 HEADERS += \
     esmodelement.h \
     esmodmodel.h \
-    asyncfilewriter.h \
     minizip/crypt.h \
     minizip/ioapi.h \
     minizip/unzip.h \
@@ -51,6 +50,7 @@ HEADERS += \
     zlib/zconf.h \
     zlib/zlib.h \
     zlib/zutil.h \
-    asyncunzipper.h
+    asyncunzipper.h \
+    asyncdownloader.h
 
 DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 IOAPI_NO_64
