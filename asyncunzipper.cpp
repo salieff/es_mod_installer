@@ -190,8 +190,6 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
 
         if (aborted())
             break;
-
-        QThread::msleep(500);
     }
 
     file.close();
