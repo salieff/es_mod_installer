@@ -46,9 +46,9 @@ bool AsyncUnzipper::failed()
 
 void AsyncUnzipper::abort()
 {
-    m_abortMutex.lock();
-    m_abortFlag = true;
-    m_abortMutex.unlock();
+        m_abortMutex.lock();
+        m_abortFlag = true;
+        m_abortMutex.unlock();
 }
 
 QStringList AsyncUnzipper::unpackedFiles()

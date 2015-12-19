@@ -13,7 +13,7 @@ Rectangle {
     property int margin: 10
 
     Rectangle {
-        property int koeff: (modstate == "Downloading" || modstate == "Unpacking") ? progress : 100
+        property int koeff: progress
         anchors {
             verticalCenter: parent.verticalCenter
             left: parent.left
@@ -76,23 +76,24 @@ Rectangle {
                 verticalCenter: parent.verticalCenter
                 left: parent.left
             }
+
             source: {
                 if (modstate == "Unknown")
-                    "icons/download.png"
+                    guiblocked != 0 ? "icons/download_press.png" : "icons/download.png"
                 else if (modstate == "Available")
-                    "icons/download.png"
+                    guiblocked != 0 ? "icons/download_press.png" : "icons/download.png"
                 else if (modstate == "Downloading")
-                    "icons/abort.png"
+                    guiblocked != 0 ? "icons/abort_press.png" : "icons/abort.png"
                 else if (modstate == "Unpacking")
-                    "icons/abort.png"
+                    guiblocked != 0 ? "icons/abort_press.png" : "icons/abort.png"
                 else if (modstate == "Failed")
-                    "icons/reload.png"
+                    guiblocked != 0 ? "icons/reload_press.png" : "icons/reload.png"
                 else if (modstate == "InstalledAvailable")
-                    "icons/trash.png"
+                    guiblocked != 0 ? "icons/trash_press.png" : "icons/trash.png"
                 else if (modstate == "InstalledHasUpdate")
-                    "icons/update.png"
+                    guiblocked == 1 ? "icons/update_press.png" : "icons/update.png"
                 else if (modstate == "Installed")
-                    "icons/trash.png"
+                    guiblocked != 0 ? "icons/trash_press.png" : "icons/trash.png"
             }
 
             visible: (modstate != "Unknown") ? true : false
@@ -100,18 +101,20 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    if (modstate == "Available")
-                        esModel.Download(index)
-                    else if (modstate == "Downloading" || modstate == "Unpacking")
-                        esModel.Abort(index)
-                    else if (modstate == "Failed")
-                        esModel.Retry(index)
-                    else if (modstate == "InstalledAvailable")
-                        esModel.Delete(index)
-                    else if (modstate == "InstalledHasUpdate")
-                        esModel.Update(index)
-                    else if (modstate == "Installed")
-                        esModel.Delete(index)
+                    if (guiblocked == 0) {
+                        if (modstate == "Available")
+                            esModel.Download(index)
+                        else if (modstate == "Downloading" || modstate == "Unpacking")
+                            esModel.Abort(index)
+                        else if (modstate == "Failed")
+                            esModel.Retry(index)
+                        else if (modstate == "InstalledAvailable")
+                            esModel.Delete(index)
+                        else if (modstate == "InstalledHasUpdate")
+                            esModel.Update(index)
+                        else if (modstate == "Installed")
+                            esModel.Delete(index)
+                    }
                 }
             }
         }
@@ -134,11 +137,14 @@ Rectangle {
                 verticalCenter: parent.verticalCenter
                 right: parent.right
             }
-            source: "icons/trash.png"
+            source: guiblocked == 2 ? "icons/trash_press.png" : "icons/trash.png"
             visible: (modstate == "InstalledHasUpdate") ? true : false
             MouseArea {
                 anchors.fill: parent
-                onClicked: esModel.Delete(index)
+                onClicked: {
+                    if (guiblocked == 0)
+                        esModel.Delete(index)
+                }
             }
         }
     }

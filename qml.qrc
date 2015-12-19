@@ -8,5 +8,10 @@
         <file>icons/update.png</file>
         <file>Delegate.qml</file>
         <file>icons/info.png</file>
+        <file>icons/abort_press.png</file>
+        <file>icons/download_press.png</file>
+        <file>icons/reload_press.png</file>
+        <file>icons/trash_press.png</file>
+        <file>icons/update_press.png</file>
     </qresource>
 </RCC>

@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 
     QNetworkAccessManager mgr;
 #ifndef ANDROID
-    mgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+    // mgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
     ESModModel esmodel(&mgr);
 

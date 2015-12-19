@@ -7,6 +7,7 @@
 
 #include "asyncdownloader.h"
 #include "asyncunzipper.h"
+#include "asyncdeleter.h"
 
 class ESModElement : public QObject
 {
@@ -47,28 +48,35 @@ public:
     double size;
     double timestamp;
 
+    int guiblocked;
+
     QStringList m_localFiles;
     double m_localSize;
     double m_localTimestamp;
-
-public slots:
-    void zipListUnpacked();
-    void unpackProgress(int p);
 
 private slots:
     void headersReceived();
     void filesDownloaded();
     void downloadProgress(int p);
+    void zipListUnpacked();
+    void unpackProgress(int p);
+    void filesDeleted();
 
 signals:
     void stateChanged();
+    void removeMe();
+    void saveMe();
 
 // private signals:
     void abortProcessing();
 
 private:
+    void blockGui(int b = 1);
+    void changeState(State s);
+
     AsyncDownloader m_asyncDownloader;
     AsyncUnzipper m_asyncUnzipper;
+    AsyncDeleter m_asyncDeleter;
 };
 
 #endif // ESMODELEMENT_H

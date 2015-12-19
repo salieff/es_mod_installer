@@ -23,7 +23,8 @@ SOURCES += main.cpp \
     zlib/uncompr.c \
     zlib/zutil.c \
     asyncunzipper.cpp \
-    asyncdownloader.cpp
+    asyncdownloader.cpp \
+    asyncdeleter.cpp
 
 RESOURCES += qml.qrc
 
@@ -51,6 +52,7 @@ HEADERS += \
     zlib/zlib.h \
     zlib/zutil.h \
     asyncunzipper.h \
-    asyncdownloader.h
+    asyncdownloader.h \
+    asyncdeleter.h
 
 DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 IOAPI_NO_64

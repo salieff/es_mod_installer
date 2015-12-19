@@ -19,7 +19,8 @@ public:
         StateRole,
         ProgressRole,
         SizeRole,
-        TimestampRole
+        TimestampRole,
+        GuiBlockedRole
     };
 
     ESModModel(QNetworkAccessManager *mgr, QObject *parent = 0);
@@ -43,13 +44,15 @@ public slots:
     void Delete(int ind);
 
     void elementChanged(int ind = -1);
+    void elementNeedRemove();
+
+    void SaveLocalModsDB();
 
 protected:
     QHash<int, QByteArray> roleNames() const;
 
 private:
     bool LoadLocalModsDB(QList<ESModElement *> &l);
-    void SaveLocalModsDB();
 
     QList<ESModElement *> m_elements;
     QNetworkAccessManager *m_NetMgr;

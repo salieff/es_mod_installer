@@ -23,6 +23,7 @@ ESModModel::ESModModel(QNetworkAccessManager *mgr, QObject *parent)
 
 ESModModel::~ESModModel()
 {
+    SaveLocalModsDB();
 }
 
 void ESModModel::setBusyIndicator(QObject *bus)
@@ -43,6 +44,8 @@ void ESModModel::addModElement(ESModElement *element)
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     m_elements << element;
     connect(element, SIGNAL(stateChanged()), this, SLOT(elementChanged()));
+    connect(element, SIGNAL(saveMe()), this, SLOT(SaveLocalModsDB()));
+    connect(element, SIGNAL(removeMe()), this, SLOT(elementNeedRemove()));
     endInsertRows();
 }
 
@@ -93,6 +96,10 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         return element->timestamp;
         break;
 
+    case GuiBlockedRole:
+        return element->guiblocked;
+        break;
+
     default:
         break;
     }
@@ -111,6 +118,7 @@ QHash<int, QByteArray> ESModModel::roleNames() const
     roles[ProgressRole] = "progress";
     roles[SizeRole] = "modsize";
     roles[TimestampRole] = "timestamp";
+    roles[GuiBlockedRole] = "guiblocked";
     return roles;
 }
 
@@ -221,7 +229,6 @@ void ESModModel::Abort(int ind)
 void ESModModel::Retry(int ind)
 {
     // printf("[%s] %d\n", __PRETTY_FUNCTION__, ind);
-    m_elements[ind]->state = ESModElement::Available;
     m_elements[ind]->Download();
 }
 
@@ -235,20 +242,6 @@ void ESModModel::Delete(int ind)
 {
     // printf("[%s] %d\n", __PRETTY_FUNCTION__, ind);
     m_elements[ind]->Delete();
-    if (m_elements[ind]->state == ESModElement::Installed)
-    {
-        beginRemoveRows(QModelIndex(), ind, ind);
-        delete m_elements[ind];
-        m_elements.removeAt(ind);
-        endRemoveRows();
-    }
-    else
-    {
-        m_elements[ind]->state = ESModElement::Available;
-        elementChanged(ind);
-    }
-
-    SaveLocalModsDB();
 }
 
 void ESModModel::elementChanged(int ind)
@@ -265,14 +258,21 @@ void ESModModel::elementChanged(int ind)
     }
 
     if (ind >= 0)
-    {
-        if (m_elements[ind]->state == ESModElement::Installed || \
-                m_elements[ind]->state == ESModElement::InstalledAvailable || \
-                m_elements[ind]->state == ESModElement::InstalledHasUpdate)
-            SaveLocalModsDB();
-
         emit dataChanged(index(ind, 0), index(ind, 0));
-    }
+}
+
+void ESModModel::elementNeedRemove()
+{
+    ESModElement *el = dynamic_cast<ESModElement *>(sender());
+    for (int i = 0; i < m_elements.count(); ++i)
+        if (el == m_elements[i])
+        {
+            beginRemoveRows(QModelIndex(), i, i);
+            m_elements.removeAt(i);
+            endRemoveRows();
+
+            break;
+        }
 }
 
 bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)

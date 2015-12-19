@@ -16,7 +16,7 @@ AsyncDownloader::AsyncDownloader(QObject *parent)
       m_file(this)
 {
 #ifndef ANDROID
-    m_netMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+    // m_netMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
 
     moveToThread(&m_thread);
@@ -135,9 +135,14 @@ void AsyncDownloader::fileDownloaded()
             m_wasError = true;
 
         if (m_headersOnly)
+        {
             emit headersReady();
+        }
         else
+        {
+            m_file.close();
             emit finished();
+        }
 
         return;
     }
