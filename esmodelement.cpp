@@ -246,6 +246,12 @@ void ESModElement::filesDeleted()
         emit removeMe();
         emit saveMe();
         break;
+
+    case Unknown:
+    case Available:
+    case Failed:
+        // These states don't call Delete()
+        break;
     }
 }
 

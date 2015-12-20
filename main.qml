@@ -1,6 +1,7 @@
 import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.2
+import QtQuick.Window 2.2
 
 ApplicationWindow {
     visible: true
@@ -11,22 +12,6 @@ ApplicationWindow {
     ColumnLayout {
         anchors.fill: parent
 
-        /*
-    menuBar: MenuBar {
-        Menu {
-            title: qsTr("File")
-            MenuItem {
-                text: qsTr("&Open")
-                onTriggered: console.log("Open action triggered");
-            }
-            MenuItem {
-                text: qsTr("Exit")
-                onTriggered: Qt.quit();
-            }
-        }
-    }
-    */
-
         ListView {
             Layout.fillWidth: true
             anchors.top: appTitle.bottom
@@ -34,7 +19,6 @@ ApplicationWindow {
             model: esModel
             delegate: Delegate {}
             anchors.margins: 10
-            // clip: true
             spacing: 5
             maximumFlickVelocity: 5000
 
@@ -80,14 +64,8 @@ ApplicationWindow {
                     id: appTitleText
                     objectName: "appTitleText"
                     Layout.fillWidth: true
-                    /*
-                    anchors {
-                        bottom: parent.bottom
-                        bottomMargin: parent.radius
-                    }
-                    */
                     horizontalAlignment: Text.AlignHCenter
-                    font.pixelSize: 35
+                    font.pointSize: 18
                     wrapMode: Text.Wrap
                     style: Text.Raised
                     styleColor: "white"
@@ -96,8 +74,9 @@ ApplicationWindow {
 
                 Image {
                     id: helpImage
-                    //anchors.right: parent.right
                     source: "icons/info.png"
+                    sourceSize.width: Screen.pixelDensity * 6
+                    sourceSize.height: Screen.pixelDensity * 6
                     MouseArea {
                         anchors.fill: parent
                         onClicked: { }
@@ -107,4 +86,3 @@ ApplicationWindow {
         }
     }
 }
-

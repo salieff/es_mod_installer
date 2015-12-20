@@ -1,5 +1,6 @@
 import QtQuick 2.3
 import QtQuick.Layouts 1.2
+import QtQuick.Window 2.2
 
 Rectangle {
     anchors.horizontalCenter: parent.horizontalCenter
@@ -96,6 +97,9 @@ Rectangle {
                     guiblocked != 0 ? "icons/trash_press.png" : "icons/trash.png"
             }
 
+            sourceSize.width: Screen.pixelDensity * 11
+            sourceSize.height: Screen.pixelDensity * 11
+
             visible: (modstate != "Unknown") ? true : false
 
             MouseArea {
@@ -123,7 +127,7 @@ Rectangle {
             id: delegateText
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            font.pixelSize: 35
+            font.pointSize: 18
             wrapMode: Text.Wrap
             style: Text.Sunken
             color: "white"
@@ -138,6 +142,8 @@ Rectangle {
                 right: parent.right
             }
             source: guiblocked == 2 ? "icons/trash_press.png" : "icons/trash.png"
+            sourceSize.width: Screen.pixelDensity * 11
+            sourceSize.height: Screen.pixelDensity * 11
             visible: (modstate == "InstalledHasUpdate") ? true : false
             MouseArea {
                 anchors.fill: parent

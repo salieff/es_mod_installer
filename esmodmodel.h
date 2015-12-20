@@ -23,7 +23,7 @@ public:
         GuiBlockedRole
     };
 
-    ESModModel(QNetworkAccessManager *mgr, QObject *parent = 0);
+    ESModModel(QObject *parent = 0);
     virtual ~ESModModel();
 
     void setBusyIndicator(QObject *bus);
@@ -54,8 +54,9 @@ protected:
 private:
     bool LoadLocalModsDB(QList<ESModElement *> &l);
 
+    QNetworkAccessManager m_NetMgr;
+
     QList<ESModElement *> m_elements;
-    QNetworkAccessManager *m_NetMgr;
     QObject *m_busyIndicator;
     QObject *m_appTitleText;
 };

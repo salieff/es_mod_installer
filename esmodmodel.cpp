@@ -6,17 +6,19 @@
 
 #include "esmodmodel.h"
 
-// #define ES_MOD_INDEX_URL "https://raw.githubusercontent.com/Oziabr/ESmanager/master/project.json"
 #define ES_MOD_INDEX_URL "http://191.ru/es/project.json"
 #define ES_MOD_DB_PATH "/sdcard/Android/data/su.sovietgames.everlasting_summer/files/.esmanager_installed.db"
 
-ESModModel::ESModModel(QNetworkAccessManager *mgr, QObject *parent)
+ESModModel::ESModModel(QObject *parent)
     : QAbstractListModel(parent),
-      m_NetMgr(mgr),
+      m_NetMgr(this),
       m_busyIndicator(NULL),
       m_appTitleText(NULL)
 {
-    QNetworkReply *rep = m_NetMgr->get(QNetworkRequest(QUrl(ES_MOD_INDEX_URL)));
+#ifndef ANDROID
+    // m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+#endif
+    QNetworkReply *rep = m_NetMgr.get(QNetworkRequest(QUrl(ES_MOD_INDEX_URL)));
     connect(rep, SIGNAL(finished()), this, SLOT(ESModIndexDownloaded()));
     connect(rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(ESModIndexError(QNetworkReply::NetworkError)));
 }
@@ -133,16 +135,6 @@ void ESModModel::ESModIndexDownloaded()
     QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
     if (rep->error() == QNetworkReply::NoError)
     {
-        /*
-        addModElement(new ESModElement(ESModElement::Available, 100, this));
-        addModElement(new ESModElement(ESModElement::Downloading, 70, this));
-        addModElement(new ESModElement(ESModElement::Unpacking, 70, this));
-        addModElement(new ESModElement(ESModElement::Failed, 100, this));
-        addModElement(new ESModElement(ESModElement::InstalledAvailable, 100, this));
-        addModElement(new ESModElement(ESModElement::InstalledHasUpdate, 100, this));
-        addModElement(new ESModElement(ESModElement::Installed, 100, this));
-        */
-
         QByteArray data = rep->readAll();
         QJsonParseError err;
         QJsonDocument doc = QJsonDocument::fromJson(data, &err);
@@ -217,30 +209,25 @@ void ESModModel::ESModIndexError(QNetworkReply::NetworkError code)
 void ESModModel::Download(int ind)
 {
     m_elements[ind]->Download();
-    // printf("[%s] %d\n", __PRETTY_FUNCTION__, ind);
 }
 
 void ESModModel::Abort(int ind)
 {
-    // printf("[%s] %d\n", __PRETTY_FUNCTION__, ind);
     m_elements[ind]->Abort();
 }
 
 void ESModModel::Retry(int ind)
 {
-    // printf("[%s] %d\n", __PRETTY_FUNCTION__, ind);
     m_elements[ind]->Download();
 }
 
 void ESModModel::Update(int ind)
 {
-    // printf("[%s] %d\n", __PRETTY_FUNCTION__, ind);
     m_elements[ind]->Update();
 }
 
 void ESModModel::Delete(int ind)
 {
-    // printf("[%s] %d\n", __PRETTY_FUNCTION__, ind);
     m_elements[ind]->Delete();
 }
 
