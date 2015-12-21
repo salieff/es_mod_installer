@@ -131,29 +131,27 @@ void ESModElement::zipListUnpacked()
 {
     disconnect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()));
 
-    QStringList tmp_localFiles;
-    for (int i = 0; i < m_localFiles.count(); ++i)
-    {
-        if (m_localFiles[i].endsWith(".zip", Qt::CaseInsensitive) && QFile::remove(m_localFiles[i]))
-            continue;
-
-        tmp_localFiles << m_localFiles[i];
-    }
-
-    tmp_localFiles << m_asyncUnzipper.unpackedFiles();
-    m_localFiles.swap(tmp_localFiles);
+    m_localFiles << m_asyncUnzipper.unpackedFiles();
 
     if (state != Unpacking || m_asyncUnzipper.aborted() || m_asyncUnzipper.failed())
     {
-        Delete();
+        if (m_asyncUnzipper.failed())
+            blockGui(3); // Without press any button
+
+        m_asyncDeleter.wait();
+        m_asyncDeleter.deleteFiles(m_localFiles);
         return;
     }
+
+    for (QStringList::iterator i = m_localFiles.begin(); i != m_localFiles.end(); ++i)
+        if (i->endsWith(".zip", Qt::CaseInsensitive))
+            i = m_localFiles.erase(i);
 
     m_localTimestamp = timestamp;
     m_localSize = size;
 
-    changeState(InstalledAvailable);
     emit saveMe();
+    changeState(InstalledAvailable);
 }
 
 void ESModElement::unpackProgress(int p)
@@ -173,7 +171,11 @@ void ESModElement::filesDownloaded()
 
     if (state != Downloading || m_asyncDownloader.aborted() || m_asyncDownloader.failed())
     {
-        Delete();
+        if (m_asyncDownloader.failed())
+            blockGui(3); // Without press any button
+
+        m_asyncDeleter.wait();
+        m_asyncDeleter.deleteFiles(m_localFiles);
         return;
     }
 
@@ -205,6 +207,8 @@ void ESModElement::filesDeleted()
     m_localSize = 0;
     m_localTimestamp = 0;
 
+    emit saveMe();
+
     switch(state)
     {
     case Downloading :
@@ -223,20 +227,17 @@ void ESModElement::filesDeleted()
 
     case InstalledAvailable :
         changeState(Available);
-        emit saveMe();
         break;
 
     case InstalledHasUpdate :
-        if (guiblocked == 1)
+        if (guiblocked == 1) // By update button
         {
             state = Available;
-            emit saveMe();
             Download();
         }
-        if (guiblocked == 2)
+        if (guiblocked == 2) // By delete button
         {
             changeState(Available);
-            emit saveMe();
         }
         break;
 
@@ -244,7 +245,6 @@ void ESModElement::filesDeleted()
         state = Unknown;
         deleteLater();
         emit removeMe();
-        emit saveMe();
         break;
 
     case Unknown:

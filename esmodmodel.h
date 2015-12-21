@@ -4,7 +4,9 @@
 #include <QAbstractListModel>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+
 #include "esmodelement.h"
+#include "asyncjsonwriter.h"
 
 class ESModModel : public QAbstractListModel
 {
@@ -55,6 +57,7 @@ private:
     bool LoadLocalModsDB(QList<ESModElement *> &l);
 
     QNetworkAccessManager m_NetMgr;
+    AsyncJsonWriter m_JsonWriter;
 
     QList<ESModElement *> m_elements;
     QObject *m_busyIndicator;

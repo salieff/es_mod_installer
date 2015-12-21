@@ -46,9 +46,9 @@ bool AsyncUnzipper::failed()
 
 void AsyncUnzipper::abort()
 {
-        m_abortMutex.lock();
-        m_abortFlag = true;
-        m_abortMutex.unlock();
+    m_abortMutex.lock();
+    m_abortFlag = true;
+    m_abortMutex.unlock();
 }
 
 QStringList AsyncUnzipper::unpackedFiles()
@@ -67,6 +67,12 @@ void AsyncUnzipper::run()
     foreach (const QString &zipFile, m_zipList)
     {
         if (!unpackZip(zipFile))
+        {
+            m_failedFlag = true;
+            break;
+        }
+
+        if (!QFile::remove(zipFile))
         {
             m_failedFlag = true;
             break;
@@ -164,7 +170,7 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
     m_unpackedFiles << fname;
 
     int unzRet = 0;
-    char buf[512 * 1024];
+    char buf[1024];
 
     while((unzRet = unzReadCurrentFile(ufd, buf, sizeof(buf))) > 0)
     {

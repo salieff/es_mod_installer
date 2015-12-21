@@ -80,21 +80,21 @@ Rectangle {
 
             source: {
                 if (modstate == "Unknown")
-                    guiblocked != 0 ? "icons/download_press.png" : "icons/download.png"
+                    guiblocked == 1 ? "icons/download_press.png" : "icons/download.png"
                 else if (modstate == "Available")
-                    guiblocked != 0 ? "icons/download_press.png" : "icons/download.png"
+                    guiblocked == 1 ? "icons/download_press.png" : "icons/download.png"
                 else if (modstate == "Downloading")
-                    guiblocked != 0 ? "icons/abort_press.png" : "icons/abort.png"
+                    guiblocked == 1 ? "icons/abort_press.png" : "icons/abort.png"
                 else if (modstate == "Unpacking")
-                    guiblocked != 0 ? "icons/abort_press.png" : "icons/abort.png"
+                    guiblocked == 1 ? "icons/abort_press.png" : "icons/abort.png"
                 else if (modstate == "Failed")
-                    guiblocked != 0 ? "icons/reload_press.png" : "icons/reload.png"
+                    guiblocked == 1 ? "icons/reload_press.png" : "icons/reload.png"
                 else if (modstate == "InstalledAvailable")
-                    guiblocked != 0 ? "icons/trash_press.png" : "icons/trash.png"
+                    guiblocked == 2 ? "icons/trash_press.png" : "icons/trash.png"
                 else if (modstate == "InstalledHasUpdate")
                     guiblocked == 1 ? "icons/update_press.png" : "icons/update.png"
                 else if (modstate == "Installed")
-                    guiblocked != 0 ? "icons/trash_press.png" : "icons/trash.png"
+                    guiblocked == 2 ? "icons/trash_press.png" : "icons/trash.png"
             }
 
             sourceSize.width: Screen.pixelDensity * 11

@@ -7,17 +7,20 @@
 #include "esmodmodel.h"
 
 #define ES_MOD_INDEX_URL "http://191.ru/es/project.json"
-#define ES_MOD_DB_PATH "/sdcard/Android/data/su.sovietgames.everlasting_summer/files/.esmanager_installed.db"
 
 ESModModel::ESModModel(QObject *parent)
     : QAbstractListModel(parent),
       m_NetMgr(this),
+      m_JsonWriter(this),
       m_busyIndicator(NULL),
       m_appTitleText(NULL)
 {
 #ifndef ANDROID
     // m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
+
+    m_JsonWriter.start();
+
     QNetworkReply *rep = m_NetMgr.get(QNetworkRequest(QUrl(ES_MOD_INDEX_URL)));
     connect(rep, SIGNAL(finished()), this, SLOT(ESModIndexDownloaded()));
     connect(rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(ESModIndexError(QNetworkReply::NetworkError)));
@@ -26,6 +29,8 @@ ESModModel::ESModModel(QObject *parent)
 ESModModel::~ESModModel()
 {
     SaveLocalModsDB();
+    m_JsonWriter.close();
+    m_JsonWriter.wait();
 }
 
 void ESModModel::setBusyIndicator(QObject *bus)
@@ -307,26 +312,10 @@ void ESModModel::SaveLocalModsDB()
 {
     QJsonArray arr;
     for (int i = 0; i < m_elements.size(); ++i)
-        if (m_elements[i]->state == ESModElement::Installed || \
-                m_elements[i]->state == ESModElement::InstalledAvailable || \
-                m_elements[i]->state == ESModElement::InstalledHasUpdate)
+        if (!m_elements[i]->m_localFiles.empty())
             arr.push_back(m_elements[i]->SerializeToDB());
 
-    QJsonObject root;
-    root["packs"] = arr;
-
-    QJsonDocument doc(root);
-    QByteArray data = doc.toJson();
-
-#ifndef ANDROID
-    QFile f(QString(ES_MOD_DB_PATH).replace(QRegExp("^/sdcard/Android/data"), QDir::homePath() + "/tmp"));
-#else
-    QFile f(ES_MOD_DB_PATH);
-#endif
-
-    if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
-        return;
-
-    f.write(data);
-    f.close();
+    QJsonObject *obj = new QJsonObject;
+    obj->insert("packs", arr);
+    m_JsonWriter.write(obj);
 }

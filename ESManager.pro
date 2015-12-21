@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     zlib/zutil.c \
     asyncunzipper.cpp \
     asyncdownloader.cpp \
-    asyncdeleter.cpp
+    asyncdeleter.cpp \
+    asyncjsonwriter.cpp
 
 RESOURCES += qml.qrc
 
@@ -53,6 +54,18 @@ HEADERS += \
     zlib/zutil.h \
     asyncunzipper.h \
     asyncdownloader.h \
-    asyncdeleter.h
+    asyncdeleter.h \
+    asyncjsonwriter.h
 
 DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 IOAPI_NO_64
+
+DISTFILES += \
+    android/AndroidManifest.xml \
+    android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradlew \
+    android/res/values/libs.xml \
+    android/build.gradle \
+    android/gradle/wrapper/gradle-wrapper.properties \
+    android/gradlew.bat
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
