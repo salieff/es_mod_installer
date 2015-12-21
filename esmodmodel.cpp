@@ -3,6 +3,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDir>
+#include <QNetworkProxy>
 
 #include "esmodmodel.h"
 
@@ -16,7 +17,7 @@ ESModModel::ESModModel(QObject *parent)
       m_appTitleText(NULL)
 {
 #ifndef ANDROID
-    // m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+    m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
 
     m_JsonWriter.start();

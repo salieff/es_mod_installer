@@ -1,5 +1,6 @@
 #include <QDir>
 #include <QJsonArray>
+#include <QMessageBox>
 
 #include "esmodelement.h"
 
@@ -17,9 +18,11 @@ ESModElement::ESModElement(QObject *parent, State s, int p)
     connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
     connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
     connect(&m_asyncDownloader, SIGNAL(headersReady()), this, SLOT(headersReceived()));
+    connect(&m_asyncDownloader, SIGNAL(overwriteRequest(QString)), this, SLOT(downloadOverwriteRequest(QString)));
 
     connect(&m_asyncUnzipper, SIGNAL(finished()), this, SLOT(zipListUnpacked()));
     connect(&m_asyncUnzipper, SIGNAL(progress(int)), this, SLOT(unpackProgress(int)));
+    connect(&m_asyncUnzipper, SIGNAL(overwriteRequest(QString)), this, SLOT(unzipperOverwriteRequest(QString)));
 
     connect(&m_asyncDeleter, SIGNAL(finished()), this, SLOT(filesDeleted()));
 }
@@ -253,6 +256,26 @@ void ESModElement::filesDeleted()
         // These states don't call Delete()
         break;
     }
+}
+
+void ESModElement::downloadOverwriteRequest(QString fname)
+{
+    QMessageBox::StandardButton b = QMessageBox::warning(NULL, tr("Risk of overwriting"), \
+                                                         tr("File %1 already exists, do you want to overwrite it?").arg(fname), \
+                                                         QMessageBox::Cancel | QMessageBox::Yes | QMessageBox::YesToAll, \
+                                                         QMessageBox::Cancel);
+
+    m_asyncDownloader.setOverwriteFlags((b == QMessageBox::YesToAll || b == QMessageBox::Yes), b == QMessageBox::YesToAll);
+}
+
+void ESModElement::unzipperOverwriteRequest(QString fname)
+{
+    QMessageBox::StandardButton b = QMessageBox::warning(NULL, tr("Risk of overwriting"), \
+                                                         tr("File %1 already exists, do you want to overwrite it?").arg(fname), \
+                                                         QMessageBox::Cancel | QMessageBox::Yes | QMessageBox::YesToAll, \
+                                                         QMessageBox::Cancel);
+
+    m_asyncUnzipper.setOverwriteFlags((b == QMessageBox::YesToAll || b == QMessageBox::Yes), b == QMessageBox::YesToAll);
 }
 
 QJsonObject ESModElement::SerializeToDB()

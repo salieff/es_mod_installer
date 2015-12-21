@@ -8,6 +8,8 @@
 #include <QStringList>
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
+#include <QMutex>
+#include <QWaitCondition>
 
 class AsyncDownloader : public QObject
 {
@@ -22,10 +24,13 @@ public:
     QStringList downloadedFiles();
     void getHeadersData(double &sz, double &tm);
 
+    void setOverwriteFlags(bool ovrw, bool ovrw_always);
+
 signals:
     void progress(int);
     void finished();
     void headersReady();
+    void overwriteRequest(QString fname);
 
 // private signals:
     void abortDownload();
@@ -40,6 +45,8 @@ private slots:
     void readData();
 
 private:
+    bool checkOverwrite(QString fname);
+
     bool m_headersOnly;
     QString m_url;
     QStringList m_files;
@@ -55,6 +62,11 @@ private:
     QThread m_thread;
     QNetworkAccessManager m_netMgr;
     QFile m_file;
+
+    bool m_canOverwrite;
+    bool m_alwaysOverwrite;
+    QMutex m_overwriteMutex;
+    QWaitCondition m_overwriteCondition;
 };
 
 #endif // ASYNCDOWNLOADER_H

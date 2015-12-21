@@ -9,7 +9,9 @@ AsyncUnzipper::AsyncUnzipper(QObject *parent)
       m_unpackedSize(0),
       m_progress(0),
       m_abortFlag(false),
-      m_failedFlag(false)
+      m_failedFlag(false),
+      m_canOverwrite(false),
+      m_alwaysOverwrite(false)
 {
 }
 
@@ -23,6 +25,8 @@ bool AsyncUnzipper::unzipList(QStringList ziplist, QString destdir)
     m_destDir = destdir;
     m_abortFlag = false;
     m_failedFlag = false;
+    m_canOverwrite = false;
+    m_alwaysOverwrite = false;
 
     start();
     return true;
@@ -54,6 +58,15 @@ void AsyncUnzipper::abort()
 QStringList AsyncUnzipper::unpackedFiles()
 {
     return m_unpackedFiles;
+}
+
+void AsyncUnzipper::setOverwriteFlags(bool ovrw, bool ovrw_always)
+{
+    m_overwriteMutex.lock();
+    m_canOverwrite = ovrw;
+    m_alwaysOverwrite = ovrw_always;
+    m_overwriteCondition.wakeAll();
+    m_overwriteMutex.unlock();
 }
 
 void AsyncUnzipper::run()
@@ -160,6 +173,12 @@ bool AsyncUnzipper::unpackZip(QString zipFile)
 
 bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
 {
+    if (!checkOverwrite(fname))
+    {
+        m_abortFlag = true;
+        return true;
+    }
+
     if (!QDir().mkpath(QFileInfo(fname).dir().path()))
         return false;
 
@@ -200,4 +219,17 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
 
     file.close();
     return (unzRet >= 0);
+}
+
+bool AsyncUnzipper::checkOverwrite(QString fname)
+{
+    if (m_alwaysOverwrite || !QFile::exists(fname))
+        return true;
+
+    m_overwriteMutex.lock();
+    emit overwriteRequest(fname);
+    m_overwriteCondition.wait(&m_overwriteMutex);
+    m_overwriteMutex.unlock();
+
+    return m_canOverwrite;
 }

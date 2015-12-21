@@ -61,6 +61,8 @@ private slots:
     void zipListUnpacked();
     void unpackProgress(int p);
     void filesDeleted();
+    void downloadOverwriteRequest(QString fname);
+    void unzipperOverwriteRequest(QString fname);
 
 signals:
     void stateChanged();

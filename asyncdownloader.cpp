@@ -13,10 +13,12 @@ AsyncDownloader::AsyncDownloader(QObject *parent)
       m_wasError(false),
       m_wasAbort(false),
       m_netMgr(this),
-      m_file(this)
+      m_file(this),
+      m_canOverwrite(false),
+      m_alwaysOverwrite(false)
 {
 #ifndef ANDROID
-    // m_netMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+    m_netMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
 
     moveToThread(&m_thread);
@@ -40,6 +42,8 @@ bool AsyncDownloader::downloadFileList(QString url, QStringList &files, QString 
     m_localFiles.clear();
     m_size = 0;
     m_timestamp = 0;
+    m_canOverwrite = false;
+    m_alwaysOverwrite = false;
 
     m_thread.start();
     return true;
@@ -76,6 +80,15 @@ void AsyncDownloader::getHeadersData(double &sz, double &tm)
     tm = m_timestamp;
 }
 
+void AsyncDownloader::setOverwriteFlags(bool ovrw, bool ovrw_always)
+{
+    m_overwriteMutex.lock();
+    m_canOverwrite = ovrw;
+    m_alwaysOverwrite = ovrw_always;
+    m_overwriteCondition.wakeAll();
+    m_overwriteMutex.unlock();
+}
+
 void AsyncDownloader::download()
 {
     if (m_files.empty() || m_url.isEmpty())
@@ -96,6 +109,13 @@ void AsyncDownloader::download()
     }
     else
     {
+        if (!checkOverwrite(m_destDir + m_files[m_currFileIndex]))
+        {
+            m_wasAbort = true;
+            emit finished();
+            return;
+        }
+
         if (!QDir().mkpath(m_destDir))
         {
             m_wasError = true;
@@ -186,6 +206,13 @@ void AsyncDownloader::fileDownloaded()
     }
     else
     {
+        if (!checkOverwrite(m_destDir + m_files[m_currFileIndex]))
+        {
+            m_wasAbort = true;
+            emit finished();
+            return;
+        }
+
         m_file.setFileName(m_destDir + m_files[m_currFileIndex]);
         if (!m_file.open(QIODevice::WriteOnly))
         {
@@ -223,4 +250,17 @@ void AsyncDownloader::readData()
         m_wasError = true;
         emit abortDownload();
     }
+}
+
+bool AsyncDownloader::checkOverwrite(QString fname)
+{
+    if (m_alwaysOverwrite || !QFile::exists(fname))
+        return true;
+
+    m_overwriteMutex.lock();
+    emit overwriteRequest(fname);
+    m_overwriteCondition.wait(&m_overwriteMutex);
+    m_overwriteMutex.unlock();
+
+    return m_canOverwrite;
 }
