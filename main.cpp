@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
 
     esmodel.setBusyIndicator(engine.rootObjects().first()->findChild<QObject *>("viewBusyIndicator"));
     esmodel.setAppTitleText(engine.rootObjects().first()->findChild<QObject *>("appTitleText"));
+    esmodel.setHelpText(engine.rootObjects().first()->findChild<QObject *>("helpText"));
 
     return app.exec();
 }

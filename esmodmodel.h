@@ -15,6 +15,8 @@ public:
     enum ModRoles
     {
         TitleRole = Qt::UserRole + 1,
+        StatusRole,
+        LangsRole,
         UriRole,
         PathRole,
         FilesRole,
@@ -30,6 +32,7 @@ public:
 
     void setBusyIndicator(QObject *bus);
     void setAppTitleText(QObject *txt);
+    void setHelpText(QObject *txt);
 
     void addModElement(ESModElement *element);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
@@ -62,6 +65,7 @@ private:
     QList<ESModElement *> m_elements;
     QObject *m_busyIndicator;
     QObject *m_appTitleText;
+    QObject *m_helpText;
 };
 
 #endif // ESMODMODEL_H

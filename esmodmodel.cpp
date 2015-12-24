@@ -7,14 +7,15 @@
 
 #include "esmodmodel.h"
 
-#define ES_MOD_INDEX_URL "http://191.ru/es/project.json"
+#define ES_MOD_INDEX_URL "http://191.ru/es/project1.json"
 
 ESModModel::ESModModel(QObject *parent)
     : QAbstractListModel(parent),
       m_NetMgr(this),
       m_JsonWriter(this),
       m_busyIndicator(NULL),
-      m_appTitleText(NULL)
+      m_appTitleText(NULL),
+      m_helpText(NULL)
 {
 #ifndef ANDROID
     m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
@@ -47,6 +48,11 @@ void ESModModel::setAppTitleText(QObject *txt)
     m_appTitleText = txt;
 }
 
+void ESModModel::setHelpText(QObject *txt)
+{
+    m_helpText = txt;
+}
+
 void ESModModel::addModElement(ESModElement *element)
 {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
@@ -76,6 +82,14 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         return element->title;
         break;
 
+    case StatusRole:
+        return element->status;
+        break;
+
+    case LangsRole:
+        return element->langs.join(",");
+        break;
+
     case UriRole:
         return element->uri;
         break;
@@ -97,11 +111,23 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         break;
 
     case SizeRole:
+        if (element->size == 0)
+            return element->m_localSize;
+
         return element->size;
         break;
 
     case TimestampRole:
-        return element->timestamp;
+        {
+        QDateTime dt;
+
+        if (element->timestamp == 0)
+            dt.setTime_t(element->m_localTimestamp);
+        else
+            dt.setTime_t(element->timestamp);
+
+        return dt.toString("yyyy.MM.dd");
+        }
         break;
 
     case GuiBlockedRole:
@@ -119,6 +145,8 @@ QHash<int, QByteArray> ESModModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
     roles[TitleRole] = "title";
+    roles[StatusRole] = "status";
+    roles[LangsRole] = "langs";
     roles[UriRole] = "uri";
     roles[PathRole] = "path";
     roles[FilesRole] = "files";
@@ -127,6 +155,7 @@ QHash<int, QByteArray> ESModModel::roleNames() const
     roles[SizeRole] = "modsize";
     roles[TimestampRole] = "timestamp";
     roles[GuiBlockedRole] = "guiblocked";
+
     return roles;
 }
 
@@ -161,12 +190,18 @@ void ESModModel::ESModIndexDownloaded()
             if (m_appTitleText != NULL && !appTitle.isEmpty())
                 m_appTitleText->setProperty("text", appTitle);
 
+            QString appHelp = obj["appReadMe"].toString();
+            if (m_helpText != NULL && !appHelp.isEmpty())
+                m_helpText->setProperty("text", appHelp);
+
             QJsonArray arr = obj["packs"].toArray();
             for (int i = 0; i < arr.size(); ++i)
             {
                 ESModElement *el = new ESModElement(this);
 
                 el->title = arr[i].toObject()["title"].toString().trimmed();
+                el->status = arr[i].toObject()["status"].toString().trimmed();
+                el->langs = arr[i].toObject()["lang"].toString().trimmed().split(QRegExp("[,\\s]+"), QString::SkipEmptyParts);
                 el->uri = arr[i].toObject()["uri"].toString().trimmed();
                 el->path = arr[i].toObject()["path"].toString().trimmed();
 #ifndef ANDROID

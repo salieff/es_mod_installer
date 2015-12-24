@@ -10,6 +10,7 @@ ApplicationWindow {
     title: qsTr("ES Manager")
 
     ColumnLayout {
+        id: mainLayout
         anchors.fill: parent
 
         ListView {
@@ -42,30 +43,6 @@ ApplicationWindow {
                 running: false;
             }
 
-            Rectangle {
-                id: infoText
-                objectName: "infoText"
-                anchors.fill: parent;
-                anchors {
-                    leftMargin: 5
-                    rightMargin: 5
-                }
-                radius: 10
-                opacity: 0
-                visible: false
-                onOpacityChanged: if (opacity == 0) { visible = false }
-
-                Text {
-                    anchors.fill: parent;
-                    anchors.margins: 10
-                    font.pointSize: 18
-                    wrapMode: Text.Wrap
-                    text: "This property holds whether the item is visible. By default this is true.
-Setting this property directly affects the visible value of child items. When set to false, the visible values of all child items also become false. When set to true, the visible values of child items are returned to true, unless they have explicitly been set to false.
-(Because of this flow-on behavior, using the visible property may not have the intended effect if a property binding should only respond to explicit property changes. In such cases it may be better to use the opacity property instead.)
-If this property is set to false, the item will no longer receive mouse events, but will continue to receive key events and will retain the keyboard focus if it has been set. (In contrast, setting the enabled property to false stops both mouse and keyboard events, and also removes focus from the item.)"
-                }
-            }
         }
 
         Rectangle {
@@ -95,7 +72,7 @@ If this property is set to false, the item will no longer receive mouse events, 
                     wrapMode: Text.Wrap
                     style: Text.Raised
                     styleColor: "white"
-                    text: "ES mod manager"
+                    text: qsTr("ES mod manager")
                 }
 
                 Image {
@@ -105,14 +82,15 @@ If this property is set to false, the item will no longer receive mouse events, 
                     sourceSize.height: Screen.pixelDensity * 6
                     MouseArea {
                         anchors.fill: parent
-                        PropertyAnimation {id:fadein; target: infoText; property: "opacity"; from: 0; to: 0.95; duration: 300}
-                        PropertyAnimation {id:fadeout; target: infoText; property: "opacity"; from: 0.95; to: 0; duration: 300}
+                        PropertyAnimation {id:fadein; target: infoRect; property: "opacity"; from: 0; to: 0.95; duration: 300}
+                        PropertyAnimation {id:fadeout; target: infoRect; property: "opacity"; from: 0.95; to: 0; duration: 300}
                         onClicked: {
-                            if (infoText.visible) {
+                            if (infoRect.visible) {
                                 fadeout.start()
                             }
                             else {
-                                infoText.visible = true
+                                infoRect.visible = true
+                                mainListView.enabled = false
                                 fadein.start()
                             }
                         }
@@ -121,4 +99,39 @@ If this property is set to false, the item will no longer receive mouse events, 
             }
         }
     }
+
+    Rectangle {
+        id: infoRect
+        height: parent.height - appTitle.height
+        anchors {
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
+            margins: 5
+        }
+        radius: 10
+        opacity: 0
+        visible: false
+        clip: true
+        onOpacityChanged: if (opacity == 0) {
+                              visible = false
+                              mainListView.enabled = true
+                          }
+
+        Flickable {
+            anchors.fill: parent;
+            anchors.margins: 10
+            contentHeight: helpText.implicitHeight
+
+            Text {
+                id: helpText
+                objectName: "helpText"
+                width: parent.width
+                font.pointSize: 18
+                wrapMode: Text.Wrap
+                text: qsTr("<h3>Hello!</h3><br><p>If you see this text instead of help so you don't have internet connection to download help topic!</p>")
+            }
+        }
+    }
+
 }

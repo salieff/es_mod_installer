@@ -39,6 +39,8 @@ public:
     void DeserializeFromDB(QJsonObject obj);
 
     QString title;
+    QStringList langs;
+    QString status;
     QString uri;
     QString path;
     QStringList files;

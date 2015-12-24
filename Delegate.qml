@@ -3,9 +3,11 @@ import QtQuick.Layouts 1.2
 import QtQuick.Window 2.2
 
 Rectangle {
+    id: mainRectangle
     anchors.horizontalCenter: parent.horizontalCenter
     width: parent.width - margin * 2;
-    height: Math.max(delegateText.implicitHeight, delegateImage.implicitHeight) + 2 * margin
+    height: Math.max(textBox.implicitHeight, delegateImage.implicitHeight) + 2 * margin
+    // height: delegateImage.implicitHeight + 2 * margin
     radius: 15
     border.width: 2
     border.color: "#22000000"
@@ -123,16 +125,52 @@ Rectangle {
             }
         }
 
-        Text {
-            id: delegateText
+        Item {
+            id: textBox
             Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            font.pointSize: 18
-            wrapMode: Text.Wrap
-            style: Text.Sunken
-            color: "white"
-            styleColor: "black"
-            text: title
+            Layout.minimumHeight: delegateText1.implicitHeight + delegateText2.implicitHeight + layout2.spacing + mainRectangle.margin * 20
+            anchors.verticalCenter: parent.verticalCenter
+
+            ColumnLayout {
+                id: layout2
+                anchors.fill: parent
+
+                Text {
+                    id: delegateText1
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    font.pointSize: 18
+                    wrapMode: Text.Wrap
+                    style: Text.Sunken
+                    color: "white"
+                    styleColor: "black"
+                    text: title
+                }
+
+                Text {
+                    id: delegateText2
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.top: delegateText1.bottom
+                    font.pointSize: 10
+                    wrapMode: Text.Wrap
+                    style: Text.Sunken
+                    color: "white"
+                    styleColor: "black"
+                    text: "(" + langs + ") [" + status + "] {" + getReadableFileSizeString(modsize) + ", " + timestamp + "}"
+
+                    function getReadableFileSizeString(fileSizeInBytes) {
+                        var i = -1;
+                        var byteUnits = [' kb', ' Mb', ' Gb', ' Tb', 'Pb', 'Eb', 'Zb', 'Yb'];
+                        do {
+                            fileSizeInBytes = fileSizeInBytes / 1024;
+                            i++;
+                        } while (fileSizeInBytes > 1024 && i < (byteUnits.length - 1));
+
+                        return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
+                    }
+                }
+            }
         }
 
         Image {

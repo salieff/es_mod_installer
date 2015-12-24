@@ -280,13 +280,19 @@ void ESModElement::unzipperOverwriteRequest(QString fname)
 
 QJsonObject ESModElement::SerializeToDB()
 {
-    QJsonArray arr;
+    QJsonArray files_arr;
     foreach (const QString &fname, m_localFiles)
-        arr << fname;
+        files_arr << fname;
+
+    QJsonArray langs_arr;
+    foreach (const QString &lang, langs)
+        langs_arr << lang;
 
     QJsonObject obj;
     obj["title"] = title;
-    obj["files"] = arr;
+    obj["langs"] = langs_arr;
+    obj["status"] = status;
+    obj["files"] = files_arr;
     obj["size"] = m_localSize;
     obj["timestamp"] = m_localTimestamp;
 
@@ -296,13 +302,19 @@ QJsonObject ESModElement::SerializeToDB()
 void ESModElement::DeserializeFromDB(QJsonObject obj)
 {
     title = obj["title"].toString();
+    status = obj["status"].toString();
     m_localSize = obj["size"].toDouble();
     m_localTimestamp = obj["timestamp"].toDouble();
 
-    QJsonArray arr = obj["files"].toArray();
+    QJsonArray files_arr = obj["files"].toArray();
     m_localFiles.clear();
-    for (int i = 0; i < arr.size(); ++i)
-        m_localFiles << arr[i].toString();
+    for (int i = 0; i < files_arr.size(); ++i)
+        m_localFiles << files_arr[i].toString();
+
+    QJsonArray langs_arr = obj["langs"].toArray();
+    langs.clear();
+    for (int i = 0; i < langs_arr.size(); ++i)
+        langs << langs_arr[i].toString();
 }
 
 void ESModElement::blockGui(int b)
