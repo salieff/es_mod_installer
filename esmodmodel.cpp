@@ -18,7 +18,7 @@ ESModModel::ESModModel(QObject *parent)
       m_helpText(NULL)
 {
 #ifndef ANDROID
-    m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+    // m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
 
     m_JsonWriter.start();
@@ -213,7 +213,16 @@ void ESModModel::ESModIndexDownloaded()
                     el->files << files_arr[j].toString().trimmed();
 
                 for (int j = 0; j < local_elements.size(); ++j)
-                    if (local_elements[j]->title == el->title)
+                {
+                    QString title1 = local_elements[j]->title;
+                    title1 = title1.remove(QRegExp("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegExp("\\[.*\\]")).remove(QRegExp("\\{.*\\}")).simplified();
+                    // printf("title1 = [%s]\n", title1.toLocal8Bit().data());
+
+                    QString title2 = el->title;
+                    title2 = title2.remove(QRegExp("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegExp("\\[.*\\]")).remove(QRegExp("\\{.*\\}")).simplified();
+                    // printf("title2 = [%s]\n", title2.toLocal8Bit().data());
+
+                    if (title1 == title2)
                     {
                         el->m_localFiles = local_elements[j]->m_localFiles;
                         el->m_localSize = local_elements[j]->m_localSize;
@@ -221,6 +230,7 @@ void ESModModel::ESModIndexDownloaded()
                         delete local_elements[j];
                         local_elements.removeAt(j);
                     }
+                }
 
                 addModElement(el);
             }

@@ -18,7 +18,7 @@ AsyncDownloader::AsyncDownloader(QObject *parent)
       m_alwaysOverwrite(false)
 {
 #ifndef ANDROID
-    m_netMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+    // m_netMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
 
     moveToThread(&m_thread);

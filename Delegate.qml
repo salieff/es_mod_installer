@@ -5,9 +5,8 @@ import QtQuick.Window 2.2
 Rectangle {
     id: mainRectangle
     anchors.horizontalCenter: parent.horizontalCenter
-    width: parent.width - margin * 2;
-    height: Math.max(textBox.implicitHeight, delegateImage.implicitHeight) + 2 * margin
-    // height: delegateImage.implicitHeight + 2 * margin
+    width: parent.width - margin * 2
+    height: Math.max(textBox.Layout.preferredHeight, delegateImage.height, flagBox.height) + margin * 2
     radius: 15
     border.width: 2
     border.color: "#22000000"
@@ -44,7 +43,7 @@ Rectangle {
                 "#608060"
         }
 
-        visible: (modstate != "Unknown") ? true : false
+        visible: (modstate != "Unknown")
     }
 
     Rectangle {
@@ -65,21 +64,18 @@ Rectangle {
             GradientStop { position: 1;    color: "#55FFFFFF" }
         }
 
-        visible: (modstate != "Unknown") ? true : false
+        visible: (modstate != "Unknown")
     }
 
     RowLayout {
+        id: layout1
         anchors.fill: parent
         anchors.margins: parent.margin
-        spacing: 10
+        spacing: parent.margin
 
         Image {
             id: delegateImage
-            anchors {
-                verticalCenter: parent.verticalCenter
-                left: parent.left
-            }
-
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
             source: {
                 if (modstate == "Unknown")
                     guiblocked == 1 ? "icons/download_press.png" : "icons/download.png"
@@ -102,7 +98,7 @@ Rectangle {
             sourceSize.width: Screen.pixelDensity * 11
             sourceSize.height: Screen.pixelDensity * 11
 
-            visible: (modstate != "Unknown") ? true : false
+            visible: (modstate != "Unknown")
 
             MouseArea {
                 anchors.fill: parent
@@ -128,12 +124,12 @@ Rectangle {
         Item {
             id: textBox
             Layout.fillWidth: true
-            Layout.minimumHeight: delegateText1.implicitHeight + delegateText2.implicitHeight + layout2.spacing + mainRectangle.margin * 20
-            anchors.verticalCenter: parent.verticalCenter
+            Layout.preferredHeight: layout2.implicitHeight
 
             ColumnLayout {
                 id: layout2
                 anchors.fill: parent
+                spacing: mainRectangle.margin
 
                 Text {
                     id: delegateText1
@@ -146,18 +142,16 @@ Rectangle {
                     styleColor: "black"
                     text: title
                 }
-
                 Text {
                     id: delegateText2
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
-                    anchors.top: delegateText1.bottom
-                    font.pointSize: 10
+                    font.pointSize: 12
                     wrapMode: Text.Wrap
                     style: Text.Sunken
                     color: "white"
                     styleColor: "black"
-                    text: "(" + langs + ") [" + status + "] {" + getReadableFileSizeString(modsize) + ", " + timestamp + "}"
+                    text: "[" + status + "] {" + getReadableFileSizeString(modsize) + ", " + timestamp + "}"
 
                     function getReadableFileSizeString(fileSizeInBytes) {
                         var i = -1;
@@ -170,19 +164,46 @@ Rectangle {
                         return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
                     }
                 }
+
+            }
+        }
+
+        Item {
+            id: flagBox
+            Layout.preferredHeight: layout3.implicitHeight
+            Layout.preferredWidth: layout3.implicitWidth
+
+            ColumnLayout {
+                id: layout3
+                anchors.fill: parent
+                Image {
+                    source: "icons/rus_flag.png"
+                    sourceSize.width: Screen.pixelDensity * 5
+                    sourceSize.height: Screen.pixelDensity * 3
+                    visible: (langs.indexOf("Ru") > -1)
+                }
+                Image {
+                    source: "icons/eng_flag.png"
+                    sourceSize.width: Screen.pixelDensity * 5
+                    sourceSize.height: Screen.pixelDensity * 3
+                    visible: (langs.indexOf("En") > -1)
+                }
+                Image {
+                    source: "icons/spa_flag.png"
+                    sourceSize.width: Screen.pixelDensity * 5
+                    sourceSize.height: Screen.pixelDensity * 3
+                    visible: (langs.indexOf("Spa") > -1)
+                }
             }
         }
 
         Image {
             id: delegateImage2
-            anchors {
-                verticalCenter: parent.verticalCenter
-                right: parent.right
-            }
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
             source: guiblocked == 2 ? "icons/trash_press.png" : "icons/trash.png"
             sourceSize.width: Screen.pixelDensity * 11
             sourceSize.height: Screen.pixelDensity * 11
-            visible: (modstate == "InstalledHasUpdate") ? true : false
+            visible: (modstate == "InstalledHasUpdate")
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
