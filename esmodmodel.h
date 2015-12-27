@@ -53,6 +53,12 @@ public slots:
 
     void SaveLocalModsDB();
 
+    void sortAsServer();
+    void sortByName(int updown);
+    void sortBySize(int updown);
+    void sortByDate(int updown);
+    void filterByKeywords(QString str);
+
 protected:
     QHash<int, QByteArray> roleNames() const;
 
@@ -62,7 +68,9 @@ private:
     QNetworkAccessManager m_NetMgr;
     AsyncJsonWriter m_JsonWriter;
 
+    QList<ESModElement *> m_initialElements;
     QList<ESModElement *> m_elements;
+
     QObject *m_busyIndicator;
     QObject *m_appTitleText;
     QObject *m_helpText;

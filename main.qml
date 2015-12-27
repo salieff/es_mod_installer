@@ -17,11 +17,12 @@ ApplicationWindow {
             id: mainListView
             Layout.fillWidth: true
             anchors.top: appTitle.bottom
-            anchors.bottom: parent.bottom
+            anchors.bottom: sortSearchBox.top
             model: esModel
             delegate: Delegate {}
             anchors.margins: 10
             spacing: 5
+            // clip: true
             maximumFlickVelocity: 5000
 
             remove: Transition {
@@ -50,7 +51,7 @@ ApplicationWindow {
             anchors.top: parent.top
             anchors.topMargin: -radius
             Layout.fillWidth: true
-            Layout.minimumHeight: Math.max(appTitleText.implicitHeight, helpImage.height) + radius*4
+            Layout.preferredHeight: Math.max(appTitleText.implicitHeight, helpImage.height) + 20 + radius
             radius: 10
 
             gradient: Gradient {
@@ -59,8 +60,12 @@ ApplicationWindow {
             }
 
             RowLayout {
-                anchors.fill: parent
-                anchors.margins: 10
+                anchors {
+                    fill: parent
+                    topMargin: appTitle.radius
+                    leftMargin: 10
+                    rightMargin: 10
+                }
                 spacing: 10
 
                 Text {
@@ -80,6 +85,8 @@ ApplicationWindow {
                     source: "icons/info.png"
                     sourceSize.width: Screen.pixelDensity * 6
                     sourceSize.height: Screen.pixelDensity * 6
+                    Layout.preferredWidth: sourceSize.width
+                    Layout.preferredHeight: sourceSize.height
                     MouseArea {
                         anchors.fill: parent
                         PropertyAnimation {id:fadein; target: infoRect; property: "opacity"; from: 0; to: 0.95; duration: 300}
@@ -95,6 +102,94 @@ ApplicationWindow {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        Rectangle {
+            id: sortSearchBox
+            Layout.fillWidth: true
+            Layout.preferredHeight: sortSearchLayout.implicitHeight + 20 + radius
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: -radius
+            radius: 10
+            gradient: Gradient {
+                GradientStop { position: 0; color: "#F0F0F0" }
+                GradientStop { position: 1; color: "#909090" }
+            }
+
+            RowLayout {
+                id: sortSearchLayout
+                anchors {
+                    fill: parent
+                    bottomMargin: sortSearchBox.radius
+                    leftMargin: 10
+                    rightMargin: 10
+                }
+                spacing: 10
+
+                Rectangle {
+                    width: Screen.pixelDensity * 6
+                    height: Screen.pixelDensity * 6
+                    radius: 10
+                    gradient: Gradient {
+                        GradientStop { position: 0; color: "#FFFFFF" }
+                        GradientStop { position: 1; color: "#A0A0A0" }
+                    }
+
+                    Text {
+                        id: sortText
+                        anchors.fill: parent
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        font.pointSize: 16
+                        style: Text.Raised
+                        styleColor: "white"
+                        text: "•"
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: sortMenu.popup()
+                    }
+                }
+
+                TextField {
+                    id: searchText
+                    Layout.fillWidth: true
+                    font.pointSize: 18
+                    placeholderText: qsTr("Name filter")
+                    onEditingFinished: esModel.filterByKeywords(searchText.text)
+                }
+
+                Image {
+                    source: "icons/abort.png"
+                    sourceSize.width: Screen.pixelDensity * 6
+                    sourceSize.height: Screen.pixelDensity * 6
+                    Layout.preferredWidth: sourceSize.width
+                    Layout.preferredHeight: sourceSize.height
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            searchText.text = ""
+                            esModel.filterByKeywords(searchText.text)
+                        }
+                    }
+                }
+
+                Image {
+                    source: "icons/search.png"
+                    sourceSize.width: Screen.pixelDensity * 6
+                    sourceSize.height: Screen.pixelDensity * 6
+                    Layout.preferredWidth: sourceSize.width
+                    Layout.preferredHeight: sourceSize.height
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: esModel.filterByKeywords(searchText.text)
+                    }
+
                 }
             }
         }
@@ -134,4 +229,64 @@ ApplicationWindow {
         }
     }
 
+    Menu {
+        id: sortMenu
+        title: qsTr("Sort mode")
+
+        MenuItem {
+            text: qsTr("As server")
+            onTriggered: {
+                esModel.sortAsServer()
+                sortText.text = "•"
+            }
+        }
+
+        MenuItem {
+            text: qsTr("By name a→Z")
+            onTriggered: {
+                esModel.sortByName(0)
+                sortText.text = "aZ↑"
+            }
+        }
+
+        MenuItem {
+            text: qsTr("By name Z→a")
+            onTriggered: {
+                esModel.sortByName(1)
+                sortText.text = "Za↓"
+            }
+        }
+
+        MenuItem {
+            text: qsTr("By size 1→99")
+            onTriggered: {
+                esModel.sortBySize(0)
+                sortText.text = "Sz↑"
+            }
+        }
+
+        MenuItem {
+            text: qsTr("By size 99→1")
+            onTriggered: {
+                esModel.sortBySize(1)
+                sortText.text = "Sz↓"
+            }
+        }
+
+        MenuItem {
+            text: qsTr("By date 1.1.1970 → 12.12.2015")
+            onTriggered: {
+                esModel.sortByDate(0)
+                sortText.text = "Dt↑"
+            }
+        }
+
+        MenuItem {
+            text: qsTr("By date 12.12.2015 → 1.1.1970")
+            onTriggered: {
+                esModel.sortByDate(1)
+                sortText.text = "Dt↓"
+            }
+        }
+    }
 }

@@ -13,7 +13,9 @@ ESModElement::ESModElement(QObject *parent, State s, int p)
       timestamp(0),
       guiblocked(1),
       m_localSize(0),
-      m_localTimestamp(0)
+      m_localTimestamp(0),
+      m_serverIndex(0),
+      m_keywordFilterCounter(0)
 {
     connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
     connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
@@ -146,9 +148,12 @@ void ESModElement::zipListUnpacked()
         return;
     }
 
-    for (QStringList::iterator i = m_localFiles.begin(); i != m_localFiles.end(); ++i)
-        if (i->endsWith(".zip", Qt::CaseInsensitive))
-            i = m_localFiles.erase(i);
+    QStringList::iterator it = m_localFiles.begin();
+    while (it != m_localFiles.end())
+        if (it->endsWith(".zip", Qt::CaseInsensitive))
+            it = m_localFiles.erase(it);
+        else
+            ++it;
 
     m_localTimestamp = timestamp;
     m_localSize = size;

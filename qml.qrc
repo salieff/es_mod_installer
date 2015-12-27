@@ -16,5 +16,6 @@
         <file>icons/eng_flag.png</file>
         <file>icons/rus_flag.png</file>
         <file>icons/spa_flag.png</file>
+        <file>icons/search.png</file>
     </qresource>
 </RCC>

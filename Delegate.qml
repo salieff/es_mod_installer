@@ -95,8 +95,10 @@ Rectangle {
                     guiblocked == 2 ? "icons/trash_press.png" : "icons/trash.png"
             }
 
-            sourceSize.width: Screen.pixelDensity * 11
-            sourceSize.height: Screen.pixelDensity * 11
+            sourceSize.width: Screen.pixelDensity * 9
+            sourceSize.height: Screen.pixelDensity * 9
+            Layout.preferredWidth: sourceSize.width
+            Layout.preferredHeight: sourceSize.height
 
             visible: (modstate != "Unknown")
 
@@ -180,18 +182,24 @@ Rectangle {
                     source: "icons/rus_flag.png"
                     sourceSize.width: Screen.pixelDensity * 5
                     sourceSize.height: Screen.pixelDensity * 3
+                    Layout.preferredWidth: sourceSize.width
+                    Layout.preferredHeight: sourceSize.height
                     visible: (langs.indexOf("Ru") > -1)
                 }
                 Image {
                     source: "icons/eng_flag.png"
                     sourceSize.width: Screen.pixelDensity * 5
                     sourceSize.height: Screen.pixelDensity * 3
+                    Layout.preferredWidth: sourceSize.width
+                    Layout.preferredHeight: sourceSize.height
                     visible: (langs.indexOf("En") > -1)
                 }
                 Image {
                     source: "icons/spa_flag.png"
                     sourceSize.width: Screen.pixelDensity * 5
                     sourceSize.height: Screen.pixelDensity * 3
+                    Layout.preferredWidth: sourceSize.width
+                    Layout.preferredHeight: sourceSize.height
                     visible: (langs.indexOf("Spa") > -1)
                 }
             }
@@ -201,8 +209,10 @@ Rectangle {
             id: delegateImage2
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
             source: guiblocked == 2 ? "icons/trash_press.png" : "icons/trash.png"
-            sourceSize.width: Screen.pixelDensity * 11
-            sourceSize.height: Screen.pixelDensity * 11
+            sourceSize.width: Screen.pixelDensity * 9
+            sourceSize.height: Screen.pixelDensity * 9
+            Layout.preferredWidth: sourceSize.width
+            Layout.preferredHeight: sourceSize.height
             visible: (modstate == "InstalledHasUpdate")
             MouseArea {
                 anchors.fill: parent
