@@ -23,10 +23,21 @@ public:
         InstalledHasUpdate,
         Installed
     };
+    Q_ENUMS(State)
+
+    enum GuiBlockReason {
+        NoBlock,
+        ByUnknown,
+        ByDownload,
+        ByUnpack,
+        ByAbort,
+        ByRetry,
+        ByUpdate,
+        ByDelete
+    };
+    Q_ENUMS(GuiBlockReason)
 
     ESModElement(QObject *parent = NULL, State s = Unknown, int p = 100);
-
-    QString StateName() const;
 
     void Download();
     void Abort();
@@ -50,14 +61,14 @@ public:
     double size;
     double timestamp;
 
-    int guiblocked;
+    GuiBlockReason guiblocked;
 
     QStringList m_localFiles;
     double m_localSize;
     double m_localTimestamp;
 
     int m_serverIndex;
-    int m_keywordFilterCounter;
+    std::vector<int> m_keywordFilterCounter;
 
 private slots:
     void headersReceived();
@@ -78,7 +89,7 @@ signals:
     void abortProcessing();
 
 private:
-    void blockGui(int b = 1);
+    void blockGui(GuiBlockReason b);
     void changeState(State s);
 
     AsyncDownloader m_asyncDownloader;

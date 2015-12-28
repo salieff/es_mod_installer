@@ -13,9 +13,7 @@ ESModModel::ESModModel(QObject *parent)
     : QAbstractListModel(parent),
       m_NetMgr(this),
       m_JsonWriter(this),
-      m_busyIndicator(NULL),
-      m_appTitleText(NULL),
-      m_helpText(NULL)
+      m_lastSortMode(AsServer)
 {
 #ifndef ANDROID
     // m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
@@ -33,24 +31,6 @@ ESModModel::~ESModModel()
     SaveLocalModsDB();
     m_JsonWriter.close();
     m_JsonWriter.wait();
-}
-
-void ESModModel::setBusyIndicator(QObject *bus)
-{
-    m_busyIndicator = bus;
-
-    if (m_busyIndicator)
-        m_busyIndicator->setProperty("running", true);
-}
-
-void ESModModel::setAppTitleText(QObject *txt)
-{
-    m_appTitleText = txt;
-}
-
-void ESModModel::setHelpText(QObject *txt)
-{
-    m_helpText = txt;
 }
 
 void ESModModel::addModElement(ESModElement *element)
@@ -104,7 +84,7 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         break;
 
     case StateRole:
-        return element->StateName();
+        return element->state;
         break;
 
     case ProgressRole:
@@ -167,9 +147,6 @@ void ESModModel::ESModIndexDownloaded()
     QList<ESModElement *> local_elements;
     LoadLocalModsDB(local_elements);
 
-    if (m_busyIndicator)
-        m_busyIndicator->setProperty("running", false);
-
     QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
     if (rep->error() == QNetworkReply::NoError)
     {
@@ -190,12 +167,12 @@ void ESModModel::ESModIndexDownloaded()
             QJsonObject obj = doc.object();
 
             QString appTitle = obj["appTitle"].toString();
-            if (m_appTitleText != NULL && !appTitle.isEmpty())
-                m_appTitleText->setProperty("text", appTitle);
+            if (!appTitle.isEmpty())
+                emit appTitleReceived(appTitle);
 
             QString appHelp = obj["appReadMe"].toString();
-            if (m_helpText != NULL && !appHelp.isEmpty())
-                m_helpText->setProperty("text", appHelp);
+            if (!appHelp.isEmpty())
+                emit appHelpReceived(appHelp);
 
             QJsonArray arr = obj["packs"].toArray();
             for (int i = 0; i < arr.size(); ++i)
@@ -250,6 +227,7 @@ void ESModModel::ESModIndexDownloaded()
     foreach (ESModElement *el, m_elements)
         el->RequestHeaders();
 
+    emit esIndexReceived();
     rep->deleteLater();
 }
 
@@ -257,8 +235,7 @@ void ESModModel::ESModIndexError(QNetworkReply::NetworkError code)
 {
     Q_UNUSED(code);
 
-    if (m_busyIndicator)
-        m_busyIndicator->setProperty("running", false);
+    emit esIndexReceived();
 
     QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
     QMessageBox::critical(NULL, "Index download error", rep->errorString());
@@ -447,54 +424,51 @@ static bool lessThanByDate1(ESModElement *a, ESModElement *b)
     return tm1 >= tm2;
 }
 
-void ESModModel::sortAsServer()
-{
-    beginResetModel();
-    m_elements = m_initialElements;
-    qSort(m_elements.begin(), m_elements.end(), lessThanAsServer);
-    endResetModel();
-}
+typedef bool (*lessThanSortFunc)(ESModElement *a, ESModElement *b);
+static const lessThanSortFunc lessThanArray[] = { \
+    lessThanAsServer, \
+    lessThanByName0, \
+    lessThanByName1, \
+    lessThanBySize0, \
+    lessThanBySize1, \
+    lessThanByDate0, \
+    lessThanByDate1 \
+};
 
-void ESModModel::sortByName(int updown)
+void ESModModel::sortList(SortMode m)
 {
-    beginResetModel();
-    m_elements = m_initialElements;
-    if (updown == 0)
-        qSort(m_elements.begin(), m_elements.end(), lessThanByName0);
-    else
-        qSort(m_elements.begin(), m_elements.end(), lessThanByName1);
-    endResetModel();
-}
+    m_lastSortMode = m;
 
-void ESModModel::sortBySize(int updown)
-{
     beginResetModel();
     m_elements = m_initialElements;
-    if (updown == 0)
-        qSort(m_elements.begin(), m_elements.end(), lessThanBySize0);
-    else
-        qSort(m_elements.begin(), m_elements.end(), lessThanBySize1);
-    endResetModel();
-}
-
-void ESModModel::sortByDate(int updown)
-{
-    beginResetModel();
-    m_elements = m_initialElements;
-    if (updown == 0)
-        qSort(m_elements.begin(), m_elements.end(), lessThanByDate0);
-    else
-        qSort(m_elements.begin(), m_elements.end(), lessThanByDate1);
+    qSort(m_elements.begin(), m_elements.end(), lessThanArray[m]);
     endResetModel();
 }
 
 static bool lessThanKeyword(ESModElement *a, ESModElement *b)
 {
-    return a->m_keywordFilterCounter >= b->m_keywordFilterCounter;
+    if (a->m_keywordFilterCounter.size() != b->m_keywordFilterCounter.size())
+        return a->m_keywordFilterCounter.size() > b->m_keywordFilterCounter.size();
+
+    for (size_t i = 0; i < a->m_keywordFilterCounter.size(); ++i)
+    {
+        if (a->m_keywordFilterCounter[i] == b->m_keywordFilterCounter[i])
+            continue;
+
+        return a->m_keywordFilterCounter[i] >= b->m_keywordFilterCounter[i];
+    }
+
+    return false;
 }
 
 void ESModModel::filterByKeywords(QString str)
 {
+    if (str.isEmpty())
+    {
+        sortList(m_lastSortMode);
+        return;
+    }
+
     QStringList strList = str.trimmed().split(QRegExp("\\s+"), QString::SkipEmptyParts);
     QStringList::iterator sit = strList.begin();
     while (sit != strList.end())
@@ -505,34 +479,34 @@ void ESModModel::filterByKeywords(QString str)
             ++sit;
     }
 
+    if (strList.empty())
+        return;
+
     beginResetModel();
     m_elements = m_initialElements;
 
-    if (!strList.empty())
+    QList<ESModElement *>::iterator it = m_elements.begin();
+    while (it != m_elements.end())
     {
-        QList<ESModElement *>::iterator it = m_elements.begin();
-        while (it != m_elements.end())
-        {
-            (*it)->m_keywordFilterCounter = 0;
-            bool found = false;
-            for (int i = 0; i < strList.size(); ++i)
-                if ((*it)->title.contains(strList[i], Qt::CaseInsensitive))
-                {
-                    found = true;
-                    (*it)->m_keywordFilterCounter += strList.size() - i;
-                }
+        (*it)->m_keywordFilterCounter.assign(strList.size(), 0);
 
-            if (found)
+        bool found = false;
+        for (int i = 0; i < strList.size(); ++i)
+            if ((*it)->title.contains(strList[i], Qt::CaseInsensitive))
             {
-                ++it;
-                continue;
+                found = true;
+                (*it)->m_keywordFilterCounter[i]++;
             }
 
-            it = m_elements.erase(it);
+        if (found)
+        {
+            ++it;
+            continue;
         }
 
-        qSort(m_elements.begin(), m_elements.end(), lessThanKeyword);
+        it = m_elements.erase(it);
     }
 
+    qSort(m_elements.begin(), m_elements.end(), lessThanKeyword);
     endResetModel();
 }

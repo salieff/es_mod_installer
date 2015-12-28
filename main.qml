@@ -2,6 +2,7 @@ import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.2
 import QtQuick.Window 2.2
+import org.salieff.esmodinstaller 1.0
 
 ApplicationWindow {
     visible: true
@@ -35,13 +36,18 @@ ApplicationWindow {
             }
 
             BusyIndicator {
-                objectName: "viewBusyIndicator"
+                id: viewBusyIndicator
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
                 anchors.margins: 40
                 width: 200
                 height: 200
-                running: false;
+                running: true;
+
+                Connections {
+                    target: esModel
+                    onEsIndexReceived: viewBusyIndicator.running = false;
+                }
             }
 
         }
@@ -70,7 +76,6 @@ ApplicationWindow {
 
                 Text {
                     id: appTitleText
-                    objectName: "appTitleText"
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     font.pointSize: 18
@@ -78,6 +83,11 @@ ApplicationWindow {
                     style: Text.Raised
                     styleColor: "white"
                     text: qsTr("ES mod manager")
+
+                    Connections {
+                        target: esModel
+                        onAppTitleReceived: appTitleText.text = text
+                    }
                 }
 
                 Image {
@@ -225,6 +235,11 @@ ApplicationWindow {
                 font.pointSize: 18
                 wrapMode: Text.Wrap
                 text: qsTr("<h3>Hello!</h3><br><p>If you see this text instead of help so you don't have internet connection to download help topic!</p>")
+
+                Connections {
+                    target: esModel
+                    onAppHelpReceived: helpText.text = text
+                }
             }
         }
     }
@@ -236,7 +251,7 @@ ApplicationWindow {
         MenuItem {
             text: qsTr("As server")
             onTriggered: {
-                esModel.sortAsServer()
+                esModel.sortList(ESModModel.AsServer)
                 sortText.text = "•"
             }
         }
@@ -244,7 +259,7 @@ ApplicationWindow {
         MenuItem {
             text: qsTr("By name a→Z")
             onTriggered: {
-                esModel.sortByName(0)
+                esModel.sortList(ESModModel.ByNameUp)
                 sortText.text = "aZ↑"
             }
         }
@@ -252,7 +267,7 @@ ApplicationWindow {
         MenuItem {
             text: qsTr("By name Z→a")
             onTriggered: {
-                esModel.sortByName(1)
+                esModel.sortList(ESModModel.ByNameDown)
                 sortText.text = "Za↓"
             }
         }
@@ -260,7 +275,7 @@ ApplicationWindow {
         MenuItem {
             text: qsTr("By size 1→99")
             onTriggered: {
-                esModel.sortBySize(0)
+                esModel.sortList(ESModModel.BySizeUp)
                 sortText.text = "Sz↑"
             }
         }
@@ -268,7 +283,7 @@ ApplicationWindow {
         MenuItem {
             text: qsTr("By size 99→1")
             onTriggered: {
-                esModel.sortBySize(1)
+                esModel.sortList(ESModModel.BySizeDown)
                 sortText.text = "Sz↓"
             }
         }
@@ -276,7 +291,7 @@ ApplicationWindow {
         MenuItem {
             text: qsTr("By date 1.1.1970 → 12.12.2015")
             onTriggered: {
-                esModel.sortByDate(0)
+                esModel.sortList(ESModModel.ByDateUp)
                 sortText.text = "Dt↑"
             }
         }
@@ -284,7 +299,7 @@ ApplicationWindow {
         MenuItem {
             text: qsTr("By date 12.12.2015 → 1.1.1970")
             onTriggered: {
-                esModel.sortByDate(1)
+                esModel.sortList(ESModModel.ByDateDown)
                 sortText.text = "Dt↓"
             }
         }

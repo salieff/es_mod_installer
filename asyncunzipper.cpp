@@ -3,6 +3,8 @@
 
 #include "asyncunzipper.h"
 
+#define UNPACK_BUFFER_SIZE (16*1024)
+
 AsyncUnzipper::AsyncUnzipper(QObject *parent)
     : QThread(parent),
       m_totalSize(0),
@@ -189,7 +191,7 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
     m_unpackedFiles << fname;
 
     int unzRet = 0;
-    char buf[1024];
+    char buf[UNPACK_BUFFER_SIZE];
 
     while((unzRet = unzReadCurrentFile(ufd, buf, sizeof(buf))) > 0)
     {

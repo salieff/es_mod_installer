@@ -27,16 +27,28 @@ public:
         GuiBlockedRole
     };
 
+    enum SortMode {
+        AsServer   = 0,
+        ByNameUp   = 1,
+        ByNameDown = 2,
+        BySizeUp   = 3,
+        BySizeDown = 4,
+        ByDateUp   = 5,
+        ByDateDown = 6
+    };
+    Q_ENUMS(SortMode)
+
     ESModModel(QObject *parent = 0);
     virtual ~ESModModel();
-
-    void setBusyIndicator(QObject *bus);
-    void setAppTitleText(QObject *txt);
-    void setHelpText(QObject *txt);
 
     void addModElement(ESModElement *element);
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+
+signals:
+    void appTitleReceived(const QString &text);
+    void appHelpReceived(const QString &text);
+    void esIndexReceived();
 
 public slots:
     void ESModIndexDownloaded();
@@ -53,10 +65,7 @@ public slots:
 
     void SaveLocalModsDB();
 
-    void sortAsServer();
-    void sortByName(int updown);
-    void sortBySize(int updown);
-    void sortByDate(int updown);
+    void sortList(SortMode m);
     void filterByKeywords(QString str);
 
 protected:
@@ -71,9 +80,7 @@ private:
     QList<ESModElement *> m_initialElements;
     QList<ESModElement *> m_elements;
 
-    QObject *m_busyIndicator;
-    QObject *m_appTitleText;
-    QObject *m_helpText;
+    SortMode m_lastSortMode;
 };
 
 #endif // ESMODMODEL_H

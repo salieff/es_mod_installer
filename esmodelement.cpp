@@ -11,11 +11,10 @@ ESModElement::ESModElement(QObject *parent, State s, int p)
       progress(p),
       size(0),
       timestamp(0),
-      guiblocked(1),
+      guiblocked(ByUnknown),
       m_localSize(0),
       m_localTimestamp(0),
-      m_serverIndex(0),
-      m_keywordFilterCounter(0)
+      m_serverIndex(0)
 {
     connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
     connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
@@ -29,25 +28,6 @@ ESModElement::ESModElement(QObject *parent, State s, int p)
     connect(&m_asyncDeleter, SIGNAL(finished()), this, SLOT(filesDeleted()));
 }
 
-QString ESModElement::StateName() const
-{
-#define DECLARE_STATE_NAME(arg) case arg: return #arg; break;
-    switch (state)
-    {
-    DECLARE_STATE_NAME(Unknown);
-    DECLARE_STATE_NAME(Available);
-    DECLARE_STATE_NAME(Downloading);
-    DECLARE_STATE_NAME(Unpacking);
-    DECLARE_STATE_NAME(Failed);
-    DECLARE_STATE_NAME(InstalledAvailable);
-    DECLARE_STATE_NAME(InstalledHasUpdate);
-    DECLARE_STATE_NAME(Installed);
-    }
-#undef DECLARE_STATE_NAME
-
-    return "###???###";
-}
-
 void ESModElement::Download()
 {
     if (state != Available && state != InstalledHasUpdate && state != Failed)
@@ -56,7 +36,7 @@ void ESModElement::Download()
     if (files.empty() || uri.isEmpty())
         return;
 
-    blockGui();
+    blockGui(ByDownload);
 
     // Make shure previous async operations already done
     m_asyncDownloader.wait();
@@ -72,20 +52,20 @@ void ESModElement::Download()
 
 void ESModElement::Abort()
 {
-    blockGui();
+    blockGui(ByAbort);
     emit abortProcessing();
 }
 
 void ESModElement::Update()
 {
-    blockGui();
+    blockGui(ByUpdate);
     m_asyncDeleter.wait();
     m_asyncDeleter.deleteFiles(m_localFiles);
 }
 
 void ESModElement::Delete()
 {
-    blockGui(2);
+    blockGui(ByDelete);
     m_asyncDeleter.wait();
     m_asyncDeleter.deleteFiles(m_localFiles);
 }
@@ -141,7 +121,7 @@ void ESModElement::zipListUnpacked()
     if (state != Unpacking || m_asyncUnzipper.aborted() || m_asyncUnzipper.failed())
     {
         if (m_asyncUnzipper.failed())
-            blockGui(3); // Without press any button
+            blockGui(ByUnknown); // Without press any button
 
         m_asyncDeleter.wait();
         m_asyncDeleter.deleteFiles(m_localFiles);
@@ -180,7 +160,7 @@ void ESModElement::filesDownloaded()
     if (state != Downloading || m_asyncDownloader.aborted() || m_asyncDownloader.failed())
     {
         if (m_asyncDownloader.failed())
-            blockGui(3); // Without press any button
+            blockGui(ByUnknown); // Without press any button
 
         m_asyncDeleter.wait();
         m_asyncDeleter.deleteFiles(m_localFiles);
@@ -238,12 +218,12 @@ void ESModElement::filesDeleted()
         break;
 
     case InstalledHasUpdate :
-        if (guiblocked == 1) // By update button
+        if (guiblocked == ByUpdate) // By update button
         {
             state = Available;
             Download();
         }
-        if (guiblocked == 2) // By delete button
+        if (guiblocked == ByDelete) // By delete button
         {
             changeState(Available);
         }
@@ -322,7 +302,7 @@ void ESModElement::DeserializeFromDB(QJsonObject obj)
         langs << langs_arr[i].toString();
 }
 
-void ESModElement::blockGui(int b)
+void ESModElement::blockGui(GuiBlockReason b)
 {
     guiblocked = b;
     emit stateChanged();
@@ -335,7 +315,7 @@ void ESModElement::changeState(State s)
     else
         progress = 100;
 
-    guiblocked = 0;
+    guiblocked = NoBlock;
     state = s;
     emit stateChanged();
 }

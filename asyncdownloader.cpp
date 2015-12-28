@@ -6,19 +6,27 @@
 
 #include "asyncdownloader.h"
 
+// #define NET_BUFFER_SIZE 1024
+
 AsyncDownloader::AsyncDownloader(QObject *parent)
     : QObject(parent),
       m_headersOnly(false),
       m_currFileIndex(0),
+      m_progress(0),
       m_wasError(false),
       m_wasAbort(false),
       m_netMgr(this),
       m_file(this),
       m_canOverwrite(false),
       m_alwaysOverwrite(false)
+#ifdef ANDROID
+//     ,m_debugFile("/sdcard/esmanager.log", this)
+#endif
 {
 #ifndef ANDROID
     // m_netMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+#else
+//    m_debugFile.open(QIODevice::WriteOnly | QIODevice::Text);
 #endif
 
     moveToThread(&m_thread);
@@ -26,6 +34,13 @@ AsyncDownloader::AsyncDownloader(QObject *parent)
     connect(&m_thread, SIGNAL(started()), this, SLOT(download()));
     connect(this, SIGNAL(finished()), &m_thread, SLOT(quit()));
     connect(this, SIGNAL(headersReady()), &m_thread, SLOT(quit()));
+}
+
+AsyncDownloader::~AsyncDownloader()
+{
+#ifdef ANDROID
+//    m_debugFile.close();
+#endif
 }
 
 bool AsyncDownloader::downloadFileList(QString url, QStringList &files, QString destdir, bool headers_only)
@@ -37,6 +52,7 @@ bool AsyncDownloader::downloadFileList(QString url, QStringList &files, QString 
     m_files = files;
     m_destDir = destdir;
     m_currFileIndex = 0;
+    m_progress = 0;
     m_wasError = false;
     m_wasAbort = false;
     m_localFiles.clear();
@@ -139,6 +155,7 @@ void AsyncDownloader::download()
         connect(rep, SIGNAL(readyRead()), this, SLOT(readData()));
     }
 
+//    rep->setReadBufferSize(NET_BUFFER_SIZE);
     connect(rep, SIGNAL(finished()), this, SLOT(fileDownloaded()));
 }
 
@@ -170,6 +187,12 @@ void AsyncDownloader::fileDownloaded()
     if (!m_headersOnly)
     {
         QByteArray data = rep->readAll();
+
+#ifdef ANDROID
+//        QTextStream debugOut(&m_debugFile);
+//        debugOut << "[AsyncDownloader::fileDownloaded] Read " << data.size() << " bytes" << "\n";
+#endif
+
         if (!data.isEmpty() && m_file.write(data) != data.size())
         {
             m_wasError = true;
@@ -229,6 +252,7 @@ void AsyncDownloader::fileDownloaded()
         connect(new_rep, SIGNAL(readyRead()), this, SLOT(readData()));
     }
 
+//    new_rep->setReadBufferSize(NET_BUFFER_SIZE);
     connect(new_rep, SIGNAL(finished()), this, SLOT(fileDownloaded()));
 }
 
@@ -238,13 +262,23 @@ void AsyncDownloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
         return;
 
     int p = (m_currFileIndex * 100 / m_files.count()) + bytesReceived * 100 / (bytesTotal * m_files.count());
-    emit progress(p);
+    if (m_progress != p)
+    {
+        m_progress = p;
+        emit progress(m_progress);
+    }
 }
 
 void AsyncDownloader::readData()
 {
     QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
     QByteArray data = rep->readAll();
+
+#ifdef ANDROID
+//    QTextStream debugOut(&m_debugFile);
+//    debugOut << "[AsyncDownloader::readData] Read " << data.size() << " bytes" << "\n";
+#endif
+
     if (!data.isEmpty() && m_file.write(data) != data.size())
     {
         m_wasError = true;

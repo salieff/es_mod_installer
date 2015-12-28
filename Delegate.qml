@@ -1,6 +1,7 @@
 import QtQuick 2.3
 import QtQuick.Layouts 1.2
 import QtQuick.Window 2.2
+import org.salieff.esmodinstaller 1.0
 
 Rectangle {
     id: mainRectangle
@@ -25,25 +26,33 @@ Rectangle {
         height: parent.height - parent.border.width * 2
         radius: parent.radius - parent.border.width
         color: {
-            if (modstate == "Unknown")
+            switch (modstate) {
+            case ESModElement.Unknown :
                 "darkslategrey"
-            else if (modstate == "Available")
+                break;
+
+            case ESModElement.Available :
+            case ESModElement.Downloading :
                 "#0000e0"
-            else if (modstate == "Downloading")
-                "#0000e0"
-            else if (modstate == "Unpacking")
+                break;
+
+            case ESModElement.Unpacking :
+            case ESModElement.InstalledAvailable :
+            case ESModElement.InstalledHasUpdate :
                 "#008000"
-            else if (modstate == "Failed")
+                break;
+
+            case ESModElement.Failed :
                 "red"
-            else if (modstate == "InstalledAvailable")
-                "#008000"
-            else if (modstate == "InstalledHasUpdate")
-                "#008000"
-            else if (modstate == "Installed")
+                break;
+
+            case ESModElement.Installed :
                 "#608060"
+                break;
+            }
         }
 
-        visible: (modstate != "Unknown")
+        visible: (modstate !== ESModElement.Unknown)
     }
 
     Rectangle {
@@ -64,7 +73,7 @@ Rectangle {
             GradientStop { position: 1;    color: "#55FFFFFF" }
         }
 
-        visible: (modstate != "Unknown")
+        visible: (modstate !== ESModElement.Unknown)
     }
 
     RowLayout {
@@ -77,22 +86,32 @@ Rectangle {
             id: delegateImage
             Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
             source: {
-                if (modstate == "Unknown")
-                    guiblocked == 1 ? "icons/download_press.png" : "icons/download.png"
-                else if (modstate == "Available")
-                    guiblocked == 1 ? "icons/download_press.png" : "icons/download.png"
-                else if (modstate == "Downloading")
-                    guiblocked == 1 ? "icons/abort_press.png" : "icons/abort.png"
-                else if (modstate == "Unpacking")
-                    guiblocked == 1 ? "icons/abort_press.png" : "icons/abort.png"
-                else if (modstate == "Failed")
-                    guiblocked == 1 ? "icons/reload_press.png" : "icons/reload.png"
-                else if (modstate == "InstalledAvailable")
-                    guiblocked == 2 ? "icons/trash_press.png" : "icons/trash.png"
-                else if (modstate == "InstalledHasUpdate")
-                    guiblocked == 1 ? "icons/update_press.png" : "icons/update.png"
-                else if (modstate == "Installed")
-                    guiblocked == 2 ? "icons/trash_press.png" : "icons/trash.png"
+                switch (modstate) {
+                case ESModElement.Unknown :
+                    "icons/info.png"
+                    break;
+
+                case ESModElement.Available :
+                    guiblocked == ESModElement.ByDownload ? "icons/download_press.png" : "icons/download.png"
+                    break;
+
+                case ESModElement.Downloading :
+                case ESModElement.Unpacking :
+                    guiblocked == ESModElement.ByAbort ? "icons/abort_press.png" : "icons/abort.png"
+                    break;
+
+                case ESModElement.Failed :
+                    (guiblocked == ESModElement.ByRetry || guiblocked == ESModElement.ByDownload) ? "icons/reload_press.png" : "icons/reload.png"
+                    break;
+
+                case ESModElement.InstalledAvailable :
+                case ESModElement.Installed :
+                    guiblocked == ESModElement.ByDelete ? "icons/trash_press.png" : "icons/trash.png"
+                    break;
+
+                case ESModElement.InstalledHasUpdate :
+                    guiblocked == ESModElement.ByUpdate ? "icons/update_press.png" : "icons/update.png"
+                }
             }
 
             sourceSize.width: Screen.pixelDensity * 9
@@ -105,19 +124,30 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    if (guiblocked == 0) {
-                        if (modstate == "Available")
+                    if (guiblocked == ESModElement.NoBlock) {
+                        switch (modstate) {
+                        case ESModElement.Available :
                             esModel.Download(index)
-                        else if (modstate == "Downloading" || modstate == "Unpacking")
+                            break;
+
+                        case ESModElement.Downloading :
+                        case ESModElement.Unpacking :
                             esModel.Abort(index)
-                        else if (modstate == "Failed")
+                            break;
+
+                        case ESModElement.Failed :
                             esModel.Retry(index)
-                        else if (modstate == "InstalledAvailable")
+                            break;
+
+                        case ESModElement.InstalledAvailable :
+                        case ESModElement.Installed :
                             esModel.Delete(index)
-                        else if (modstate == "InstalledHasUpdate")
+                            break;
+
+                        case ESModElement.InstalledHasUpdate :
                             esModel.Update(index)
-                        else if (modstate == "Installed")
-                            esModel.Delete(index)
+                            break;
+                        }
                     }
                 }
             }
@@ -213,11 +243,11 @@ Rectangle {
             sourceSize.height: Screen.pixelDensity * 9
             Layout.preferredWidth: sourceSize.width
             Layout.preferredHeight: sourceSize.height
-            visible: (modstate == "InstalledHasUpdate")
+            visible: (modstate === ESModElement.InstalledHasUpdate)
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    if (guiblocked == 0)
+                    if (guiblocked == ESModElement.NoBlock)
                         esModel.Delete(index)
                 }
             }

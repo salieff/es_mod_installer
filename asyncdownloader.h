@@ -16,6 +16,7 @@ class AsyncDownloader : public QObject
     Q_OBJECT
 public:
     explicit AsyncDownloader(QObject *parent = 0);
+    virtual ~AsyncDownloader();
 
     bool downloadFileList(QString url, QStringList &files, QString destdir, bool headers_only = false);
     bool wait(unsigned long t = ULONG_MAX);
@@ -52,6 +53,7 @@ private:
     QStringList m_files;
     QString m_destDir;
     int m_currFileIndex;
+    int m_progress;
     bool m_wasError;
     bool m_wasAbort;
 
@@ -67,6 +69,10 @@ private:
     bool m_alwaysOverwrite;
     QMutex m_overwriteMutex;
     QWaitCondition m_overwriteCondition;
+
+#ifdef ANDROID
+//    QFile m_debugFile;
+#endif
 };
 
 #endif // ASYNCDOWNLOADER_H
