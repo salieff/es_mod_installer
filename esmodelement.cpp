@@ -277,6 +277,7 @@ QJsonObject ESModElement::SerializeToDB()
     obj["title"] = title;
     obj["langs"] = langs_arr;
     obj["status"] = status;
+    obj["infouri"] = infouri;
     obj["files"] = files_arr;
     obj["size"] = m_localSize;
     obj["timestamp"] = m_localTimestamp;
@@ -288,6 +289,7 @@ void ESModElement::DeserializeFromDB(QJsonObject obj)
 {
     title = obj["title"].toString();
     status = obj["status"].toString();
+    infouri = obj["infouri"].toString();
     m_localSize = obj["size"].toDouble();
     m_localTimestamp = obj["timestamp"].toDouble();
 

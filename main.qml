@@ -142,8 +142,8 @@ ApplicationWindow {
                 spacing: 10
 
                 Rectangle {
-                    width: Screen.pixelDensity * 6
-                    height: Screen.pixelDensity * 6
+                    width: Screen.pixelDensity * 7
+                    height: Screen.pixelDensity * 7
                     radius: 10
                     gradient: Gradient {
                         GradientStop { position: 0; color: "#FFFFFF" }
@@ -155,7 +155,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        font.pointSize: 16
+                        font.pointSize: 25
                         style: Text.Raised
                         styleColor: "white"
                         text: "•"
@@ -170,15 +170,15 @@ ApplicationWindow {
                 TextField {
                     id: searchText
                     Layout.fillWidth: true
-                    font.pointSize: 18
+                    font.pointSize: 25
                     placeholderText: qsTr("Name filter")
                     onEditingFinished: esModel.filterByKeywords(searchText.text)
                 }
 
                 Image {
                     source: "icons/abort.png"
-                    sourceSize.width: Screen.pixelDensity * 6
-                    sourceSize.height: Screen.pixelDensity * 6
+                    sourceSize.width: Screen.pixelDensity * 7
+                    sourceSize.height: Screen.pixelDensity * 7
                     Layout.preferredWidth: sourceSize.width
                     Layout.preferredHeight: sourceSize.height
 
@@ -193,8 +193,8 @@ ApplicationWindow {
 
                 Image {
                     source: "icons/search.png"
-                    sourceSize.width: Screen.pixelDensity * 6
-                    sourceSize.height: Screen.pixelDensity * 6
+                    sourceSize.width: Screen.pixelDensity * 7
+                    sourceSize.height: Screen.pixelDensity * 7
                     Layout.preferredWidth: sourceSize.width
                     Layout.preferredHeight: sourceSize.height
 
