@@ -7,7 +7,7 @@ Rectangle {
     id: mainRectangle
     anchors.horizontalCenter: parent.horizontalCenter
     width: parent.width - margin * 2
-    height: Math.max(textBox.Layout.preferredHeight, delegateImage.height, flagBox.height) + margin * 2
+    height: Math.max(delegateTextBox.Layout.preferredHeight, delegateImage.height, flagBox.height) + margin * 2
     radius: 15
     border.width: 2
     border.color: "#22000000"
@@ -154,7 +154,7 @@ Rectangle {
         }
 
         Item {
-            id: textBox
+            id: delegateTextBox
             Layout.fillWidth: true
             Layout.preferredHeight: layout2.implicitHeight
 
@@ -195,8 +195,13 @@ Rectangle {
 
                         return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
                     }
-                }
 
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: mainRectangle.ListView.view.infoUriSignal(infouri)
             }
         }
 

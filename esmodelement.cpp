@@ -14,7 +14,7 @@ ESModElement::ESModElement(QObject *parent, State s, int p)
       guiblocked(ByUnknown),
       m_localSize(0),
       m_localTimestamp(0),
-      m_serverIndex(0)
+      m_modelIndex(0)
 {
     connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
     connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));

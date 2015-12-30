@@ -24,7 +24,7 @@ AsyncDownloader::AsyncDownloader(QObject *parent)
 #endif
 {
 #ifndef ANDROID
-    // m_netMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+    m_netMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #else
 //    m_debugFile.open(QIODevice::WriteOnly | QIODevice::Text);
 #endif

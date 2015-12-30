@@ -18,6 +18,7 @@ public:
         StatusRole,
         LangsRole,
         UriRole,
+        InfoUriRole,
         PathRole,
         FilesRole,
         StateRole,
@@ -60,7 +61,7 @@ public slots:
     void Update(int ind);
     void Delete(int ind);
 
-    void elementChanged(int ind = -1);
+    void elementChanged();
     void elementNeedRemove();
 
     void SaveLocalModsDB();
@@ -73,6 +74,7 @@ protected:
 
 private:
     bool LoadLocalModsDB(QList<ESModElement *> &l);
+    void ReindexElements();
 
     QNetworkAccessManager m_NetMgr;
     AsyncJsonWriter m_JsonWriter;

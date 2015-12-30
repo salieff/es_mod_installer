@@ -16,7 +16,7 @@ ESModModel::ESModModel(QObject *parent)
       m_lastSortMode(AsServer)
 {
 #ifndef ANDROID
-    // m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+    m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
 
     m_JsonWriter.start();
@@ -35,13 +35,10 @@ ESModModel::~ESModModel()
 
 void ESModModel::addModElement(ESModElement *element)
 {
-    beginInsertRows(QModelIndex(), rowCount(), rowCount());
     m_initialElements << element;
-    m_elements << element;
     connect(element, SIGNAL(stateChanged()), this, SLOT(elementChanged()));
     connect(element, SIGNAL(saveMe()), this, SLOT(SaveLocalModsDB()));
     connect(element, SIGNAL(removeMe()), this, SLOT(elementNeedRemove()));
-    endInsertRows();
 }
 
 int ESModModel::rowCount(const QModelIndex & parent) const
@@ -73,6 +70,10 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
 
     case UriRole:
         return element->uri;
+        break;
+
+    case InfoUriRole:
+        return element->infouri;
         break;
 
     case PathRole:
@@ -129,6 +130,7 @@ QHash<int, QByteArray> ESModModel::roleNames() const
     roles[StatusRole] = "status";
     roles[LangsRole] = "langs";
     roles[UriRole] = "uri";
+    roles[InfoUriRole] = "infouri";
     roles[PathRole] = "path";
     roles[FilesRole] = "files";
     roles[StateRole] = "modstate";
@@ -142,8 +144,6 @@ QHash<int, QByteArray> ESModModel::roleNames() const
 
 void ESModModel::ESModIndexDownloaded()
 {
-    int serverIndex = 0;
-
     QList<ESModElement *> local_elements;
     LoadLocalModsDB(local_elements);
 
@@ -183,6 +183,7 @@ void ESModModel::ESModIndexDownloaded()
                 el->status = arr[i].toObject()["status"].toString().trimmed();
                 el->langs = arr[i].toObject()["lang"].toString().trimmed().split(QRegExp("[,\\s]+"), QString::SkipEmptyParts);
                 el->uri = arr[i].toObject()["uri"].toString().trimmed();
+                el->infouri = arr[i].toObject()["infouri"].toString().trimmed();
                 el->path = arr[i].toObject()["path"].toString().trimmed();
 #ifndef ANDROID
                 el->path.replace(QRegExp("^/sdcard/Android/data"), QDir::homePath() + "/tmp");
@@ -192,37 +193,40 @@ void ESModModel::ESModIndexDownloaded()
                 for (int j = 0; j < files_arr.size(); ++j)
                     el->files << files_arr[j].toString().trimmed();
 
-                for (int j = 0; j < local_elements.size(); ++j)
-                {
-                    QString title1 = local_elements[j]->title;
-                    title1 = title1.remove(QRegExp("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegExp("\\[.*\\]")).remove(QRegExp("\\{.*\\}")).simplified();
-                    // printf("title1 = [%s]\n", title1.toLocal8Bit().data());
+                QString title1 = el->title;
+                title1 = title1.remove(QRegExp("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegExp("\\[.*\\]")).remove(QRegExp("\\{.*\\}")).simplified();
+                // printf("title2 = [%s]\n", title2.toLocal8Bit().data());
 
-                    QString title2 = el->title;
+                QList<ESModElement *>::iterator it = local_elements.begin();
+                while (it != local_elements.end())
+                {
+                    QString title2 = (*it)->title;
                     title2 = title2.remove(QRegExp("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegExp("\\[.*\\]")).remove(QRegExp("\\{.*\\}")).simplified();
-                    // printf("title2 = [%s]\n", title2.toLocal8Bit().data());
+                    // printf("title1 = [%s]\n", title1.toLocal8Bit().data());
 
                     if (title1 == title2)
                     {
-                        el->m_localFiles = local_elements[j]->m_localFiles;
-                        el->m_localSize = local_elements[j]->m_localSize;
-                        el->m_localTimestamp = local_elements[j]->m_localTimestamp;
-                        delete local_elements[j];
-                        local_elements.removeAt(j);
+                        el->m_localFiles = (*it)->m_localFiles;
+                        el->m_localSize = (*it)->m_localSize;
+                        el->m_localTimestamp = (*it)->m_localTimestamp;
+                        delete (*it);
+                        it = local_elements.erase(it);
+                    }
+                    else
+                    {
+                        ++it;
                     }
                 }
 
-                el->m_serverIndex = serverIndex++;
                 addModElement(el);
             }
         }
     }
 
     for (int j = 0; j < local_elements.size(); ++j)
-    {
-        local_elements[j]->m_serverIndex = serverIndex++;
         addModElement(local_elements[j]);
-    }
+
+    sortList(m_lastSortMode);
 
     foreach (ESModElement *el, m_elements)
         el->RequestHeaders();
@@ -235,6 +239,7 @@ void ESModModel::ESModIndexError(QNetworkReply::NetworkError code)
 {
     Q_UNUSED(code);
 
+    sortList(m_lastSortMode);
     emit esIndexReceived();
 
     QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
@@ -266,42 +271,34 @@ void ESModModel::Delete(int ind)
     m_elements[ind]->Delete();
 }
 
-void ESModModel::elementChanged(int ind)
+void ESModModel::elementChanged()
 {
-    if (ind < 0)
-    {
-        ESModElement *el = dynamic_cast<ESModElement *>(sender());
-        for (int i = 0; i < m_elements.count(); ++i)
-            if (el == m_elements[i])
-            {
-                ind = i;
-                break;
-            }
-    }
+    ESModElement *el = dynamic_cast<ESModElement *>(sender());
 
-    if (ind >= 0)
-        emit dataChanged(index(ind, 0), index(ind, 0));
+    if (el->m_modelIndex >= 0)
+        emit dataChanged(index(el->m_modelIndex, 0), index(el->m_modelIndex, 0));
 }
 
 void ESModModel::elementNeedRemove()
 {
     ESModElement *el = dynamic_cast<ESModElement *>(sender());
-    for (int i = 0; i < m_elements.count(); ++i)
-        if (el == m_elements[i])
-        {
-            beginRemoveRows(QModelIndex(), i, i);
-            m_elements.removeAt(i);
-            endRemoveRows();
 
+    beginRemoveRows(QModelIndex(), el->m_modelIndex, el->m_modelIndex);
+    QList<ESModElement *>::iterator it = m_initialElements.begin();
+    while(it != m_initialElements.end())
+        if (el == (*it))
+        {
+            it = m_initialElements.erase(it);
             break;
         }
-
-    for (int i = 0; i < m_initialElements.count(); ++i)
-        if (el == m_initialElements[i])
+        else
         {
-            m_initialElements.removeAt(i);
-            break;
+            ++it;
         }
+
+    m_elements.removeAt(el->m_modelIndex);
+    ReindexElements();
+    endRemoveRows();
 }
 
 bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
@@ -355,11 +352,6 @@ void ESModModel::SaveLocalModsDB()
     QJsonObject *obj = new QJsonObject;
     obj->insert("packs", arr);
     m_JsonWriter.write(obj);
-}
-
-static bool lessThanAsServer(ESModElement *a, ESModElement *b)
-{
-    return a->m_serverIndex < b->m_serverIndex;
 }
 
 static bool lessThanByName0(ESModElement *a, ESModElement *b)
@@ -426,7 +418,7 @@ static bool lessThanByDate1(ESModElement *a, ESModElement *b)
 
 typedef bool (*lessThanSortFunc)(ESModElement *a, ESModElement *b);
 static const lessThanSortFunc lessThanArray[] = { \
-    lessThanAsServer, \
+    NULL, \
     lessThanByName0, \
     lessThanByName1, \
     lessThanBySize0, \
@@ -441,7 +433,9 @@ void ESModModel::sortList(SortMode m)
 
     beginResetModel();
     m_elements = m_initialElements;
-    qSort(m_elements.begin(), m_elements.end(), lessThanArray[m]);
+    if (lessThanArray[m])
+        qSort(m_elements.begin(), m_elements.end(), lessThanArray[m]);
+    ReindexElements();
     endResetModel();
 }
 
@@ -508,5 +502,15 @@ void ESModModel::filterByKeywords(QString str)
     }
 
     qSort(m_elements.begin(), m_elements.end(), lessThanKeyword);
+    ReindexElements();
     endResetModel();
+}
+
+void ESModModel::ReindexElements()
+{
+    for (int i = 0; i < m_elements.size(); ++i)
+        m_initialElements[i]->m_modelIndex = -1;
+
+    for (int i = 0; i < m_elements.size(); ++i)
+        m_elements[i]->m_modelIndex = i;
 }

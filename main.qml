@@ -2,13 +2,14 @@ import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.2
 import QtQuick.Window 2.2
+import QtWebView 1.0
 import org.salieff.esmodinstaller 1.0
 
 ApplicationWindow {
-    visible: true
     width: 720
     height: 900
     title: qsTr("ES Manager")
+    visible: true
 
     ColumnLayout {
         id: mainLayout
@@ -25,6 +26,8 @@ ApplicationWindow {
             spacing: 5
             // clip: true
             maximumFlickVelocity: 5000
+
+            signal infoUriSignal(string uriStr)
 
             remove: Transition {
                 NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 400 }
@@ -244,6 +247,37 @@ ApplicationWindow {
         }
     }
 
+    WebView {
+        id: infoUriView
+        opacity: 0
+        visible: false
+        height: parent.height - appTitle.height
+        anchors {
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
+            margins: 5
+        }
+
+        onOpacityChanged: if (opacity == 0) {
+                              visible = false
+                              mainListView.enabled = true
+                          }
+
+        PropertyAnimation {id:fadein2; target: infoUriView; property: "opacity"; from: 0; to: 0.95; duration: 300}
+        PropertyAnimation {id:fadeout2; target: infoUriView; property: "opacity"; from: 0.95; to: 0; duration: 300}
+
+        Connections {
+            target: mainListView
+            onInfoUriSignal: {
+                infoUriView.visible = true
+                mainListView.enabled = false
+                fadein2.start()
+                infoUriView.url = uriStr
+            }
+        }
+    }
+
     Menu {
         id: sortMenu
         title: qsTr("Sort mode")
@@ -302,6 +336,19 @@ ApplicationWindow {
                 esModel.sortList(ESModModel.ByDateDown)
                 sortText.text = "Dt↓"
             }
+        }
+    }
+
+
+    onClosing: {
+        if (infoRect.visible) {
+            close.accepted = false
+            fadeout.start()
+        }
+
+        if (infoUriView.visible) {
+            close.accepted = false
+            fadeout2.start()
         }
     }
 }

@@ -53,6 +53,7 @@ public:
     QStringList langs;
     QString status;
     QString uri;
+    QString infouri;
     QString path;
     QStringList files;
 
@@ -67,7 +68,7 @@ public:
     double m_localSize;
     double m_localTimestamp;
 
-    int m_serverIndex;
+    int m_modelIndex;
     std::vector<int> m_keywordFilterCounter;
 
 private slots:

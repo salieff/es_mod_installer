@@ -2,6 +2,10 @@ TEMPLATE = app
 
 QT += qml quick widgets
 
+!android {
+QT += webengine
+}
+
 SOURCES += main.cpp \
     esmodelement.cpp \
     esmodmodel.cpp \
