@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Герои модов "Бесконечного Лета"</title>
+</head>
+
+<body>
+<form action="sendpersons" method="post">
+	<p>
+	Пожалуйста, выберите мод, в который вы играли, и отметьте персонажей, участвующих в нем.
+	</p>
+	<p>
+	<select id="modMenu" name="modId" size="1">
+		<script>
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', '/static/project1.json', false);
+		xhr.send();
+
+		if (xhr.status != 200)
+		{
+			alert(xhr.status + ': ' + xhr.statusText);
+		}
+		else
+		{
+			var mods = JSON.parse(xhr.responseText);
+			var select = document.getElementById('modMenu');
+			mods.packs.forEach(function(item, i, arr) {
+					var opt = document.createElement('option');
+					opt.value = item.idmod;
+					opt.innerHTML = item.title;
+					select.appendChild(opt);
+					});
+		}
+		</script>
+	</select>
+	</p>
+	<p>
+	<table>
+		<tr>
+			<td align="center"><img src="/static/img/pioneer.png"></td>
+			<td align="center"><img src="/static/img/alisa.png"></td>
+			<td align="center"><img src="/static/img/lena.png"></td>
+			<td align="center"><img src="/static/img/miku.png"></td>
+			<td align="center"><img src="/static/img/pioneer.png"></td>
+			<td align="center"><img src="/static/img/slavya.png"></td>
+			<td align="center"><img src="/static/img/ulyana.png"></td>
+			<td align="center"><img src="/static/img/yulya.png"></td>
+		</tr>
+		<tr>
+			<td align="center"><input type="checkbox" name="semen" value="1">Семён</td>
+			<td align="center"><input type="checkbox" name="alisa" value="1">Алиса</td>
+			<td align="center"><input type="checkbox" name="lena" value="1">Лена</td>
+			<td align="center"><input type="checkbox" name="miku" value="1">Мику</td>
+			<td align="center"><input type="checkbox" name="pioneer" value="1">Пионер</td>
+			<td align="center"><input type="checkbox" name="slavya" value="1">Славя</td>
+			<td align="center"><input type="checkbox" name="ulyana" value="1">Ульяна</td>
+			<td align="center"><input type="checkbox" name="yulya" value="1">Юля</td>
+		</tr>
+	</table>
+	</p>
+	<p>
+	<table>
+		<tr>
+			<td align="center"><img src="/static/img/viola.png"></td>
+			<td align="center"><img src="/static/img/jenya.png"></td>
+			<td align="center"><img src="/static/img/tolik.png"></td>
+			<td align="center"><img src="/static/img/shurik.png"></td>
+			<td align="center"><img src="/static/img/elektronik.png"></td>
+			<td align="center"><img src="/static/img/olga.png"></td>
+		</tr>
+		<tr>
+			<td align="center"><input type="checkbox" name="viola" value="1">Виола</td>
+			<td align="center"><input type="checkbox" name="jenya" value="1">Женя</td>
+			<td align="center"><input type="checkbox" name="tolik" value="1">Толик</td>
+			<td align="center"><input type="checkbox" name="shurik" value="1">Шурик</td>
+			<td align="center"><input type="checkbox" name="elektronik" value="1">Электроник</td>
+			<td align="center"><input type="checkbox" name="olga" value="1">Ольга<br>Дмитриевна</td>
+		</tr>
+	</table>
+	</p>
+	<p>
+	Персонажей, не обозначенных чекбоксами, впишите в это поле через запятую:<br>
+	<input name="other_persons" size="80">
+	</p>
+	<input type="submit" value="Отправить">
+</form>
+</body>
+</html>
