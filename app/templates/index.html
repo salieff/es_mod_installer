@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Герои модов "Бесконечного Лета"</title>
-</head>
+<!-- extend base layout -->
+{% extends "base.html" %}
 
-<body>
+{% block content %}
 <form action="sendpersons" method="post">
 	<p>
 	Пожалуйста, выберите мод, в который вы играли, и отметьте персонажей, участвующих в нем.
@@ -14,7 +10,7 @@
 	<select id="modMenu" name="modId" size="1">
 		<script>
 		var xhr = new XMLHttpRequest();
-		xhr.open('GET', '/static/project1.json', false);
+		xhr.open('GET', '{{json_path}}', false);
 		xhr.send();
 
 		if (xhr.status != 200)
@@ -36,48 +32,20 @@
 	</select>
 	</p>
 	<p>
+	{% for person_array in [primary_persons, secondary_persons] %}
 	<table>
 		<tr>
-			<td align="center"><img src="/static/img/pioneer.png"></td>
-			<td align="center"><img src="/static/img/alisa.png"></td>
-			<td align="center"><img src="/static/img/lena.png"></td>
-			<td align="center"><img src="/static/img/miku.png"></td>
-			<td align="center"><img src="/static/img/pioneer.png"></td>
-			<td align="center"><img src="/static/img/slavya.png"></td>
-			<td align="center"><img src="/static/img/ulyana.png"></td>
-			<td align="center"><img src="/static/img/yulya.png"></td>
+			{% for person in person_array %}
+			<td align="center"><img src="/static/img/{{person.alias}}.png"></td>
+			{% endfor %}
 		</tr>
 		<tr>
-			<td align="center"><input type="checkbox" name="semen" value="1">Семён</td>
-			<td align="center"><input type="checkbox" name="alisa" value="1">Алиса</td>
-			<td align="center"><input type="checkbox" name="lena" value="1">Лена</td>
-			<td align="center"><input type="checkbox" name="miku" value="1">Мику</td>
-			<td align="center"><input type="checkbox" name="pioneer" value="1">Пионер</td>
-			<td align="center"><input type="checkbox" name="slavya" value="1">Славя</td>
-			<td align="center"><input type="checkbox" name="ulyana" value="1">Ульяна</td>
-			<td align="center"><input type="checkbox" name="yulya" value="1">Юля</td>
+			{% for person in person_array %}
+			<td align="center"><input type="checkbox" name="{{person.alias}}" value="1">{{person.name.decode('utf-8')}}</td>
+			{% endfor %}
 		</tr>
 	</table>
-	</p>
-	<p>
-	<table>
-		<tr>
-			<td align="center"><img src="/static/img/viola.png"></td>
-			<td align="center"><img src="/static/img/jenya.png"></td>
-			<td align="center"><img src="/static/img/tolik.png"></td>
-			<td align="center"><img src="/static/img/shurik.png"></td>
-			<td align="center"><img src="/static/img/elektronik.png"></td>
-			<td align="center"><img src="/static/img/olga.png"></td>
-		</tr>
-		<tr>
-			<td align="center"><input type="checkbox" name="viola" value="1">Виола</td>
-			<td align="center"><input type="checkbox" name="jenya" value="1">Женя</td>
-			<td align="center"><input type="checkbox" name="tolik" value="1">Толик</td>
-			<td align="center"><input type="checkbox" name="shurik" value="1">Шурик</td>
-			<td align="center"><input type="checkbox" name="elektronik" value="1">Электроник</td>
-			<td align="center"><input type="checkbox" name="olga" value="1">Ольга<br>Дмитриевна</td>
-		</tr>
-	</table>
+	{% endfor %}
 	</p>
 	<p>
 	Персонажей, не обозначенных чекбоксами, впишите в это поле через запятую:<br>
@@ -85,5 +53,4 @@
 	</p>
 	<input type="submit" value="Отправить">
 </form>
-</body>
-</html>
+{% endblock %}
