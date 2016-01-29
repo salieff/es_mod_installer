@@ -8,3 +8,7 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 
 from app import views, models
+
+#import requests
+#r = requests.get('http://191.ru/es/project1.json')
+#print(r.json())
