@@ -6,29 +6,16 @@
 	<p>
 	Пожалуйста, выберите мод, в который вы играли, и отметьте персонажей, участвующих в нем.
 	</p>
+	{% if err_msg %}
+	<p>
+	<h1 style="color:#ff0000">{{err_msg}}</h1>
+	</p>
+	{% endif %}
 	<p>
 	<select id="modMenu" name="modId" size="1">
-		<script>
-		var xhr = new XMLHttpRequest();
-		xhr.open('GET', '{{json_path}}', false);
-		xhr.send();
-
-		if (xhr.status != 200)
-		{
-			alert(xhr.status + ': ' + xhr.statusText);
-		}
-		else
-		{
-			var mods = JSON.parse(xhr.responseText);
-			var select = document.getElementById('modMenu');
-			mods.packs.forEach(function(item, i, arr) {
-					var opt = document.createElement('option');
-					opt.value = item.idmod;
-					opt.innerHTML = item.title;
-					select.appendChild(opt);
-					});
-		}
-		</script>
+		{% for mod in mod_packs %}
+		<option value="{{mod.idmod}}">{{mod.title}}</option>
+		{% endfor %}
 	</select>
 	</p>
 	<p>
@@ -41,7 +28,7 @@
 		</tr>
 		<tr>
 			{% for person in person_array %}
-			<td align="center"><input type="checkbox" name="{{person.alias}}" value="1">{{person.name.decode('utf-8')}}</td>
+			<td align="center"><input type="checkbox" name="personId_{{person.alias}}" value="{{person.id}}"><strong>{{person.name}}</strong></td>
 			{% endfor %}
 		</tr>
 	</table>
@@ -49,7 +36,7 @@
 	</p>
 	<p>
 	Персонажей, не обозначенных чекбоксами, впишите в это поле через запятую:<br>
-	<input name="other_persons" size="80">
+	<input name="persons_other" size="80">
 	</p>
 	<input type="submit" value="Отправить">
 </form>

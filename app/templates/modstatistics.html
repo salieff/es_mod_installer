@@ -2,27 +2,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-		<p>
-		Спасибо за обработку!<br>
-		<script>
-		var xhr = new XMLHttpRequest();
-		xhr.open('GET', '{{json_path}}', false);
-		xhr.send();
-
-		if (xhr.status != 200)
-		{
-			alert(xhr.status + ': ' + xhr.statusText);
-		}
-		else
-		{
-			var mods = JSON.parse(xhr.responseText);
-			var titleItems = mods.packs.filter(function(item) {
-					return item.idmod === {{mod_id}};
-					});
-			
-			document.write("<h1>" + titleItems[0].title + "</h1>");
-		}
-		</script>
-		</p>
-		<a href="{{url_for('index')}}">Обработать ещё один мод</a>
+<p>
+Спасибо за обработку!<br>
+<h1>{{mod_name}}</h1>
+</p>
+<a href="{{url_for('index')}}">Обработать ещё один мод</a>
 {% endblock %}
