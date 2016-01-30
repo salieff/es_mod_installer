@@ -62,3 +62,32 @@ def sendpersons():
         return render_template("modstatistics.html", mod_name = mod_name)
 
     return redirect(url_for('index'))
+
+class ModWithPersons:
+    def __init__(self, modid, name):
+        self.modid = modid
+        self.name = name
+        self.persons = []
+        self.votes = 0
+
+        modpers = models.ModPerson.query.filter(models.ModPerson.modid == self.modid).order_by(models.ModPerson.votes.desc())
+        for mp in modpers:
+            self.persons.append({'alias': mp.person.alias, 'name': mp.person.name, 'trust': mp.votes * 100 / mp.modvote.votes})
+            self.votes = mp.modvote.votes
+
+        modotherpers = models.ModOtherPerson.query.filter(models.ModOtherPerson.modid == self.modid).order_by(models.ModOtherPerson.votes.desc())
+        for mop in modotherpers:
+            self.persons.append({'alias': "unknown", 'name': mop.name.title(), 'trust': mop.votes * 100 / mop.modvote.votes})
+            self.votes = mop.modvote.votes
+
+@app.route('/modsinfo')
+def modsinfo():
+    json_request = requests.get(JSON_INDEX_PATH)
+    mods_info = []
+
+    for mod in json_request.json()['packs']:
+        mwp = ModWithPersons(modid = mod['idmod'], name = mod['title'])
+        if mwp.votes > 0:
+            mods_info.append(mwp)
+
+    return render_template("modsinfo.html", mods_info = mods_info)
