@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>icons/abort.png</file>
+        <file>icons/download.png</file>
+        <file>icons/reload.png</file>
+        <file>icons/trash.png</file>
+        <file>icons/update.png</file>
+        <file>Delegate.qml</file>
+        <file>icons/info.png</file>
+        <file>icons/abort_press.png</file>
+        <file>icons/download_press.png</file>
+        <file>icons/reload_press.png</file>
+        <file>icons/trash_press.png</file>
+        <file>icons/update_press.png</file>
+        <file>icons/eng_flag.png</file>
+        <file>icons/rus_flag.png</file>
+        <file>icons/spa_flag.png</file>
+        <file>icons/search.png</file>
+    </qresource>
+</RCC>

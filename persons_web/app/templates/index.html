@@ -1,0 +1,38 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+<form action="sendpersons" method="post">
+	<p>
+	Пожалуйста, выберите мод, в который вы играли, и отметьте персонажей, участвующих в нем.
+	</p>
+	<p>
+	<select id="modMenu" name="modId" size="1">
+		{% for mod in mod_packs %}
+		<option value="{{mod.idmod}}">{{mod.title}}</option>
+		{% endfor %}
+	</select>
+	</p>
+	<p>
+	{% for person_array in [primary_persons, secondary_persons] %}
+	<table>
+		<tr>
+			{% for person in person_array %}
+			<td align="center"><img src="/static/img/{{person.alias}}.png"></td>
+			{% endfor %}
+		</tr>
+		<tr>
+			{% for person in person_array %}
+			<td align="center"><input type="checkbox" name="personId_{{person.alias}}" value="{{person.id}}"><strong>{{person.name}}</strong></td>
+			{% endfor %}
+		</tr>
+	</table>
+	{% endfor %}
+	</p>
+	<p>
+	Персонажей, не обозначенных чекбоксами, впишите в это поле через запятую:<br>
+	<input name="persons_other" size="80">
+	</p>
+	<input type="submit" value="Отправить">
+</form>
+{% endblock %}

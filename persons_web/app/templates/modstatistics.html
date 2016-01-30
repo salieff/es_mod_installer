@@ -1,0 +1,10 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+<p>
+Спасибо за обработку!<br>
+<h1>{{mod_name}}</h1>
+</p>
+<a href="{{url_for('index')}}">Обработать ещё один мод</a>
+{% endblock %}
