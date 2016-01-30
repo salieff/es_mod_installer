@@ -6,11 +6,6 @@
 	<p>
 	Пожалуйста, выберите мод, в который вы играли, и отметьте персонажей, участвующих в нем.
 	</p>
-	{% if err_msg %}
-	<p>
-	<h1 style="color:#ff0000">{{err_msg}}</h1>
-	</p>
-	{% endif %}
 	<p>
 	<select id="modMenu" name="modId" size="1">
 		{% for mod in mod_packs %}
