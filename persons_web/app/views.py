@@ -8,10 +8,11 @@ import requests
 @app.route('/')
 @app.route('/index')
 def index():
+    selected_modid = request.args.get('selected_modid', '1')
     primary_persons = models.Person.query.filter(models.Person.primary_role == True)
     secondary_persons = models.Person.query.filter(models.Person.primary_role != True)
     json_request = requests.get(JSON_INDEX_PATH)
-    return render_template("index.html", primary_persons = primary_persons, secondary_persons = secondary_persons, mod_packs = json_request.json()['packs'])
+    return render_template("index.html", primary_persons = primary_persons, secondary_persons = secondary_persons, mod_packs = json_request.json()['packs'], selected_modid = selected_modid)
 
 def beautyOtherPersons(op_str):
     op_arr = op_str.split(',')
@@ -20,7 +21,8 @@ def beautyOtherPersons(op_str):
     op_arr = set(op_arr)
     return op_arr
 
-@app.route('/sendpersons', methods = ['GET', 'POST'])
+#@app.route('/sendpersons', methods = ['GET', 'POST'])
+@app.route('/sendpersons', methods = ['POST'])
 def sendpersons():
     has_data = False
     mod_id = request.form['modId']
@@ -59,9 +61,10 @@ def sendpersons():
         json_request = requests.get(JSON_INDEX_PATH)
         mod_packs = json_request.json()['packs']
         mod_name = [mod['title'] for mod in mod_packs if int(mod['idmod']) == int(mod_id)][0]
-        return render_template("modstatistics.html", mod_name = mod_name)
+        #return render_template("modstatistics.html", mod_name = mod_name)
+        return redirect(url_for('modsinfo', _anchor = 'modheader_'+mod_id))
 
-    return redirect(url_for('index'))
+    return redirect(url_for('index', selected_modid = mod_id))
 
 class ModWithPersons:
     def __init__(self, modid, name):

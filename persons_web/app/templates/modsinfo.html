@@ -4,8 +4,10 @@
 {% block content %}
 {% for mod in mods_info %}
 <p>
+<a name="modheader_{{mod.modid}}"></a>
 <img height="32" align="middle" src="/static/img/modicon.png">
 <strong>{{mod.name}}</strong> (отметилось {{mod.votes}} человек)
+<a href="{{ url_for('index') }}?selected_modid={{mod.modid}}">[Поставить свои отметки]</a>
 <table style="margin-left:2em;">
 	{% for pers in mod.persons %}
 	<tr>

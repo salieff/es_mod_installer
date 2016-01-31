@@ -9,7 +9,11 @@
 	<p>
 	<select id="modMenu" name="modId" size="1">
 		{% for mod in mod_packs %}
-		<option value="{{mod.idmod}}">{{mod.title}}</option>
+			{% if mod.idmod|int() == selected_modid|int() %}
+				<option value="{{mod.idmod}}" selected>{{mod.title}}</option>
+			{% else %}
+				<option value="{{mod.idmod}}">{{mod.title}}</option>
+			{% endif %}
 		{% endfor %}
 	</select>
 	</p>
@@ -35,4 +39,6 @@
 	</p>
 	<input type="submit" value="Отправить">
 </form>
+<hr>
+<a href="{{ url_for('modsinfo') }}">[Перейти к таблице результатов]</a>
 {% endblock %}
