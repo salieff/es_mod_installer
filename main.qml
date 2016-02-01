@@ -6,6 +6,7 @@ import QtWebView 1.0
 import org.salieff.esmodinstaller 1.0
 
 ApplicationWindow {
+    id: mainWindow
     width: 720
     height: 900
     title: qsTr("ES Manager")
@@ -28,6 +29,7 @@ ApplicationWindow {
             maximumFlickVelocity: 5000
 
             signal infoUriSignal(string uriStr)
+            signal likeBoxSignal(int itemIndex, bool myLike, bool myDislike, int likes, int dislikes)
 
             remove: Transition {
                 NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 400 }
@@ -102,8 +104,6 @@ ApplicationWindow {
                     Layout.preferredHeight: sourceSize.height
                     MouseArea {
                         anchors.fill: parent
-                        PropertyAnimation {id:fadein; target: infoRect; property: "opacity"; from: 0; to: 0.95; duration: 300}
-                        PropertyAnimation {id:fadeout; target: infoRect; property: "opacity"; from: 0.95; to: 0; duration: 300}
                         onClicked: {
                             if (infoRect.visible) {
                                 fadeout.start()
@@ -249,9 +249,15 @@ ApplicationWindow {
 
     WebView {
         id: infoUriView
-        opacity: 0
+        // opacity: 0
         visible: false
+        /*
+        x: 10
+        y: appTitle.height
+        width: parent.width
+        */
         height: parent.height - appTitle.height
+
         anchors {
             bottom: parent.bottom
             left: parent.left
@@ -259,21 +265,32 @@ ApplicationWindow {
             margins: 5
         }
 
+        /*
         onOpacityChanged: if (opacity == 0) {
                               visible = false
                               mainListView.enabled = true
                           }
-
-        PropertyAnimation {id:fadein2; target: infoUriView; property: "opacity"; from: 0; to: 0.95; duration: 300}
-        PropertyAnimation {id:fadeout2; target: infoUriView; property: "opacity"; from: 0.95; to: 0; duration: 300}
+        onXChanged: if (x == mainWindow.width) {
+                        visible = false
+                        mainListView.enabled = true
+                    }
+        */
 
         Connections {
             target: mainListView
             onInfoUriSignal: {
                 infoUriView.visible = true
                 mainListView.enabled = false
-                fadein2.start()
-                infoUriView.url = uriStr
+                console.log(">>>>>>>>>>>>>>>>> [", infoUriView.url, "] [", uriStr, "]")
+                if (infoUriView.url != uriStr) {
+                    console.log(">>>>>>>>>>>>>>>>> [URL Changed!!!]")
+                    infoUriView.url = "about:blank"
+                    infoUriView.url = uriStr
+                    // fadein2.start()
+                }
+                else {
+                    console.log(">>>>>>>>>>>>>>>>> [URL the same]")
+                }
             }
         }
     }
@@ -339,6 +356,211 @@ ApplicationWindow {
         }
     }
 
+    Rectangle {
+        id: likeRect
+        width: likeRectLayout.implicitWidth + 40
+        height: likeRectLayout.implicitHeight + 40
+        anchors.centerIn: parent
+        radius: 10
+        color: "#e0ffffff"
+        opacity: 0
+        visible: false
+
+        property int itemIndex: -1
+
+        onOpacityChanged: if (opacity == 0) {
+                              visible = false
+                              mainListView.enabled = true
+                          }
+
+        ColumnLayout {
+            id: likeRectLayout
+            anchors.centerIn: parent
+            spacing: 20
+
+            Image {
+                id: likeImg
+                source: "icons/like.png"
+                sourceSize.width: Screen.pixelDensity * 20
+                sourceSize.height: Screen.pixelDensity * 20
+                Layout.preferredWidth: sourceSize.width
+                Layout.preferredHeight: sourceSize.height
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                opacity: 1
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    preventStealing: true
+
+                    property bool wasPressed: false
+
+                    onPressed: {
+                        wasPressed = true
+                        likeImg.opacity = 1
+                        dislikeImg.opacity = 0.3
+                    }
+
+                    onReleased: {
+                        wasPressed = false
+                        fadeout3.start()
+                    }
+
+                    onExited: {
+                        if (wasPressed)
+                        {
+                            wasPressed = false;
+                            fadeout3.start()
+                        }
+                    }
+                }
+
+            }
+
+            Image {
+                id: dislikeImg
+                source: "icons/dislike.png"
+                sourceSize.width: Screen.pixelDensity * 20
+                sourceSize.height: Screen.pixelDensity * 20
+                Layout.preferredWidth: sourceSize.width
+                Layout.preferredHeight: sourceSize.height
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                opacity: 0.3
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    preventStealing: true
+
+                    property bool wasPressed: false
+
+                    onPressed: {
+                        wasPressed = true
+                        likeImg.opacity = 0.3
+                        dislikeImg.opacity = 1
+                    }
+
+                    onReleased: {
+                        wasPressed = false
+                        fadeout3.start()
+                    }
+
+                    onExited: {
+                        if (wasPressed)
+                        {
+                            wasPressed = false;
+                            fadeout3.start()
+                        }
+                    }
+                }
+
+            }
+
+            RowLayout {
+                id: likeMiniRow
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+
+                Image {
+                    id: likeMiniImg
+                    source: "icons/like.png"
+                    sourceSize.width: Screen.pixelDensity * 6
+                    sourceSize.height: Screen.pixelDensity * 6
+                    Layout.preferredWidth: sourceSize.width
+                    Layout.preferredHeight: sourceSize.height
+                }
+
+                Text {
+                    id: likeText
+                    font.pointSize: 24
+                    style: Text.Sunken
+                    color: "lightgreen"
+                    styleColor: "black"
+                    text: "33"
+                }
+
+                Image {
+                    id: dislikeMiniImg
+                    source: "icons/dislike.png"
+                    sourceSize.width: Screen.pixelDensity * 6
+                    sourceSize.height: Screen.pixelDensity * 6
+                    Layout.preferredWidth: sourceSize.width
+                    Layout.preferredHeight: sourceSize.height
+                }
+
+                Text {
+                    id: dislikeText
+                    font.pointSize: 24
+                    style: Text.Sunken
+                    color: "lightblue"
+                    styleColor: "black"
+                    text: "33"
+                }
+
+            }
+        }
+
+        Connections {
+            target: mainListView
+            onLikeBoxSignal: {
+                if (!likeRect.visible)
+                {
+                    if (myLike)
+                        likeImg.opacity = 1
+                    else
+                        likeImg.opacity = 0.3
+
+                    if (myDislike)
+                        dislikeImg.opacity = 1
+                    else
+                        dislikeImg.opacity = 0.3
+
+                    if (likes > 0)
+                    {
+                        likeText.text = likes
+                        likeMiniImg.visible = true;
+                        likeText.visible = true;
+                    }
+                    else
+                    {
+                        likeMiniImg.visible = false;
+                        likeText.visible = false;
+                    }
+
+                    if (dislikes > 0)
+                    {
+                        dislikeText.text = dislikes
+                        dislikeMiniImg.visible = true;
+                        dislikeText.visible = true;
+                    }
+                    else
+                    {
+                        dislikeMiniImg.visible = false;
+                        dislikeText.visible = false;
+                    }
+
+                    if (likes <= 0 && dislikes <= 0)
+                        likeMiniRow.visible = false
+                    else
+                        likeMiniRow.visible = true
+
+                    mainListView.enabled = false
+                    likeRect.itemIndex = itemIndex
+                    likeRect.visible = true
+                    fadein3.start()
+                }
+            }
+        }
+    }
+
+    PropertyAnimation {id:fadein; target: infoRect; property: "opacity"; from: 0; to: 0.95; duration: 300}
+    PropertyAnimation {id:fadeout; target: infoRect; property: "opacity"; from: 0.95; to: 0; duration: 300}
+    //PropertyAnimation {id:fadein2; target: infoUriView; property: "opacity"; from: 0; to: 0.95; duration: 300}
+    //PropertyAnimation {id:fadeout2; target: infoUriView; property: "opacity"; from: 0.95; to: 0; duration: 300}
+    //PropertyAnimation {id:fadein2; target: infoUriView; property: "x"; from: mainWindow.width; to: 0; duration: 300}
+    //PropertyAnimation {id:fadeout2; target: infoUriView; property: "x"; from: 0; to: mainWindow.width; duration: 500}
+    PropertyAnimation {id:fadein3; target: likeRect; property: "opacity"; from: 0; to: 1; duration: 300}
+    PropertyAnimation {id:fadeout3; target: likeRect; property: "opacity"; from: 1; to: 0; duration: 500}
 
     onClosing: {
         if (infoRect.visible) {
@@ -348,7 +570,14 @@ ApplicationWindow {
 
         if (infoUriView.visible) {
             close.accepted = false
-            fadeout2.start()
+            //fadeout2.start()
+            infoUriView.visible = false
+            mainListView.enabled = true
+        }
+
+        if (likeRect.visible) {
+            close.accepted = false
+            fadeout3.start()
         }
     }
 }

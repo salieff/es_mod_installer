@@ -114,8 +114,8 @@ Rectangle {
                 }
             }
 
-            sourceSize.width: Screen.pixelDensity * 9
-            sourceSize.height: Screen.pixelDensity * 9
+            sourceSize.width: Screen.pixelDensity * 7
+            sourceSize.height: Screen.pixelDensity * 7
             Layout.preferredWidth: sourceSize.width
             Layout.preferredHeight: sourceSize.height
 
@@ -167,7 +167,7 @@ Rectangle {
                     id: delegateText1
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
-                    font.pointSize: 18
+                    font.pointSize: 13.5
                     wrapMode: Text.Wrap
                     style: Text.Sunken
                     color: "white"
@@ -178,7 +178,7 @@ Rectangle {
                     id: delegateText2
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
-                    font.pointSize: 12
+                    font.pointSize: 9
                     wrapMode: Text.Wrap
                     style: Text.Sunken
                     color: "white"
@@ -201,7 +201,69 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: mainRectangle.ListView.view.infoUriSignal(infouri)
+                hoverEnabled: true
+                preventStealing: true
+
+                property bool wasPressed: false
+
+                onPressed: {
+                    delegateText1.color = "red"
+                    delegateText2.color = "red"
+                    wasPressed = true
+                }
+
+                onReleased: {
+                    wasPressed = false;
+                    delegateText1.color = "white"
+                    delegateText2.color = "white"
+                    mainRectangle.ListView.view.infoUriSignal(infouri)
+                }
+
+                onExited: {
+                    if (wasPressed)
+                    {
+                        wasPressed = false;
+                        delegateText1.color = "white"
+                        delegateText2.color = "white"
+                        mainRectangle.ListView.view.infoUriSignal(infouri)
+                    }
+                }
+            }
+        }
+
+        Item {
+            id: likeBox
+            Layout.preferredHeight: likeLayout.implicitHeight
+            Layout.preferredWidth: likeLayout.implicitWidth
+
+            RowLayout {
+                id: likeLayout
+                anchors.fill: parent
+
+                Image {
+                    id: likeImg
+                    source: index % 2 != 0 ? "icons/like.png" : "icons/dislike.png"
+                    sourceSize.width: Screen.pixelDensity * 3
+                    sourceSize.height: Screen.pixelDensity * 3
+                    Layout.preferredWidth: sourceSize.width
+                    Layout.preferredHeight: sourceSize.height
+                }
+
+                Text {
+                    id: likeText
+                    font.pointSize: 12
+                    style: Text.Sunken
+                    color: index % 2 != 0 ? "lightgreen" : "lightblue"
+                    styleColor: "black"
+                    text: 33 + (index % 2) * 10
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+
+                // signal likeBoxSignal(int itemIndex, bool myLike, bool myDislike, int likes, int dislikes)
+                onClicked: mainRectangle.ListView.view.likeBoxSignal(index, index % 2 != 0, index % 2 == 0, 23 + (index % 2), 36 - (index % 2))
             }
         }
 
@@ -215,24 +277,24 @@ Rectangle {
                 anchors.fill: parent
                 Image {
                     source: "icons/rus_flag.png"
-                    sourceSize.width: Screen.pixelDensity * 5
-                    sourceSize.height: Screen.pixelDensity * 3
+                    sourceSize.width: Screen.pixelDensity * 3
+                    sourceSize.height: Screen.pixelDensity * 2
                     Layout.preferredWidth: sourceSize.width
                     Layout.preferredHeight: sourceSize.height
                     visible: (langs.indexOf("Ru") > -1)
                 }
                 Image {
                     source: "icons/eng_flag.png"
-                    sourceSize.width: Screen.pixelDensity * 5
-                    sourceSize.height: Screen.pixelDensity * 3
+                    sourceSize.width: Screen.pixelDensity * 3
+                    sourceSize.height: Screen.pixelDensity * 2
                     Layout.preferredWidth: sourceSize.width
                     Layout.preferredHeight: sourceSize.height
                     visible: (langs.indexOf("En") > -1)
                 }
                 Image {
                     source: "icons/spa_flag.png"
-                    sourceSize.width: Screen.pixelDensity * 5
-                    sourceSize.height: Screen.pixelDensity * 3
+                    sourceSize.width: Screen.pixelDensity * 3
+                    sourceSize.height: Screen.pixelDensity * 2
                     Layout.preferredWidth: sourceSize.width
                     Layout.preferredHeight: sourceSize.height
                     visible: (langs.indexOf("Spa") > -1)
@@ -244,8 +306,8 @@ Rectangle {
             id: delegateImage2
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
             source: guiblocked == 2 ? "icons/trash_press.png" : "icons/trash.png"
-            sourceSize.width: Screen.pixelDensity * 9
-            sourceSize.height: Screen.pixelDensity * 9
+            sourceSize.width: Screen.pixelDensity * 7
+            sourceSize.height: Screen.pixelDensity * 7
             Layout.preferredWidth: sourceSize.width
             Layout.preferredHeight: sourceSize.height
             visible: (modstate === ESModElement.InstalledHasUpdate)

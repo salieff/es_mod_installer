@@ -17,5 +17,7 @@
         <file>icons/rus_flag.png</file>
         <file>icons/spa_flag.png</file>
         <file>icons/search.png</file>
+        <file>icons/dislike.png</file>
+        <file>icons/like.png</file>
     </qresource>
 </RCC>
