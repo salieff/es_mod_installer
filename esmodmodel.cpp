@@ -16,7 +16,7 @@ ESModModel::ESModModel(QObject *parent)
       m_lastSortMode(AsServer)
 {
 #ifndef ANDROID
-    m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+    //    m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
 
     m_JsonWriter.start();
@@ -116,6 +116,18 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         return element->guiblocked;
         break;
 
+    case MyLikeMarkRole :
+        return element->mylikemark;
+        break;
+
+    case LikeMarksCountRole :
+        return element->likemarkscount;
+        break;
+
+    case DislikeMarksCountRole :
+        return element->dislikemarkscount;
+        break;
+
     default:
         break;
     }
@@ -138,6 +150,9 @@ QHash<int, QByteArray> ESModModel::roleNames() const
     roles[SizeRole] = "modsize";
     roles[TimestampRole] = "timestamp";
     roles[GuiBlockedRole] = "guiblocked";
+    roles[MyLikeMarkRole] = "mylikemark";
+    roles[LikeMarksCountRole] = "likemarkscount";
+    roles[DislikeMarksCountRole] = "dislikemarkscount";
 
     return roles;
 }
@@ -178,53 +193,15 @@ void ESModModel::ESModIndexDownloaded()
             for (int i = 0; i < arr.size(); ++i)
             {
                 ESModElement *el = new ESModElement(this);
-
-                el->title = arr[i].toObject()["title"].toString().trimmed();
-                el->status = arr[i].toObject()["status"].toString().trimmed();
-                el->langs = arr[i].toObject()["lang"].toString().trimmed().split(QRegExp("[,\\s]+"), QString::SkipEmptyParts);
-                el->uri = arr[i].toObject()["uri"].toString().trimmed();
-                el->infouri = arr[i].toObject()["infouri"].toString().trimmed();
-                el->path = arr[i].toObject()["path"].toString().trimmed();
-#ifndef ANDROID
-                el->path.replace(QRegExp("^/sdcard/Android/data"), QDir::homePath() + "/tmp");
-#endif
-
-                QJsonArray files_arr = arr[i].toObject()["files"].toArray();
-                for (int j = 0; j < files_arr.size(); ++j)
-                    el->files << files_arr[j].toString().trimmed();
-
-                QString title1 = el->title;
-                title1 = title1.remove(QRegExp("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegExp("\\[.*\\]")).remove(QRegExp("\\{.*\\}")).simplified();
-                // printf("title2 = [%s]\n", title2.toLocal8Bit().data());
-
-                QList<ESModElement *>::iterator it = local_elements.begin();
-                while (it != local_elements.end())
-                {
-                    QString title2 = (*it)->title;
-                    title2 = title2.remove(QRegExp("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegExp("\\[.*\\]")).remove(QRegExp("\\{.*\\}")).simplified();
-                    // printf("title1 = [%s]\n", title1.toLocal8Bit().data());
-
-                    if (title1 == title2)
-                    {
-                        el->m_localFiles = (*it)->m_localFiles;
-                        el->m_localSize = (*it)->m_localSize;
-                        el->m_localTimestamp = (*it)->m_localTimestamp;
-                        delete (*it);
-                        it = local_elements.erase(it);
-                    }
-                    else
-                    {
-                        ++it;
-                    }
-                }
-
+                el->DeserializeFromNetwork(arr[i].toObject());
+                el->TryToPickupFrom(local_elements);
                 addModElement(el);
             }
         }
     }
 
-    for (int j = 0; j < local_elements.size(); ++j)
-        addModElement(local_elements[j]);
+    foreach (ESModElement *el, local_elements)
+        addModElement(el);
 
     sortList(m_lastSortMode);
 
@@ -331,6 +308,10 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
     }
 
     QJsonObject obj = doc.object();
+
+    // FIXME: Can't sort by size or date until headers weren't received
+    // m_lastSortMode = (ESModModel::SortMode)obj["sortmode"].toInt();
+
     QJsonArray arr = obj["packs"].toArray();
     for (int i = 0; i < arr.size(); ++i)
     {
@@ -350,6 +331,7 @@ void ESModModel::SaveLocalModsDB()
             arr.push_back(m_initialElements[i]->SerializeToDB());
 
     QJsonObject *obj = new QJsonObject;
+    obj->insert("sortmode", (int)m_lastSortMode);
     obj->insert("packs", arr);
     m_JsonWriter.write(obj);
 }
@@ -437,6 +419,8 @@ void ESModModel::sortList(SortMode m)
         qSort(m_elements.begin(), m_elements.end(), lessThanArray[m]);
     ReindexElements();
     endResetModel();
+
+    emit listSorted(m_lastSortMode);
 }
 
 static bool lessThanKeyword(ESModElement *a, ESModElement *b)

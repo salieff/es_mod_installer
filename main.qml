@@ -29,7 +29,7 @@ ApplicationWindow {
             maximumFlickVelocity: 5000
 
             signal infoUriSignal(string uriStr)
-            signal likeBoxSignal(int itemIndex, bool myLike, bool myDislike, int likes, int dislikes)
+            signal likeBoxSignal(int itemIndex, int myLike, int likes, int dislikes)
 
             remove: Transition {
                 NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 400 }
@@ -159,6 +159,42 @@ ApplicationWindow {
                         style: Text.Raised
                         styleColor: "white"
                         text: "•"
+
+                        Connections {
+                            target: esModel
+                            onListSorted: {
+                                switch(m)
+                                {
+                                case ESModModel.AsServer :
+                                    sortText.text = "•"
+                                    break;
+
+                                case ESModModel.ByNameUp :
+                                    sortText.text = "aZ↑"
+                                    break;
+
+                                case ESModModel.ByNameDown :
+                                    sortText.text = "Za↓"
+                                    break;
+
+                                case ESModModel.BySizeUp :
+                                    sortText.text = "Sz↑"
+                                    break;
+
+                                case ESModModel.BySizeDown :
+                                    sortText.text = "Sz↓"
+                                    break;
+
+                                case ESModModel.ByDateUp :
+                                    sortText.text = "Dt↑"
+                                    break;
+
+                                case ESModModel.ByDateDown :
+                                    sortText.text = "Dt↓"
+                                    break;
+                                }
+                            }
+                        }
                     }
 
                     MouseArea {
@@ -279,17 +315,16 @@ ApplicationWindow {
         Connections {
             target: mainListView
             onInfoUriSignal: {
-                infoUriView.visible = true
-                mainListView.enabled = false
-                console.log(">>>>>>>>>>>>>>>>> [", infoUriView.url, "] [", uriStr, "]")
-                if (infoUriView.url != uriStr) {
-                    console.log(">>>>>>>>>>>>>>>>> [URL Changed!!!]")
-                    infoUriView.url = "about:blank"
-                    infoUriView.url = uriStr
-                    // fadein2.start()
-                }
-                else {
-                    console.log(">>>>>>>>>>>>>>>>> [URL the same]")
+                if (uriStr)
+                {
+                    mainListView.enabled = false
+                    infoUriView.visible = true
+                    if (infoUriView.url != uriStr)
+                    {
+                        infoUriView.url = "about:blank"
+                        infoUriView.url = uriStr
+                        // fadein2.start()
+                    }
                 }
             }
         }
@@ -301,58 +336,37 @@ ApplicationWindow {
 
         MenuItem {
             text: qsTr("As server")
-            onTriggered: {
-                esModel.sortList(ESModModel.AsServer)
-                sortText.text = "•"
-            }
+            onTriggered: esModel.sortList(ESModModel.AsServer)
         }
 
         MenuItem {
             text: qsTr("By name a→Z")
-            onTriggered: {
-                esModel.sortList(ESModModel.ByNameUp)
-                sortText.text = "aZ↑"
-            }
+            onTriggered: esModel.sortList(ESModModel.ByNameUp)
         }
 
         MenuItem {
             text: qsTr("By name Z→a")
-            onTriggered: {
-                esModel.sortList(ESModModel.ByNameDown)
-                sortText.text = "Za↓"
-            }
+            onTriggered: esModel.sortList(ESModModel.ByNameDown)
         }
 
         MenuItem {
             text: qsTr("By size 1→99")
-            onTriggered: {
-                esModel.sortList(ESModModel.BySizeUp)
-                sortText.text = "Sz↑"
-            }
+            onTriggered: esModel.sortList(ESModModel.BySizeUp)
         }
 
         MenuItem {
             text: qsTr("By size 99→1")
-            onTriggered: {
-                esModel.sortList(ESModModel.BySizeDown)
-                sortText.text = "Sz↓"
-            }
+            onTriggered: esModel.sortList(ESModModel.BySizeDown)
         }
 
         MenuItem {
             text: qsTr("By date 1.1.1970 → 12.12.2015")
-            onTriggered: {
-                esModel.sortList(ESModModel.ByDateUp)
-                sortText.text = "Dt↑"
-            }
+            onTriggered: esModel.sortList(ESModModel.ByDateUp)
         }
 
         MenuItem {
             text: qsTr("By date 12.12.2015 → 1.1.1970")
-            onTriggered: {
-                esModel.sortList(ESModModel.ByDateDown)
-                sortText.text = "Dt↓"
-            }
+            onTriggered: esModel.sortList(ESModModel.ByDateDown)
         }
     }
 
@@ -367,6 +381,7 @@ ApplicationWindow {
         visible: false
 
         property int itemIndex: -1
+        property int myLike: ESModElement.LikeMarkNotFound
 
         onOpacityChanged: if (opacity == 0) {
                               visible = false
@@ -390,26 +405,19 @@ ApplicationWindow {
 
                 MouseArea {
                     anchors.fill: parent
-                    hoverEnabled: true
-                    preventStealing: true
-
-                    property bool wasPressed: false
 
                     onPressed: {
-                        wasPressed = true
-                        likeImg.opacity = 1
-                        dislikeImg.opacity = 0.3
+                        if (likeRect.myLike !== ESModElement.LikeMark)
+                        {
+                            likeImg.opacity = 1
+                            dislikeImg.opacity = 0.3
+                        }
                     }
 
                     onReleased: {
-                        wasPressed = false
-                        fadeout3.start()
-                    }
-
-                    onExited: {
-                        if (wasPressed)
+                        if (likeRect.myLike !== ESModElement.LikeMark)
                         {
-                            wasPressed = false;
+                            likeRect.myLike = ESModElement.LikeMark
                             fadeout3.start()
                         }
                     }
@@ -429,31 +437,23 @@ ApplicationWindow {
 
                 MouseArea {
                     anchors.fill: parent
-                    hoverEnabled: true
-                    preventStealing: true
-
-                    property bool wasPressed: false
 
                     onPressed: {
-                        wasPressed = true
-                        likeImg.opacity = 0.3
-                        dislikeImg.opacity = 1
+                        if (likeRect.myLike !== ESModElement.DislikeMark)
+                        {
+                            likeImg.opacity = 0.3
+                            dislikeImg.opacity = 1
+                        }
                     }
 
                     onReleased: {
-                        wasPressed = false
-                        fadeout3.start()
-                    }
-
-                    onExited: {
-                        if (wasPressed)
+                        if (likeRect.myLike !== ESModElement.DislikeMark)
                         {
-                            wasPressed = false;
+                            likeRect.myLike = ESModElement.DislikeMark
                             fadeout3.start()
                         }
                     }
                 }
-
             }
 
             RowLayout {
@@ -505,12 +505,12 @@ ApplicationWindow {
             onLikeBoxSignal: {
                 if (!likeRect.visible)
                 {
-                    if (myLike)
+                    if (myLike === ESModElement.LikeMark)
                         likeImg.opacity = 1
                     else
                         likeImg.opacity = 0.3
 
-                    if (myDislike)
+                    if (myLike === ESModElement.DislikeMark)
                         dislikeImg.opacity = 1
                     else
                         dislikeImg.opacity = 0.3
@@ -546,6 +546,7 @@ ApplicationWindow {
 
                     mainListView.enabled = false
                     likeRect.itemIndex = itemIndex
+                    likeRect.myLike = myLike
                     likeRect.visible = true
                     fadein3.start()
                 }

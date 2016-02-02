@@ -1,4 +1,4 @@
-import QtQuick 2.3
+import QtQuick 2.5
 import QtQuick.Layouts 1.2
 import QtQuick.Window 2.2
 import org.salieff.esmodinstaller 1.0
@@ -201,33 +201,19 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
-                hoverEnabled: true
-                preventStealing: true
 
-                property bool wasPressed: false
-
-                onPressed: {
-                    delegateText1.color = "red"
-                    delegateText2.color = "red"
-                    wasPressed = true
-                }
-
-                onReleased: {
-                    wasPressed = false;
-                    delegateText1.color = "white"
-                    delegateText2.color = "white"
-                    mainRectangle.ListView.view.infoUriSignal(infouri)
-                }
-
-                onExited: {
-                    if (wasPressed)
-                    {
-                        wasPressed = false;
+                onContainsPressChanged: {
+                    if (containsPress) {
+                        delegateText1.color = "red"
+                        delegateText2.color = "red"
+                    }
+                    else {
                         delegateText1.color = "white"
                         delegateText2.color = "white"
-                        mainRectangle.ListView.view.infoUriSignal(infouri)
                     }
                 }
+
+                onClicked:  mainRectangle.ListView.view.infoUriSignal(infouri)
             }
         }
 
@@ -262,8 +248,18 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
 
-                // signal likeBoxSignal(int itemIndex, bool myLike, bool myDislike, int likes, int dislikes)
-                onClicked: mainRectangle.ListView.view.likeBoxSignal(index, index % 2 != 0, index % 2 == 0, 23 + (index % 2), 36 - (index % 2))
+                // signal likeBoxSignal(int itemIndex, int myLike, bool myDislike, int likes, int dislikes)
+                onClicked: {
+                    var myMark = ESModElement.LikeMark
+
+                    if (index % 3 === 1)
+                        myMark = ESModElement.DislikeMark
+
+                    if (index % 3 === 2)
+                        myMark = ESModElement.LikeMarkNotFound
+
+                    mainRectangle.ListView.view.likeBoxSignal(index, myMark, 23 + (index % 2), 36 - (index % 2))
+                }
             }
         }
 

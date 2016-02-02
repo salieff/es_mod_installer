@@ -37,6 +37,13 @@ public:
     };
     Q_ENUMS(GuiBlockReason)
 
+    enum LikeType {
+        LikeMarkNotFound,
+        LikeMark,
+        DislikeMark
+    };
+    Q_ENUMS(LikeType)
+
     ESModElement(QObject *parent = NULL, State s = Unknown, int p = 100);
 
     void Download();
@@ -47,8 +54,12 @@ public:
     void RequestHeaders();
 
     QJsonObject SerializeToDB();
-    void DeserializeFromDB(QJsonObject obj);
+    void DeserializeFromDB(const QJsonObject &obj);
+    void DeserializeFromNetwork(const QJsonObject &obj);
 
+    void TryToPickupFrom(QList<ESModElement *> &list);
+
+    int id;
     QString title;
     QStringList langs;
     QString status;
@@ -61,6 +72,10 @@ public:
     int progress;
     double size;
     double timestamp;
+
+    LikeType mylikemark;
+    int likemarkscount;
+    int dislikemarkscount;
 
     GuiBlockReason guiblocked;
 
@@ -92,6 +107,8 @@ signals:
 private:
     void blockGui(GuiBlockReason b);
     void changeState(State s);
+
+    bool idEquals(ESModElement *el);
 
     AsyncDownloader m_asyncDownloader;
     AsyncUnzipper m_asyncUnzipper;

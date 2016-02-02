@@ -25,7 +25,10 @@ public:
         ProgressRole,
         SizeRole,
         TimestampRole,
-        GuiBlockedRole
+        GuiBlockedRole,
+        MyLikeMarkRole,
+        LikeMarksCountRole,
+        DislikeMarksCountRole
     };
 
     enum SortMode {
@@ -50,6 +53,7 @@ signals:
     void appTitleReceived(const QString &text);
     void appHelpReceived(const QString &text);
     void esIndexReceived();
+    void listSorted(SortMode m);
 
 public slots:
     void ESModIndexDownloaded();

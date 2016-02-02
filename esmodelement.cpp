@@ -6,11 +6,15 @@
 
 ESModElement::ESModElement(QObject *parent, State s, int p)
     : QObject(parent),
-      title(QStringLiteral("Test sample mod name (Ru,Eng,Spa) [окончен] {99,9 Mb, 1979.01.09}")),
+      id(-1),
+      title(QStringLiteral("Test sample mod name")),
       state(s),
       progress(p),
       size(0),
       timestamp(0),
+      mylikemark(LikeMarkNotFound),
+      likemarkscount(0),
+      dislikemarkscount(0),
       guiblocked(ByUnknown),
       m_localSize(0),
       m_localTimestamp(0),
@@ -274,6 +278,7 @@ QJsonObject ESModElement::SerializeToDB()
         langs_arr << lang;
 
     QJsonObject obj;
+    obj["id"] = id;
     obj["title"] = title;
     obj["langs"] = langs_arr;
     obj["status"] = status;
@@ -285,8 +290,9 @@ QJsonObject ESModElement::SerializeToDB()
     return obj;
 }
 
-void ESModElement::DeserializeFromDB(QJsonObject obj)
+void ESModElement::DeserializeFromDB(const QJsonObject &obj)
 {
+    id = obj["id"].toInt(-1);
     title = obj["title"].toString();
     status = obj["status"].toString();
     infouri = obj["infouri"].toString();
@@ -302,6 +308,47 @@ void ESModElement::DeserializeFromDB(QJsonObject obj)
     langs.clear();
     for (int i = 0; i < langs_arr.size(); ++i)
         langs << langs_arr[i].toString();
+}
+
+void ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
+{
+    id = obj["idmod"].toInt(-1);
+    title = obj["title"].toString().trimmed();
+    status = obj["status"].toString().trimmed();
+    langs = obj["lang"].toString().trimmed().split(QRegExp("[,\\s]+"), QString::SkipEmptyParts);
+    uri = obj["uri"].toString().trimmed();
+    infouri = obj["infouri"].toString().trimmed();
+    path = obj["path"].toString().trimmed();
+#ifndef ANDROID
+    path.replace(QRegExp("^/sdcard/Android/data"), QDir::homePath() + "/tmp");
+#endif
+
+    QJsonArray files_arr = obj["files"].toArray();
+    for (int j = 0; j < files_arr.size(); ++j)
+        files << files_arr[j].toString().trimmed();
+}
+
+void ESModElement::TryToPickupFrom(QList<ESModElement *> &list)
+{
+    QList<ESModElement *>::iterator it = list.begin();
+    while (it != list.end())
+    {
+        if (idEquals(*it))
+        {
+            if ((*it)->id != -1)
+                id = (*it)->id;
+
+            m_localFiles = (*it)->m_localFiles;
+            m_localSize = (*it)->m_localSize;
+            m_localTimestamp = (*it)->m_localTimestamp;
+            delete (*it);
+            it = list.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }
 
 void ESModElement::blockGui(GuiBlockReason b)
@@ -320,4 +367,18 @@ void ESModElement::changeState(State s)
     guiblocked = NoBlock;
     state = s;
     emit stateChanged();
+}
+
+bool ESModElement::idEquals(ESModElement *el)
+{
+    if (id != -1 && id == el->id)
+        return true;
+
+    QString myTitle = this->title;
+    myTitle = myTitle.remove(QRegExp("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegExp("\\[.*\\]")).remove(QRegExp("\\{.*\\}")).simplified();
+
+    QString title2 = el->title;
+    title2 = title2.remove(QRegExp("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegExp("\\[.*\\]")).remove(QRegExp("\\{.*\\}")).simplified();
+
+    return (myTitle == title2);
 }
