@@ -1,0 +1,65 @@
+SETTING UP
+===================================================
+
+1. Install python 2.7+/3+
+2. Install python-mysql/python3-mysql
+3. Install mysql/mariadb
+4. Install any HTTP-server available
+
+CONFIGURING
+===================================================
+
+1. Place all files in any folder
+
+2. Add mysql database and user with
+   all required priveledges for this database
+
+3. Edit config.py
+
+4. Run tests.
+   IMPORTANT: tests should be run on EMPTY database
+   with no tables at all.
+   For python 2.7+:
+        python tests.py
+   For python 3+:
+        python3 tests.py
+
+5. If all tests passed, scripts are ready to be
+   moved to appropriate web server's directory.
+   Move files.
+
+6. Change shebang comment in rating_web.py
+   according to python's version used:
+        #!/usr/bin/env python
+    or
+        #!/usr/bin/env python3
+
+7. Add +x attribute for rating_web.py.
+
+8. Configure web server.
+
+
+REQUESTS
+===================================================
+
+NOTE: on response check "result" field first.
+      Should be "ok". Otherwise error text will
+      be placed to the field.
+
+IMPORTANT:
+      titles on requests are expected to be trimed.
+
+1. Add/change mark:
+   operation=mark title=<title> mac=<XX:XX:XX:XX:XX:XX> mark={0|1}
+   Response:
+   {"result": "ok"}
+
+2. Find my mark:
+   operation=mymark title=<title> mac=<XX:XX:XX:XX:XX:XX>
+   Response("mark" field will contain -1 if not found):
+   {"result": "ok", "mark": 1}
+
+1. Query marks:
+   operation=query title=<title>
+   Response:
+   {"down": 0, "result": "ok", "up": 1}
