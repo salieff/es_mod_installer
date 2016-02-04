@@ -1,0 +1,3 @@
+# ignore compiler output and database
+*.pyc
+modpersons.db
