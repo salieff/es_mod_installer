@@ -1,12 +1,12 @@
 <RCC>
     <qresource prefix="/">
-        <file>main.qml</file>
+        <file>gui/main.qml</file>
+        <file>gui/Delegate.qml</file>
         <file>icons/abort.png</file>
         <file>icons/download.png</file>
         <file>icons/reload.png</file>
         <file>icons/trash.png</file>
         <file>icons/update.png</file>
-        <file>Delegate.qml</file>
         <file>icons/info.png</file>
         <file>icons/abort_press.png</file>
         <file>icons/download_press.png</file>
@@ -19,5 +19,7 @@
         <file>icons/search.png</file>
         <file>icons/dislike.png</file>
         <file>icons/like.png</file>
+        <file>gui/DelegateProgress.qml</file>
+        <file>gui/DelegateLeftButton.qml</file>
     </qresource>
 </RCC>

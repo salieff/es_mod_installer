@@ -6,8 +6,8 @@ import org.salieff.esmodinstaller 1.0
 Rectangle {
     id: mainRectangle
     anchors.horizontalCenter: parent.horizontalCenter
+    height: layout1.implicitHeight
     width: parent.width - margin * 2
-    height: Math.max(delegateTextBox.Layout.preferredHeight, delegateImage.height, flagBox.height) + margin * 2
     radius: 15
     border.width: 2
     border.color: "#22000000"
@@ -15,152 +15,37 @@ Rectangle {
 
     property int margin: 10
 
-    Rectangle {
-        property int koeff: progress
-        anchors {
-            verticalCenter: parent.verticalCenter
-            left: parent.left
-            leftMargin: parent.border.width
-        }
-        width: (parent.width - parent.border.width * 2) * koeff / 100
-        height: parent.height - parent.border.width * 2
-        radius: parent.radius - parent.border.width
-        color: {
-            switch (modstate) {
-            case ESModElement.Unknown :
-                "darkslategrey"
-                break;
+    DelegateProgress {
+        anchors.fill: parent
 
-            case ESModElement.Available :
-            case ESModElement.Downloading :
-                "#0000e0"
-                break;
-
-            case ESModElement.Unpacking :
-            case ESModElement.InstalledAvailable :
-            case ESModElement.InstalledHasUpdate :
-                "#008000"
-                break;
-
-            case ESModElement.Failed :
-                "red"
-                break;
-
-            case ESModElement.Installed :
-                "#608060"
-                break;
-            }
-        }
-
-        visible: (modstate !== ESModElement.Unknown)
-    }
-
-    Rectangle {
-        anchors.centerIn: parent
-        width: parent.width - parent.border.width
-        height: parent.height - parent.border.width
-        radius: parent.radius - parent.border.width/2
-
-        border.width: parent.border.width/2
-        border.color: "#22FFFFFF"
-
-        gradient: Gradient {
-            GradientStop { position: 0;    color: "#88FFFFFF" }
-            GradientStop { position: .1;   color: "#55FFFFFF" }
-            GradientStop { position: .5;   color: "#33FFFFFF" }
-            GradientStop { position: .501; color: "#11000000" }
-            GradientStop { position: .8;   color: "#11FFFFFF" }
-            GradientStop { position: 1;    color: "#55FFFFFF" }
-        }
-
-        visible: (modstate !== ESModElement.Unknown)
+        percent: model.progress
+        modstate: model.modstate
+        borderwidth: parent.border.width
+        radius: parent.radius
     }
 
     RowLayout {
         id: layout1
-        anchors.fill: parent
-        anchors.margins: parent.margin
+        anchors.centerIn: parent
+        width: parent.width - margin * 2
         spacing: parent.margin
 
-        Image {
-            id: delegateImage
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
-            source: {
-                switch (modstate) {
-                case ESModElement.Unknown :
-                    "icons/info.png"
-                    break;
-
-                case ESModElement.Available :
-                    guiblocked == ESModElement.ByDownload ? "icons/download_press.png" : "icons/download.png"
-                    break;
-
-                case ESModElement.Downloading :
-                case ESModElement.Unpacking :
-                    guiblocked == ESModElement.ByAbort ? "icons/abort_press.png" : "icons/abort.png"
-                    break;
-
-                case ESModElement.Failed :
-                    (guiblocked == ESModElement.ByRetry || guiblocked == ESModElement.ByDownload) ? "icons/reload_press.png" : "icons/reload.png"
-                    break;
-
-                case ESModElement.InstalledAvailable :
-                case ESModElement.Installed :
-                    guiblocked == ESModElement.ByDelete ? "icons/trash_press.png" : "icons/trash.png"
-                    break;
-
-                case ESModElement.InstalledHasUpdate :
-                    guiblocked == ESModElement.ByUpdate ? "icons/update_press.png" : "icons/update.png"
-                }
-            }
-
-            sourceSize.width: Screen.pixelDensity * 7
-            sourceSize.height: Screen.pixelDensity * 7
-            Layout.preferredWidth: sourceSize.width
-            Layout.preferredHeight: sourceSize.height
-
-            visible: (modstate != "Unknown")
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    if (guiblocked == ESModElement.NoBlock) {
-                        switch (modstate) {
-                        case ESModElement.Available :
-                            esModel.Download(index)
-                            break;
-
-                        case ESModElement.Downloading :
-                        case ESModElement.Unpacking :
-                            esModel.Abort(index)
-                            break;
-
-                        case ESModElement.Failed :
-                            esModel.Retry(index)
-                            break;
-
-                        case ESModElement.InstalledAvailable :
-                        case ESModElement.Installed :
-                            esModel.Delete(index)
-                            break;
-
-                        case ESModElement.InstalledHasUpdate :
-                            esModel.Update(index)
-                            break;
-                        }
-                    }
-                }
-            }
+        DelegateLeftButton {
+            id: leftButton
+            modstate: model.modstate
+            guiblocked: model.guiblocked
         }
 
         Item {
             id: delegateTextBox
             Layout.fillWidth: true
-            Layout.preferredHeight: layout2.implicitHeight
+            Layout.preferredHeight: layout2.implicitHeight + mainRectangle.margin * 2
 
             ColumnLayout {
                 id: layout2
-                anchors.fill: parent
+                //anchors.centerIn: parent
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - margin * 2
                 spacing: mainRectangle.margin
 
                 Text {
@@ -224,11 +109,10 @@ Rectangle {
 
             RowLayout {
                 id: likeLayout
-                anchors.fill: parent
 
                 Image {
                     id: likeImg
-                    source: index % 2 != 0 ? "icons/like.png" : "icons/dislike.png"
+                    source: index % 2 != 0 ? "/icons/like.png" : "/icons/dislike.png"
                     sourceSize.width: Screen.pixelDensity * 3
                     sourceSize.height: Screen.pixelDensity * 3
                     Layout.preferredWidth: sourceSize.width
@@ -270,9 +154,8 @@ Rectangle {
 
             ColumnLayout {
                 id: layout3
-                anchors.fill: parent
                 Image {
-                    source: "icons/rus_flag.png"
+                    source: "/icons/rus_flag.png"
                     sourceSize.width: Screen.pixelDensity * 3
                     sourceSize.height: Screen.pixelDensity * 2
                     Layout.preferredWidth: sourceSize.width
@@ -280,7 +163,7 @@ Rectangle {
                     visible: (langs.indexOf("Ru") > -1)
                 }
                 Image {
-                    source: "icons/eng_flag.png"
+                    source: "/icons/eng_flag.png"
                     sourceSize.width: Screen.pixelDensity * 3
                     sourceSize.height: Screen.pixelDensity * 2
                     Layout.preferredWidth: sourceSize.width
@@ -288,7 +171,7 @@ Rectangle {
                     visible: (langs.indexOf("En") > -1)
                 }
                 Image {
-                    source: "icons/spa_flag.png"
+                    source: "/icons/spa_flag.png"
                     sourceSize.width: Screen.pixelDensity * 3
                     sourceSize.height: Screen.pixelDensity * 2
                     Layout.preferredWidth: sourceSize.width
@@ -301,7 +184,7 @@ Rectangle {
         Image {
             id: delegateImage2
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-            source: guiblocked == 2 ? "icons/trash_press.png" : "icons/trash.png"
+            source: guiblocked == 2 ? "/icons/trash_press.png" : "/icons/trash.png"
             sourceSize.width: Screen.pixelDensity * 7
             sourceSize.height: Screen.pixelDensity * 7
             Layout.preferredWidth: sourceSize.width

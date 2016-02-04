@@ -97,7 +97,7 @@ ApplicationWindow {
 
                 Image {
                     id: helpImage
-                    source: "icons/info.png"
+                    source: "/icons/info.png"
                     sourceSize.width: Screen.pixelDensity * 6
                     sourceSize.height: Screen.pixelDensity * 6
                     Layout.preferredWidth: sourceSize.width
@@ -212,7 +212,7 @@ ApplicationWindow {
                 }
 
                 Image {
-                    source: "icons/abort.png"
+                    source: "/icons/abort.png"
                     sourceSize.width: Screen.pixelDensity * 7
                     sourceSize.height: Screen.pixelDensity * 7
                     Layout.preferredWidth: sourceSize.width
@@ -228,7 +228,7 @@ ApplicationWindow {
                 }
 
                 Image {
-                    source: "icons/search.png"
+                    source: "/icons/search.png"
                     sourceSize.width: Screen.pixelDensity * 7
                     sourceSize.height: Screen.pixelDensity * 7
                     Layout.preferredWidth: sourceSize.width
@@ -395,7 +395,7 @@ ApplicationWindow {
 
             Image {
                 id: likeImg
-                source: "icons/like.png"
+                source: "/icons/like.png"
                 sourceSize.width: Screen.pixelDensity * 20
                 sourceSize.height: Screen.pixelDensity * 20
                 Layout.preferredWidth: sourceSize.width
@@ -427,7 +427,7 @@ ApplicationWindow {
 
             Image {
                 id: dislikeImg
-                source: "icons/dislike.png"
+                source: "/icons/dislike.png"
                 sourceSize.width: Screen.pixelDensity * 20
                 sourceSize.height: Screen.pixelDensity * 20
                 Layout.preferredWidth: sourceSize.width
@@ -463,7 +463,7 @@ ApplicationWindow {
 
                 Image {
                     id: likeMiniImg
-                    source: "icons/like.png"
+                    source: "/icons/like.png"
                     sourceSize.width: Screen.pixelDensity * 6
                     sourceSize.height: Screen.pixelDensity * 6
                     Layout.preferredWidth: sourceSize.width
@@ -481,7 +481,7 @@ ApplicationWindow {
 
                 Image {
                     id: dislikeMiniImg
-                    source: "icons/dislike.png"
+                    source: "/icons/dislike.png"
                     sourceSize.width: Screen.pixelDensity * 6
                     sourceSize.height: Screen.pixelDensity * 6
                     Layout.preferredWidth: sourceSize.width
