@@ -1,7 +1,6 @@
 TEMPLATE = app
 
 QT += qml quick widgets
-CONFIG += console
 
 !android {
 QT += webengine

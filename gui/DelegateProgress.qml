@@ -2,22 +2,22 @@ import QtQuick 2.5
 import org.salieff.esmodinstaller 1.0
 
 Item {
-    property int percent
-    property int modstate
-    property int borderwidth
-    property int radius
+    anchors.fill: parent
+
+    property var modeldata
+    property Rectangle outrect: parent
 
     Rectangle {
         anchors {
             verticalCenter: parent.verticalCenter
             left: parent.left
-            leftMargin: parent.borderwidth
+            leftMargin: outrect.border.width
         }
-        width: (parent.width - parent.borderwidth * 2) * parent.percent / 100
-        height: parent.height - parent.borderwidth * 2
-        radius: parent.radius - parent.borderwidth
+        width: (parent.width - outrect.border.width * 2) * modeldata.progress / 100
+        height: parent.height - outrect.border.width * 2
+        radius: outrect.radius - outrect.border.width
         color: {
-            switch (parent.modstate) {
+            switch (modeldata.modstate) {
             case ESModElement.Unknown :
                 "darkslategrey"
                 break;
@@ -43,16 +43,16 @@ Item {
             }
         }
 
-        visible: (parent.modstate !== ESModElement.Unknown)
+        visible: (modeldata.modstate !== ESModElement.Unknown)
     }
 
     Rectangle {
         anchors.centerIn: parent
-        width: parent.width - parent.borderwidth
-        height: parent.height - parent.borderwidth
-        radius: parent.radius - parent.borderwidth/2
+        width: parent.width - outrect.border.width
+        height: parent.height - outrect.border.width
+        radius: parent.radius - outrect.border.width/2
 
-        border.width: parent.borderwidth/2
+        border.width: outrect.border.width/2
         border.color: "#22FFFFFF"
 
         gradient: Gradient {
@@ -64,6 +64,6 @@ Item {
             GradientStop { position: 1;    color: "#55FFFFFF" }
         }
 
-        visible: (parent.modstate !== ESModElement.Unknown)
+        visible: (modeldata.modstate !== ESModElement.Unknown)
     }
 }

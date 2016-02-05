@@ -21,5 +21,17 @@
         <file>icons/like.png</file>
         <file>gui/DelegateProgress.qml</file>
         <file>gui/DelegateLeftButton.qml</file>
+        <file>gui/DelegateTitle.qml</file>
+        <file>gui/DelegateLike.qml</file>
+        <file>gui/DelegateLangFlags.qml</file>
+        <file>gui/DelegateRightButton.qml</file>
+        <file>gui/MMImage.qml</file>
+        <file>gui/MainListView.qml</file>
+        <file>gui/MainAppTitle.qml</file>
+        <file>gui/MainSortSearchBox.qml</file>
+        <file>gui/MainInfoPanel.qml</file>
+        <file>gui/MainWebView.qml</file>
+        <file>gui/MainSortMenu.qml</file>
+        <file>gui/MainLikePanel.qml</file>
     </qresource>
 </RCC>
