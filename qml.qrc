@@ -33,5 +33,6 @@
         <file>gui/MainWebView.qml</file>
         <file>gui/MainSortMenu.qml</file>
         <file>gui/MainLikePanel.qml</file>
+        <file>icons/nolikes.png</file>
     </qresource>
 </RCC>

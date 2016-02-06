@@ -47,6 +47,15 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 20
 
+        Text {
+            id: likeTitle
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+            font.pointSize: 18
+            color: "#606060"
+            text: qsTr("ES mod title")
+        }
+
         MMImage {
             id: likeImg
             source: "/icons/like.png"
@@ -69,6 +78,7 @@ Rectangle {
                     if (self.myLike !== ESModElement.LikeMark)
                     {
                         self.myLike = ESModElement.LikeMark
+                        esModel.SendLike(itemIndex, ESModElement.LikeMark)
                         self.hide()
                     }
                 }
@@ -98,6 +108,7 @@ Rectangle {
                     if (self.myLike !== ESModElement.DislikeMark)
                     {
                         self.myLike = ESModElement.DislikeMark
+                        esModel.SendLike(itemIndex, ESModElement.DislikeMark)
                         self.hide()
                     }
                 }
@@ -149,19 +160,19 @@ Rectangle {
         onLikeBoxSignal: {
             if (!visible)
             {
-                if (myLike === ESModElement.LikeMark)
+                if (modeldata.mylikemark === ESModElement.LikeMark)
                     likeImg.opacity = 1
                 else
                     likeImg.opacity = 0.3
 
-                if (myLike === ESModElement.DislikeMark)
+                if (modeldata.mylikemark === ESModElement.DislikeMark)
                     dislikeImg.opacity = 1
                 else
                     dislikeImg.opacity = 0.3
 
-                if (likes > 0)
+                if (modeldata.likemarkscount > 0)
                 {
-                    likeText.text = likes
+                    likeText.text = modeldata.likemarkscount
                     likeMiniImg.visible = true;
                     likeText.visible = true;
                 }
@@ -171,9 +182,9 @@ Rectangle {
                     likeText.visible = false;
                 }
 
-                if (dislikes > 0)
+                if (modeldata.dislikemarkscount > 0)
                 {
-                    dislikeText.text = dislikes
+                    dislikeText.text = modeldata.dislikemarkscount
                     dislikeMiniImg.visible = true;
                     dislikeText.visible = true;
                 }
@@ -183,15 +194,22 @@ Rectangle {
                     dislikeText.visible = false;
                 }
 
-                if (likes <= 0 && dislikes <= 0)
+                if (modeldata.likemarkscount <= 0 && modeldata.dislikemarkscount <= 0)
                     likeMiniRow.visible = false
                 else
                     likeMiniRow.visible = true
 
                 view.enabled = false
-                self.itemIndex = itemIndex
 
-                self.myLike = myLike
+                var tlen = modeldata.title.length
+                var maxlen = 25
+                if ( tlen <= maxlen)
+                    likeTitle.text = modeldata.title
+                else
+                    likeTitle.text = modeldata.title.substring(0, (maxlen - 3) / 2) + "..." + modeldata.title.substring(tlen - (maxlen - 3) / 2)
+
+                self.itemIndex = modeldata.index
+                self.myLike = modeldata.mylikemark
                 show()
             }
         }

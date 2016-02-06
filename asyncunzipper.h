@@ -16,6 +16,7 @@ public:
     bool unzipList(QStringList ziplist, QString destdir);
     bool aborted();
     bool failed();
+    QString errorString();
     QStringList unpackedFiles();
 
     void setOverwriteFlags(bool ovrw, bool ovrw_always);
@@ -32,7 +33,7 @@ protected:
 
 private:
     bool calculateTotalSize();
-    bool unpackZip(QString zipFile);
+    bool unpackZip(QString zipFile, bool calcSizeOnly = false);
     bool saveCurrentUnpFile(unzFile ufd, QString fname);
     bool checkOverwrite(QString fname);
 
@@ -45,6 +46,7 @@ private:
 
     bool m_abortFlag;
     bool m_failedFlag;
+    QString m_errorString;
     QMutex m_abortMutex;
 
     bool m_canOverwrite;

@@ -6,7 +6,7 @@ Image {
     property int mmwidth
     property int mmheight
 
-    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+    Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
 
     sourceSize.width: Screen.pixelDensity * mmwidth
     sourceSize.height: Screen.pixelDensity * mmheight

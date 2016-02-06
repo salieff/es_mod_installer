@@ -2,7 +2,6 @@
 #define ESMODMODEL_H
 
 #include <QAbstractListModel>
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
 
 #include "esmodelement.h"
@@ -64,6 +63,8 @@ public slots:
     void Retry(int ind);
     void Update(int ind);
     void Delete(int ind);
+    void SendLike(int ind, int l);
+    void ShowError(int ind);
 
     void elementChanged();
     void elementNeedRemove();
@@ -80,7 +81,6 @@ private:
     bool LoadLocalModsDB(QList<ESModElement *> &l);
     void ReindexElements();
 
-    QNetworkAccessManager m_NetMgr;
     AsyncJsonWriter m_JsonWriter;
 
     QList<ESModElement *> m_initialElements;

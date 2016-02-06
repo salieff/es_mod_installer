@@ -27,6 +27,7 @@ bool AsyncUnzipper::unzipList(QStringList ziplist, QString destdir)
     m_destDir = destdir;
     m_abortFlag = false;
     m_failedFlag = false;
+    m_errorString.clear();
     m_canOverwrite = false;
     m_alwaysOverwrite = false;
 
@@ -50,9 +51,15 @@ bool AsyncUnzipper::failed()
     return m_failedFlag;
 }
 
+QString AsyncUnzipper::errorString()
+{
+    return m_errorString;
+}
+
 void AsyncUnzipper::abort()
 {
     m_abortMutex.lock();
+    m_errorString = tr("Aborted by user");
     m_abortFlag = true;
     m_abortMutex.unlock();
 }
@@ -87,9 +94,11 @@ void AsyncUnzipper::run()
             break;
         }
 
-        if (!QFile::remove(zipFile))
+        QFile zipf(zipFile);
+        if (!zipf.remove())
         {
             m_failedFlag = true;
+            m_errorString = zipf.errorString();
             break;
         }
 
@@ -100,53 +109,38 @@ void AsyncUnzipper::run()
 
 bool AsyncUnzipper::calculateTotalSize()
 {
+    m_totalSize = 0;
     foreach (const QString &zipFile, m_zipList)
-    {
-        unzFile ufd = unzOpen(zipFile.toLocal8Bit());
-        if (ufd == NULL)
+        if (!unpackZip(zipFile, true))
             return false;
-
-        if (unzGoToFirstFile(ufd) != UNZ_OK)
-            return false;
-
-        do
-        {
-            unz_file_info finfo;
-            char fname[1025];
-            if (unzGetCurrentFileInfo(ufd, &finfo, fname, sizeof(fname) - 1, NULL, 0, NULL, 0) != UNZ_OK)
-                return false;
-
-            fname[sizeof(fname) - 1] = 0;
-
-            // We don't need in directories records
-            if (QString(fname).endsWith("/") && finfo.compressed_size == 0 && finfo.uncompressed_size == 0 && finfo.crc == 0)
-                continue;
-
-            m_totalSize += finfo.uncompressed_size;
-        } while (unzGoToNextFile(ufd) == UNZ_OK);
-
-        if (unzClose(ufd) != UNZ_OK)
-            return false;
-    }
 
     return true;
 }
 
-bool AsyncUnzipper::unpackZip(QString zipFile)
+bool AsyncUnzipper::unpackZip(QString zipFile, bool calcSizeOnly)
 {
     unzFile ufd = unzOpen(zipFile.toLocal8Bit());
     if (ufd == NULL)
+    {
+        m_errorString = tr("Can't open zip file ") + zipFile;
         return false;
+    }
 
     if (unzGoToFirstFile(ufd) != UNZ_OK)
+    {
+        m_errorString = tr("Can't go to fist entry in zip file ") + zipFile;
         return false;
+    }
 
     do
     {
         unz_file_info finfo;
         char fname[1025];
         if (unzGetCurrentFileInfo(ufd, &finfo, fname, sizeof(fname) - 1, NULL, 0, NULL, 0) != UNZ_OK)
+        {
+            m_errorString = tr("Can't get current entry info in zip file ") + zipFile;
             return false;
+        }
 
         fname[sizeof(fname) - 1] = 0;
 
@@ -154,21 +148,37 @@ bool AsyncUnzipper::unpackZip(QString zipFile)
         if (QString(fname).endsWith("/") && finfo.compressed_size == 0 && finfo.uncompressed_size == 0 && finfo.crc == 0)
             continue;
 
-        if (unzOpenCurrentFile(ufd) != UNZ_OK)
-            return false;
+        if (calcSizeOnly)
+        {
+            m_totalSize += finfo.uncompressed_size;
+        }
+        else
+        {
+            if (unzOpenCurrentFile(ufd) != UNZ_OK)
+            {
+                m_errorString = tr("Can't open current entry ") + fname + tr(" in zip file ") + zipFile;
+                return false;
+            }
 
-        if (!saveCurrentUnpFile(ufd, m_destDir + fname))
-            return false;
+            if (!saveCurrentUnpFile(ufd, m_destDir + fname))
+                return false;
 
-        if (unzCloseCurrentFile(ufd) != UNZ_OK)
-            return false;
+            if (unzCloseCurrentFile(ufd) != UNZ_OK)
+            {
+                m_errorString = tr("Can't close current entry ") + fname + tr(" in zip file ") + zipFile;
+                return false;
+            }
+        }
 
         if (aborted())
             break;
     } while (unzGoToNextFile(ufd) == UNZ_OK);
 
     if (unzClose(ufd) != UNZ_OK)
+    {
+        m_errorString = tr("Can't close zip file ") + zipFile;
         return false;
+    }
 
     return true;
 }
@@ -177,16 +187,23 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
 {
     if (!checkOverwrite(fname))
     {
+        m_errorString = tr("Aborted by user");
         m_abortFlag = true;
         return true;
     }
 
     if (!QDir().mkpath(QFileInfo(fname).dir().path()))
+    {
+        m_errorString = tr("Can't create directory ") + QFileInfo(fname).dir().path();
         return false;
+    }
 
     QFile file(fname);
     if (!file.open(QIODevice::WriteOnly))
+    {
+        m_errorString = file.errorString();
         return false;
+    }
 
     m_unpackedFiles << fname;
 
@@ -198,6 +215,7 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
         if (!file.write(buf, unzRet))
         {
             unzRet = -1;
+            m_errorString = file.errorString();
             m_failedFlag = true;
             break;
         }

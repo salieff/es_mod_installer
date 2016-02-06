@@ -14,7 +14,7 @@ ListView {
     maximumFlickVelocity: 5000
 
     signal infoUriSignal(string uriStr)
-    signal likeBoxSignal(int itemIndex, int myLike, int likes, int dislikes)
+    signal likeBoxSignal(var modeldata)
 
     remove: Transition {
         NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 400 }

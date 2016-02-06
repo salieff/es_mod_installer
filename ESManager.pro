@@ -29,7 +29,8 @@ SOURCES += main.cpp \
     asyncunzipper.cpp \
     asyncdownloader.cpp \
     asyncdeleter.cpp \
-    asyncjsonwriter.cpp
+    asyncjsonwriter.cpp \
+    asyncfilewriter.cpp
 
 RESOURCES += qml.qrc
 
@@ -59,7 +60,8 @@ HEADERS += \
     asyncunzipper.h \
     asyncdownloader.h \
     asyncdeleter.h \
-    asyncjsonwriter.h
+    asyncjsonwriter.h \
+    asyncfilewriter.h
 
 DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 IOAPI_NO_64
 

@@ -50,8 +50,10 @@ public:
     void Abort();
     void Update();
     void Delete();
+    void SendLike(LikeType l);
 
     void RequestHeaders();
+    QString errorString();
 
     QJsonObject SerializeToDB();
     void DeserializeFromDB(const QJsonObject &obj);
@@ -93,7 +95,6 @@ private slots:
     void zipListUnpacked();
     void unpackProgress(int p);
     void filesDeleted();
-    void downloadOverwriteRequest(QString fname);
     void unzipperOverwriteRequest(QString fname);
 
 signals:

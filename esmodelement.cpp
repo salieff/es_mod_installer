@@ -23,7 +23,6 @@ ESModElement::ESModElement(QObject *parent, State s, int p)
     connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
     connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
     connect(&m_asyncDownloader, SIGNAL(headersReady()), this, SLOT(headersReceived()));
-    connect(&m_asyncDownloader, SIGNAL(overwriteRequest(QString)), this, SLOT(downloadOverwriteRequest(QString)));
 
     connect(&m_asyncUnzipper, SIGNAL(finished()), this, SLOT(zipListUnpacked()));
     connect(&m_asyncUnzipper, SIGNAL(progress(int)), this, SLOT(unpackProgress(int)));
@@ -74,6 +73,11 @@ void ESModElement::Delete()
     m_asyncDeleter.deleteFiles(m_localFiles);
 }
 
+void ESModElement::SendLike(LikeType l)
+{
+
+}
+
 void ESModElement::RequestHeaders()
 {
     if (files.empty() || uri.isEmpty())
@@ -87,6 +91,17 @@ void ESModElement::RequestHeaders()
     m_asyncUnzipper.wait();
 
     m_asyncDownloader.downloadFileList(uri, files, path, true);
+}
+
+QString ESModElement::errorString()
+{
+    if (m_asyncDownloader.failed() || m_asyncDownloader.aborted())
+        return m_asyncDownloader.errorString();
+
+    if (m_asyncUnzipper.failed() || m_asyncUnzipper.aborted())
+        return m_asyncUnzipper.errorString();
+
+    return tr("Unknown error");
 }
 
 void ESModElement::headersReceived()
@@ -245,16 +260,6 @@ void ESModElement::filesDeleted()
         // These states don't call Delete()
         break;
     }
-}
-
-void ESModElement::downloadOverwriteRequest(QString fname)
-{
-    QMessageBox::StandardButton b = QMessageBox::warning(NULL, tr("Risk of overwriting"), \
-                                                         tr("File %1 already exists, do you want to overwrite it?").arg(fname), \
-                                                         QMessageBox::Cancel | QMessageBox::Yes | QMessageBox::YesToAll, \
-                                                         QMessageBox::Cancel);
-
-    m_asyncDownloader.setOverwriteFlags((b == QMessageBox::YesToAll || b == QMessageBox::Yes), b == QMessageBox::YesToAll);
 }
 
 void ESModElement::unzipperOverwriteRequest(QString fname)

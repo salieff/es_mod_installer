@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Layouts 1.2
+import org.salieff.esmodinstaller 1.0
 
 ColumnLayout {
     property var modeldata
@@ -57,6 +58,11 @@ ColumnLayout {
             }
         }
 
-        onClicked: outrect.ListView.view.infoUriSignal(infouri)
+        onClicked: {
+            if (modeldata.modstate === ESModElement.Failed)
+                esModel.ShowError(modeldata.index)
+            else
+                outrect.ListView.view.infoUriSignal(infouri)
+        }
     }
 }

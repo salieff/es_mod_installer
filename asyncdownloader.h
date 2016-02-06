@@ -2,7 +2,6 @@
 #define ASYNCDOWNLOADER_H
 
 #include <QObject>
-#include <QThread>
 #include <QFile>
 #include <QString>
 #include <QStringList>
@@ -11,10 +10,14 @@
 #include <QMutex>
 #include <QWaitCondition>
 
+#include "asyncfilewriter.h"
+
 class AsyncDownloader : public QObject
 {
     Q_OBJECT
 public:
+    static QNetworkAccessManager *NetworkManager;
+
     explicit AsyncDownloader(QObject *parent = 0);
     virtual ~AsyncDownloader();
 
@@ -22,16 +25,14 @@ public:
     bool wait(unsigned long t = ULONG_MAX);
     bool aborted();
     bool failed();
+    QString errorString();
     QStringList downloadedFiles();
     void getHeadersData(double &sz, double &tm);
-
-    void setOverwriteFlags(bool ovrw, bool ovrw_always);
 
 signals:
     void progress(int);
     void finished();
     void headersReady();
-    void overwriteRequest(QString fname);
 
 // private signals:
     void abortDownload();
@@ -40,8 +41,8 @@ public slots:
     void abort();
 
 private slots:
-    void download();
     void fileDownloaded();
+    void fileWritten();
     void downloadProgress(qint64, qint64);
     void readData();
 
@@ -56,23 +57,15 @@ private:
     int m_progress;
     bool m_wasError;
     bool m_wasAbort;
+    QString m_errorString;
 
     QStringList m_localFiles;
     double m_size;
     double m_timestamp;
 
-    QThread m_thread;
-    QNetworkAccessManager m_netMgr;
-    QFile m_file;
+    AsyncFileWriter m_file;
 
-    bool m_canOverwrite;
     bool m_alwaysOverwrite;
-    QMutex m_overwriteMutex;
-    QWaitCondition m_overwriteCondition;
-
-#ifdef ANDROID
-//    QFile m_debugFile;
-#endif
 };
 
 #endif // ASYNCDOWNLOADER_H

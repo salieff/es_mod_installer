@@ -11,17 +11,16 @@
 
 ESModModel::ESModModel(QObject *parent)
     : QAbstractListModel(parent),
-      m_NetMgr(this),
       m_JsonWriter(this),
       m_lastSortMode(AsServer)
 {
 #ifndef ANDROID
-    // m_NetMgr.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+    // AsyncDownloader::NetworkManager.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
 
     m_JsonWriter.start();
 
-    QNetworkReply *rep = m_NetMgr.get(QNetworkRequest(QUrl(ES_MOD_INDEX_URL)));
+    QNetworkReply *rep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(ES_MOD_INDEX_URL)));
     connect(rep, SIGNAL(finished()), this, SLOT(ESModIndexDownloaded()));
     connect(rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(ESModIndexError(QNetworkReply::NetworkError)));
 }
@@ -35,6 +34,19 @@ ESModModel::~ESModModel()
 
 void ESModModel::addModElement(ESModElement *element)
 {
+    if (m_initialElements.empty())
+    {
+        element->mylikemark = ESModElement::LikeMarkNotFound;
+        element->likemarkscount = 0;
+        element->dislikemarkscount = 0;
+    }
+    else
+    {
+        element->mylikemark = (ESModElement::LikeType)(qrand() % 3);
+        element->likemarkscount = qrand() % 100;
+        element->dislikemarkscount = qrand() % 100;
+    }
+
     m_initialElements << element;
     connect(element, SIGNAL(stateChanged()), this, SLOT(elementChanged()));
     connect(element, SIGNAL(saveMe()), this, SLOT(SaveLocalModsDB()));
@@ -248,6 +260,19 @@ void ESModModel::Delete(int ind)
     m_elements[ind]->Delete();
 }
 
+void ESModModel::SendLike(int ind, int l)
+{
+    m_elements[ind]->SendLike((ESModElement::LikeType)l);
+}
+
+void ESModModel::ShowError(int ind)
+{
+    if (m_elements[ind]->state != ESModElement::Failed)
+        return;
+
+    QMessageBox::critical(NULL, tr("Error"), m_elements[ind]->errorString());
+}
+
 void ESModModel::elementChanged()
 {
     ESModElement *el = dynamic_cast<ESModElement *>(sender());
@@ -336,6 +361,33 @@ void ESModModel::SaveLocalModsDB()
     m_JsonWriter.write(obj);
 }
 
+static const char *statusNamesArr[] = { \
+    "окончен", \
+    "в разработке", \
+    "заморожен", \
+    "демо", \
+    "надстройка" \
+};
+
+static bool lessThanAsServer(ESModElement *a, ESModElement *b)
+{
+    int i1 = -1;
+    int i2 = -1;
+
+    for (size_t i = 0; i < sizeof(statusNamesArr) / sizeof(statusNamesArr[0]); ++i)
+    {
+        if (a->status.compare(statusNamesArr[i], Qt::CaseInsensitive) == 0)
+            i1 = i;
+
+        if (b->status.compare(statusNamesArr[i], Qt::CaseInsensitive) == 0)
+            i2 = i;
+    }
+    if (i1 == i2)
+        return a->title < b->title;
+
+    return i1 < i2;
+}
+
 static bool lessThanByName0(ESModElement *a, ESModElement *b)
 {
     return a->title < b->title;
@@ -400,7 +452,7 @@ static bool lessThanByDate1(ESModElement *a, ESModElement *b)
 
 typedef bool (*lessThanSortFunc)(ESModElement *a, ESModElement *b);
 static const lessThanSortFunc lessThanArray[] = { \
-    NULL, \
+    lessThanAsServer, \
     lessThanByName0, \
     lessThanByName1, \
     lessThanBySize0, \

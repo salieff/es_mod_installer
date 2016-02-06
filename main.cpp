@@ -10,10 +10,14 @@
 #endif
 
 #include "esmodmodel.h"
+#include "asyncdownloader.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    AsyncDownloader::NetworkManager = new QNetworkAccessManager(&app);
+
 #ifndef ANDROID
     QtWebEngine::initialize();
 #endif
