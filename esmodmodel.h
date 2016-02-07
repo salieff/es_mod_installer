@@ -80,7 +80,11 @@ protected:
 private:
     bool LoadLocalModsDB(QList<ESModElement *> &l);
     void ReindexElements();
+
+#ifdef Q_OS_IOS
     QString ESFolderForIOS(QStringList &dirs);
+    QString m_iosEverlastingSummerFolder;
+#endif
 
     AsyncJsonWriter m_JsonWriter;
 
