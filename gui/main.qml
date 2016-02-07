@@ -20,6 +20,7 @@ ApplicationWindow {
         id: appTitle
         infoRect: infoPanel
         webView: infoUriView
+        likePanel: likeRect
     }
 
     MainSortSearchBox {
@@ -30,11 +31,13 @@ ApplicationWindow {
     MainInfoPanel {
         id: infoPanel
         view: mainListView
+        closeButton: appTitle.button
     }
 
     MainWebView {
         id: infoUriView
         height: parent.height - appTitle.height
+        closeButton: appTitle.button
         view: mainListView
     }
 
@@ -45,17 +48,15 @@ ApplicationWindow {
     MainLikePanel {
         id: likeRect
         self: likeRect
+        closeButton: appTitle.button
         view: mainListView
     }
 
     onClosing: {
-        if (infoPanel.hide())
+        if (infoPanel.hide() || infoUriView.hide() || likeRect.hide())
+        {
             close.accepted = false
-
-        if (infoUriView.hide())
-            close.accepted = false
-
-        if (likeRect.hide())
-            close.accepted = false
+            appTitle.button.state = "NORMAL"
+        }
     }
 }

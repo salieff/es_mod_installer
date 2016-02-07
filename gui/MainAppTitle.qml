@@ -4,6 +4,9 @@ import QtQuick.Layouts 1.2
 Rectangle {
     property MainInfoPanel infoRect
     property MainWebView webView
+    property MainLikePanel likePanel
+
+    property MMImage button: iButton
 
     anchors {
         top: parent.top
@@ -44,15 +47,39 @@ Rectangle {
         }
 
         MMImage {
+            id: iButton
             source: "/icons/info.png"
             mmwidth: 6
             mmheight: 6
+            state: "NORMAL"
+
+            states: [
+                State {
+                    name: "NORMAL"
+                    PropertyChanges { target: button; source: "/icons/info.png"}
+                },
+                State {
+                    name: "CLOSE"
+                    PropertyChanges { target: button; source: "/icons/abort.png"}
+                }
+            ]
 
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    webView.hide()
-                    infoRect.toggle()
+                    if (parent.state == "CLOSE")
+                    {
+                        infoRect.hide()
+                        webView.hide()
+                        likePanel.hide()
+                        parent.state = "NORMAL"
+                    }
+                    else
+                    {
+                        webView.hide()
+                        likePanel.hide()
+                        infoRect.show()
+                    }
                 }
             }
         }

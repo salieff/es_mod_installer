@@ -3,6 +3,7 @@ import QtWebView 1.0
 
 WebView {
     property ListView view
+    property MMImage closeButton
 
     visible: false
 
@@ -28,6 +29,7 @@ WebView {
 
         view.enabled = false
         visible = true
+        closeButton.state = "CLOSE"
         return true
     }
 

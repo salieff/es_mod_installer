@@ -2,9 +2,8 @@ TEMPLATE = app
 
 QT += qml quick widgets
 
-desktop {
-QT += webengine
-}
+linux-g++: QT += webengine
+
 
 SOURCES += main.cpp \
     esmodelement.cpp \

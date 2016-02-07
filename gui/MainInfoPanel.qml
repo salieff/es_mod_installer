@@ -2,6 +2,7 @@ import QtQuick 2.3
 
 Rectangle {
     property ListView view
+    property MMImage closeButton
 
     height: parent.height - appTitle.height
     anchors {
@@ -37,6 +38,7 @@ Rectangle {
         view.enabled = false
         visible = true
         opacity = 0.95
+        closeButton.state = "CLOSE"
         return true
     }
 

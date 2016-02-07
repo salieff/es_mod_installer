@@ -5,6 +5,7 @@ import org.salieff.esmodinstaller 1.0
 Rectangle {
     property ListView view
     property var self
+    property MMImage closeButton
 
     width: likeRectLayout.implicitWidth + 40
     height: likeRectLayout.implicitHeight + 40
@@ -39,6 +40,7 @@ Rectangle {
         view.enabled = false
         visible = true
         opacity = 0.95
+        closeButton.state = "CLOSE"
         return true
     }
 
@@ -79,6 +81,7 @@ Rectangle {
                     {
                         self.myLike = ESModElement.LikeMark
                         esModel.SendLike(itemIndex, ESModElement.LikeMark)
+                        closeButton.state = "NORMAL"
                         self.hide()
                     }
                 }
@@ -109,6 +112,7 @@ Rectangle {
                     {
                         self.myLike = ESModElement.DislikeMark
                         esModel.SendLike(itemIndex, ESModElement.DislikeMark)
+                        closeButton.state = "NORMAL"
                         self.hide()
                     }
                 }
