@@ -4,6 +4,7 @@
 #include <QJsonArray>
 #include <QDir>
 #include <QNetworkProxy>
+#include <QSettings>
 
 #include "esmodmodel.h"
 
@@ -14,8 +15,20 @@ ESModModel::ESModModel(QObject *parent)
       m_JsonWriter(this),
       m_lastSortMode(AsServer)
 {
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(Q_OS_IOS)
     // AsyncDownloader::NetworkManager.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+#endif
+
+#ifdef Q_OS_IOS
+    m_iosEverlastingSummerFolder = ESFolderForIOS(QStringList() \
+                                                  << "/var/mobile/Containers/Bundle/Application" \
+                                                  << "/var/mobile/Applications" \
+                                                  << "/Applications");
+
+    if (m_iosEverlastingSummerFolder.isEmpty())
+        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder"));
+    else
+        QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Installed in ") + m_iosEverlastingSummerFolder);
 #endif
 
     m_JsonWriter.start();
@@ -550,3 +563,31 @@ void ESModModel::ReindexElements()
     for (int i = 0; i < m_elements.size(); ++i)
         m_elements[i]->m_modelIndex = i;
 }
+
+#ifdef Q_OS_IOS
+QString ESModModel::ESFolderForIOS(QStringList &dirs)
+{
+    foreach (QString dir, dirs) // Top application directories
+    {
+        QFileInfoList uuidlist = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
+        foreach (QFileInfo fiuuid, uuidlist) // Application UUIDs directories
+        {
+            QFileInfoList applist = fiuuid.absoluteDir().entryInfoList(QStringList("*.app"), QDir::Dirs | QDir::NoDotAndDotDot);
+            foreach (QFileInfo fiapp, applist) // *.app directories
+            {
+                QFileInfo iplist(fiapp.absoluteDir(), "Info.plist");
+                if (!iplist.isFile())
+                    continue;
+
+                QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("CFBundleIdentifier").toString();
+                if (bunid != "com.mifki.everlastingsummer")
+                    continue;
+
+                return fiapp.absoluteFilePath();
+            }
+        }
+    }
+
+    return QString();
+}
+#endif
