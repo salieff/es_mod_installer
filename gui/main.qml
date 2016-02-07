@@ -19,6 +19,7 @@ ApplicationWindow {
     MainAppTitle {
         id: appTitle
         infoRect: infoPanel
+        webView: infoUriView
     }
 
     MainSortSearchBox {

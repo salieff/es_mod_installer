@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.2
 
 Rectangle {
     property MainInfoPanel infoRect
+    property MainWebView webView
 
     anchors {
         top: parent.top
@@ -49,7 +50,10 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: { infoRect.toggle() }
+                onClicked: {
+                    webView.hide()
+                    infoRect.toggle()
+                }
             }
         }
     }

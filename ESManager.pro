@@ -2,7 +2,7 @@ TEMPLATE = app
 
 QT += qml quick widgets
 
-!android {
+desktop {
 QT += webengine
 }
 
@@ -72,6 +72,8 @@ DISTFILES += \
     android/res/values/libs.xml \
     android/build.gradle \
     android/gradle/wrapper/gradle-wrapper.properties \
-    android/gradlew.bat
+    android/gradlew.bat \
+    Info.plist
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+ios: QMAKE_INFO_PLIST = $$PWD/Info.plist

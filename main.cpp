@@ -4,8 +4,9 @@
 #include <QQmlContext>
 #include <QNetworkAccessManager>
 #include <QNetworkProxy>
+#include <QtGlobal>
 
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(Q_OS_IOS)
 #include <QtWebEngine>
 #endif
 
@@ -18,7 +19,7 @@ int main(int argc, char *argv[])
 
     AsyncDownloader::NetworkManager = new QNetworkAccessManager(&app);
 
-#ifndef ANDROID
+#if !defined(ANDROID) && !defined(Q_OS_IOS)
     QtWebEngine::initialize();
 #endif
 
