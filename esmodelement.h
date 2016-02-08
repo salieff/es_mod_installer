@@ -57,7 +57,7 @@ public:
 
     QJsonObject SerializeToDB();
     void DeserializeFromDB(const QJsonObject &obj);
-    void DeserializeFromNetwork(const QJsonObject &obj);
+    void DeserializeFromNetwork(const QJsonObject &obj, QString overridePath = QString());
 
     void TryToPickupFrom(QList<ESModElement *> &list);
 

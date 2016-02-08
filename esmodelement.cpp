@@ -315,7 +315,7 @@ void ESModElement::DeserializeFromDB(const QJsonObject &obj)
         langs << langs_arr[i].toString();
 }
 
-void ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
+void ESModElement::DeserializeFromNetwork(const QJsonObject &obj, QString overridePath)
 {
     id = obj["idmod"].toInt(-1);
     title = obj["title"].toString().trimmed();
@@ -323,10 +323,11 @@ void ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
     langs = obj["lang"].toString().trimmed().split(QRegExp("[,\\s]+"), QString::SkipEmptyParts);
     uri = obj["uri"].toString().trimmed();
     infouri = obj["infouri"].toString().trimmed();
-    path = obj["path"].toString().trimmed();
-#ifndef ANDROID
-    path.replace(QRegExp("^/sdcard/Android/data"), QDir::homePath() + "/tmp");
-#endif
+
+    if (overridePath.isEmpty())
+        path = obj["path"].toString().trimmed();
+    else
+        path = overridePath;
 
     QJsonArray files_arr = obj["files"].toArray();
     for (int j = 0; j < files_arr.size(); ++j)

@@ -16,6 +16,11 @@ AsyncJsonWriter::~AsyncJsonWriter()
     delete m_jsonObject;
 }
 
+void AsyncJsonWriter::setDBFolder(QString dirname)
+{
+    m_esModDbPath = dirname;
+}
+
 void AsyncJsonWriter::close()
 {
     QMutexLocker ml(&m_jsonMutex);
@@ -63,12 +68,7 @@ void AsyncJsonWriter::run()
         delete doc;
         delete obj;
 
-#ifndef ANDROID
-        QFile f(QString(ES_MOD_DB_PATH).replace(QRegExp("^/sdcard/Android/data"), QDir::homePath() + "/tmp"));
-#else
-        QFile f(ES_MOD_DB_PATH);
-#endif
-
+        QFile f(m_esModDbPath + ".esmanager_installed.db");
         if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
             continue;
 

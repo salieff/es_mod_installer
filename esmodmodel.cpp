@@ -5,10 +5,12 @@
 #include <QDir>
 #include <QNetworkProxy>
 #include <QSettings>
+#include <QApplication>
 
 #include "esmodmodel.h"
 
 #define ES_MOD_INDEX_URL "http://191.ru/es/project1.json"
+#define ANDROID_ES_MOD_DB_PATH "/sdcard/Android/data/su.sovietgames.everlasting_summer/files/"
 
 ESModModel::ESModModel(QObject *parent)
     : QAbstractListModel(parent),
@@ -19,16 +21,24 @@ ESModModel::ESModModel(QObject *parent)
     // AsyncDownloader::NetworkManager.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
 
-#ifdef Q_OS_IOS
+#if defined(Q_OS_IOS)
     m_iosEverlastingSummerFolder = ESFolderForIOS(QStringList() \
                                                   << "/var/mobile/Containers/Bundle/Application" \
                                                   << "/var/mobile/Applications" \
                                                   << "/Applications");
 
     if (m_iosEverlastingSummerFolder.isEmpty())
+    {
         QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder"));
-    else
-        QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Installed in ") + m_iosEverlastingSummerFolder);
+        QApplication::quit();
+    }
+
+    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Installed in ") + m_iosEverlastingSummerFolder);
+    m_JsonWriter.setDBFolder(m_iosEverlastingSummerFolder);
+#elif defined(ANDROID)
+    m_JsonWriter.setDBFolder(ANDROID_ES_MOD_DB_PATH);
+#else
+    m_JsonWriter.setDBFolder(QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/");
 #endif
 
     m_JsonWriter.start();
@@ -218,7 +228,13 @@ void ESModModel::ESModIndexDownloaded()
             for (int i = 0; i < arr.size(); ++i)
             {
                 ESModElement *el = new ESModElement(this);
+#if defined(Q_OS_IOS)
+                el->DeserializeFromNetwork(arr[i].toObject(), m_iosEverlastingSummerFolder);
+#elif defined(ANDROID)
                 el->DeserializeFromNetwork(arr[i].toObject());
+#else
+                el->DeserializeFromNetwork(arr[i].toObject(), QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/");
+#endif
                 el->TryToPickupFrom(local_elements);
                 addModElement(el);
             }
@@ -318,10 +334,12 @@ void ESModModel::elementNeedRemove()
 
 bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
 {
-#ifndef ANDROID
-    QFile f(QString(ES_MOD_DB_PATH).replace(QRegExp("^/sdcard/Android/data"), QDir::homePath() + "/tmp"));
+#if defined(Q_OS_IOS)
+    QFile f(m_iosEverlastingSummerFolder + ".esmanager_installed.db");
+#elif defined(ANDROID)
+    QFile f(ANDROID_ES_MOD_DB_PATH  + ".esmanager_installed.db");
 #else
-    QFile f(ES_MOD_DB_PATH);
+    QFile f(QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/.esmanager_installed.db");
 #endif
 
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -572,10 +590,10 @@ QString ESModModel::ESFolderForIOS(QStringList &dirs)
         QFileInfoList uuidlist = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
         foreach (QFileInfo fiuuid, uuidlist) // Application UUIDs directories
         {
-            QFileInfoList applist = fiuuid.absoluteDir().entryInfoList(QStringList("*.app"), QDir::Dirs | QDir::NoDotAndDotDot);
+            QFileInfoList applist = QDir(fiuuid.filePath()).entryInfoList(QStringList("*.app"), QDir::Dirs | QDir::NoDotAndDotDot);
             foreach (QFileInfo fiapp, applist) // *.app directories
             {
-                QFileInfo iplist(fiapp.absoluteDir(), "Info.plist");
+                QFileInfo iplist(fiapp.filePath() + "/Info.plist");
                 if (!iplist.isFile())
                     continue;
 
@@ -583,7 +601,7 @@ QString ESModModel::ESFolderForIOS(QStringList &dirs)
                 if (bunid != "com.mifki.everlastingsummer")
                     continue;
 
-                return fiapp.absoluteFilePath();
+                return fiapp.filePath() + "/scripts/game/";
             }
         }
     }
