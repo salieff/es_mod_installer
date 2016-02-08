@@ -337,7 +337,7 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
 #if defined(Q_OS_IOS)
     QFile f(m_iosEverlastingSummerFolder + ".esmanager_installed.db");
 #elif defined(ANDROID)
-    QFile f(ANDROID_ES_MOD_DB_PATH  + ".esmanager_installed.db");
+    QFile f(QString(ANDROID_ES_MOD_DB_PATH)  + ".esmanager_installed.db");
 #else
     QFile f(QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/.esmanager_installed.db");
 #endif
