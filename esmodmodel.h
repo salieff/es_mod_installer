@@ -83,8 +83,10 @@ private:
 
 #ifdef Q_OS_IOS
     QString ESFolderForIOS(QStringList &dirs);
-    QString m_iosEverlastingSummerFolder;
+    QString iosFolderTrace;
 #endif
+
+    QString m_ESModsFolder;
 
     AsyncJsonWriter m_JsonWriter;
 

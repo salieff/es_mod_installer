@@ -22,25 +22,29 @@ ESModModel::ESModModel(QObject *parent)
 #endif
 
 #if defined(Q_OS_IOS)
-    m_iosEverlastingSummerFolder = ESFolderForIOS(QStringList() \
-                                                  << "/var/mobile/Containers/Bundle/Application" \
-                                                  << "/var/mobile/Applications" \
-                                                  << "/Applications");
+    m_ESModsFolder = ESFolderForIOS(QStringList() \
+                                    << "/User/Containers/Bundle/Application" \
+                                    << "/User/Applications" \
+                                    << "/var/mobile/Containers/Bundle/Application" \
+                                    << "/var/mobile/Applications" \
+                                    << "/private/var/mobile/Containers/Bundle/Application" \
+                                    << "/private/var/mobile/Applications" \
+                                    << "/Applications");
 
-    if (m_iosEverlastingSummerFolder.isEmpty())
+    if (m_ESModsFolder.isEmpty())
     {
-        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder"));
+        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder\n") + iosFolderTrace);
         QApplication::quit();
     }
 
-    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Installed in ") + m_iosEverlastingSummerFolder);
-    m_JsonWriter.setDBFolder(m_iosEverlastingSummerFolder);
+    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Mods are located in [") + m_ESModsFolder + "]\n" + iosFolderTrace);
 #elif defined(ANDROID)
-    m_JsonWriter.setDBFolder(ANDROID_ES_MOD_DB_PATH);
+    m_ESModsFolder = ANDROID_ES_MOD_DB_PATH;
 #else
-    m_JsonWriter.setDBFolder(QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/");
+    m_ESModsFolder = QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/";
 #endif
 
+    m_JsonWriter.setDBFolder(m_ESModsFolder);
     m_JsonWriter.start();
 
     QNetworkReply *rep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(ES_MOD_INDEX_URL)));
@@ -228,13 +232,7 @@ void ESModModel::ESModIndexDownloaded()
             for (int i = 0; i < arr.size(); ++i)
             {
                 ESModElement *el = new ESModElement(this);
-#if defined(Q_OS_IOS)
-                el->DeserializeFromNetwork(arr[i].toObject(), m_iosEverlastingSummerFolder);
-#elif defined(ANDROID)
-                el->DeserializeFromNetwork(arr[i].toObject());
-#else
-                el->DeserializeFromNetwork(arr[i].toObject(), QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/");
-#endif
+                el->DeserializeFromNetwork(arr[i].toObject(), m_ESModsFolder);
                 el->TryToPickupFrom(local_elements);
                 addModElement(el);
             }
@@ -334,14 +332,7 @@ void ESModModel::elementNeedRemove()
 
 bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
 {
-#if defined(Q_OS_IOS)
-    QFile f(m_iosEverlastingSummerFolder + ".esmanager_installed.db");
-#elif defined(ANDROID)
-    QFile f(QString(ANDROID_ES_MOD_DB_PATH)  + ".esmanager_installed.db");
-#else
-    QFile f(QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/.esmanager_installed.db");
-#endif
-
+    QFile f(m_ESModsFolder + ".esmanager_installed.db");
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
         return false;
 
@@ -587,20 +578,27 @@ QString ESModModel::ESFolderForIOS(QStringList &dirs)
 {
     foreach (QString dir, dirs) // Top application directories
     {
+        iosFolderTrace += dir + "\n";
         QFileInfoList uuidlist = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
         foreach (QFileInfo fiuuid, uuidlist) // Application UUIDs directories
         {
+            iosFolderTrace += "  " + fiuuid.filePath() + "\n";
             QFileInfoList applist = QDir(fiuuid.filePath()).entryInfoList(QStringList("*.app"), QDir::Dirs | QDir::NoDotAndDotDot);
             foreach (QFileInfo fiapp, applist) // *.app directories
             {
+                iosFolderTrace += "    " + fiapp.filePath() + "\n";
                 QFileInfo iplist(fiapp.filePath() + "/Info.plist");
                 if (!iplist.isFile())
                     continue;
 
+                iosFolderTrace += "      Info.plist\n";
+
                 QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("CFBundleIdentifier").toString();
+                iosFolderTrace += "      " + bunid + "\n";
                 if (bunid != "com.mifki.everlastingsummer")
                     continue;
 
+                iosFolderTrace += "      FOUND!\n";
                 return fiapp.filePath() + "/scripts/game/";
             }
         }

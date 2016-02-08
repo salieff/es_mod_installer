@@ -324,10 +324,12 @@ void ESModElement::DeserializeFromNetwork(const QJsonObject &obj, QString overri
     uri = obj["uri"].toString().trimmed();
     infouri = obj["infouri"].toString().trimmed();
 
-    if (overridePath.isEmpty())
-        path = obj["path"].toString().trimmed();
-    else
+    path = obj["path"].toString().trimmed();
+
+#ifndef ANDROID
+    if (!overridePath.isEmpty())
         path = overridePath;
+#endif
 
     QJsonArray files_arr = obj["files"].toArray();
     for (int j = 0; j < files_arr.size(); ++j)
