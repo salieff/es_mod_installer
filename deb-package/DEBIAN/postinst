@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# chown -R mobile.staff /Applications/ESManager.app
+su mobile -c uicache
