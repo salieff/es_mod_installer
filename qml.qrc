@@ -1,38 +1,40 @@
 <RCC>
     <qresource prefix="/">
-        <file>gui/main.qml</file>
-        <file>gui/Delegate.qml</file>
-        <file>icons/abort.png</file>
-        <file>icons/download.png</file>
-        <file>icons/reload.png</file>
-        <file>icons/trash.png</file>
-        <file>icons/update.png</file>
-        <file>icons/info.png</file>
-        <file>icons/abort_press.png</file>
-        <file>icons/download_press.png</file>
-        <file>icons/reload_press.png</file>
-        <file>icons/trash_press.png</file>
-        <file>icons/update_press.png</file>
-        <file>icons/eng_flag.png</file>
-        <file>icons/rus_flag.png</file>
-        <file>icons/spa_flag.png</file>
-        <file>icons/search.png</file>
-        <file>icons/dislike.png</file>
-        <file>icons/like.png</file>
-        <file>gui/DelegateProgress.qml</file>
-        <file>gui/DelegateLeftButton.qml</file>
-        <file>gui/DelegateTitle.qml</file>
-        <file>gui/DelegateLike.qml</file>
         <file>gui/DelegateLangFlags.qml</file>
+        <file>gui/DelegateLeftButton.qml</file>
+        <file>gui/DelegateLike.qml</file>
+        <file>gui/DelegateProgress.qml</file>
+        <file>gui/Delegate.qml</file>
         <file>gui/DelegateRightButton.qml</file>
-        <file>gui/MMImage.qml</file>
-        <file>gui/MainListView.qml</file>
+        <file>gui/DelegateTitle.qml</file>
         <file>gui/MainAppTitle.qml</file>
-        <file>gui/MainSortSearchBox.qml</file>
         <file>gui/MainInfoPanel.qml</file>
-        <file>gui/MainWebView.qml</file>
-        <file>gui/MainSortMenu.qml</file>
         <file>gui/MainLikePanel.qml</file>
+        <file>gui/MainListView.qml</file>
+        <file>gui/main.qml</file>
+        <file>gui/MainSortMenu.qml</file>
+        <file>gui/MainSortSearchBox.qml</file>
+        <file>gui/MainWebView.qml</file>
+        <file>gui/MMImage.qml</file>
+        <file>icons/abort.png</file>
+        <file>icons/abort_press.png</file>
+        <file>icons/dislike.png</file>
+        <file>icons/download.png</file>
+        <file>icons/download_press.png</file>
+        <file>icons/eng_flag.png</file>
+        <file>icons/info.png</file>
+        <file>icons/like.png</file>
         <file>icons/nolikes.png</file>
+        <file>icons/reload.png</file>
+        <file>icons/reload_press.png</file>
+        <file>icons/rus_flag.png</file>
+        <file>icons/search.png</file>
+        <file>icons/spa_flag.png</file>
+        <file>icons/trash.png</file>
+        <file>icons/trash_press.png</file>
+        <file>icons/update.png</file>
+        <file>icons/update_press.png</file>
+        <file>icons/help.png</file>
+        <file>icons/mail.png</file>
     </qresource>
 </RCC>

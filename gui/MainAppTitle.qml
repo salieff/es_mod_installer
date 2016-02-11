@@ -30,6 +30,18 @@ Rectangle {
         anchors.topMargin: parent.radius + 10
         spacing: 10
 
+        MMImage {
+            id: helpButton
+            source: "/icons/help.png"
+            mmwidth: 6
+            mmheight: 6
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: mainListView.infoUriSignal("file:///android_asset/help/index.html")
+            }
+        }
+
         Text {
             id: appTitleText
             Layout.fillWidth: true
@@ -48,19 +60,36 @@ Rectangle {
 
         MMImage {
             id: iButton
-            source: "/icons/info.png"
+            source: "/icons/mail.png"
             mmwidth: 6
             mmheight: 6
-            state: "NORMAL"
+            // state: "NORMAL"
+            state: "PULSE"
+
+            SequentialAnimation on opacity {
+                id: opacityAnim
+                running: false
+                loops: Animation.Infinite
+                NumberAnimation { from: 1; to: 0.25; duration: 500; easing.type: Easing.InOutQuad }
+                NumberAnimation { from: 0.25; to: 1; duration: 500; easing.type: Easing.InOutQuad }
+            }
 
             states: [
                 State {
                     name: "NORMAL"
-                    PropertyChanges { target: button; source: "/icons/info.png"}
+                    PropertyChanges { target: iButton; source: "/icons/mail.png"}
+                    PropertyChanges { target: iButton; opacity: 1}
+                    PropertyChanges { target: opacityAnim; running: false}
                 },
                 State {
                     name: "CLOSE"
+                    PropertyChanges { target: iButton; opacity: 1}
+                    PropertyChanges { target: opacityAnim; running: false}
                     PropertyChanges { target: button; source: "/icons/abort.png"}
+                },
+                State {
+                    name: "PULSE"
+                    PropertyChanges { target: opacityAnim; running: true}
                 }
             ]
 

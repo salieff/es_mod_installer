@@ -36,7 +36,19 @@ WebView {
     Connections {
         target: view
         onInfoUriSignal: {
-            if (uriStr)
+            if (uriStr.indexOf("qrc:/") == 0)
+            {
+                show()
+                var xhr = new XMLHttpRequest;
+                xhr.open("GET", uriStr);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        loadHtml(xhr.responseText, "qrc:/help")
+                    }
+                }
+                xhr.send();
+            }
+            else if (uriStr)
             {
                 show()
                 if (url !== uriStr)
