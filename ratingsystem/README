@@ -50,16 +50,16 @@ IMPORTANT:
       titles on requests are expected to be trimed.
 
 1. Add/change mark:
-   operation=mark title=<title> mac=<XX:XX:XX:XX:XX:XX> mark={0|1}
+   operation=mark id=<id> mac=<XX:XX:XX:XX:XX:XX> mark={0|1}
    Response:
    {"result": "ok"}
 
 2. Find my mark:
-   operation=mymark title=<title> mac=<XX:XX:XX:XX:XX:XX>
+   operation=mymark id=<id> mac=<XX:XX:XX:XX:XX:XX>
    Response("mark" field will contain -1 if not found):
    {"result": "ok", "mark": 1}
 
 1. Query marks:
-   operation=query title=<title>
+   operation=query id=<id>
    Response:
    {"down": 0, "result": "ok", "up": 1}

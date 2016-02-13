@@ -16,11 +16,11 @@ class ProjectParser:
         """ Construct class, parse and store input
         json string.
         """
-        self.titles = []
+        self.ids = []
         data = json.loads(project_json)
         for pack in data['packs']:
-            self.titles.append(pack['title'].strip())
+            self.ids.append(pack['idmod'])
 
-    def has_title(self, title):
+    def has_id(self, id):
         """ Find given title in parsed list """
-        return title in self.titles
+        return id in self.ids

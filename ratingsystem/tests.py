@@ -25,10 +25,10 @@ _test_json = """
     "packs":
     [
         {
-            "title": "testtitle"
+            "idmod": 2
         },
         {
-            "title": "утф-8"
+            "idmod": 3
         }
     ]
 }
@@ -50,23 +50,19 @@ class TestProjectParser(unittest.TestCase):
 
     def test_title_found(self):
         self.assertTrue(project_parser.ProjectParser(
-            _test_json).has_title("testtitle"))
+            _test_json).has_id(2))
 
     def test_title_not_found(self):
         self.assertFalse(project_parser.ProjectParser(
-            _test_json).has_title("strangetitle"))
-
-    def test_utf8_found(self):
-        self.assertTrue(project_parser.ProjectParser(
-            _test_json).has_title(u"утф-8"))
+            _test_json).has_id(4))
 
     def test_found_in_real_project(self):
         self.assertTrue(project_parser.ProjectParser(
-            project_fetcher.fetch()).has_title("Perfect girl"))
+            project_fetcher.fetch()).has_id(66))
 
-    def test_utf8_found_in_real_project(self):
-        self.assertTrue(project_parser.ProjectParser(
-            project_fetcher.fetch()).has_title(u"Алиса-Мод. Допил"))
+    def test_not_found_in_real_project(self):
+        self.assertFalse(project_parser.ProjectParser(
+            project_fetcher.fetch()).has_id(66666666))
 
 
 class TestDatabase(unittest.TestCase):

@@ -16,7 +16,7 @@ import sys
 import hashlib
 
 _FIELD_OPERATION = r"operation"
-_FIELD_TITLE = r"title"
+_FIELD_ID = r"id"
 _FIELD_MAC = r"mac"
 _FIELD_MARK = r"mark"
 _FIELD_RESULT = r"result"
@@ -33,13 +33,6 @@ _VALUE_MARK_UP = 1
 _VALUE_MARK_DOWN = 0
 
 _PREFIX_TITLE = r"t_"
-
-
-def _hash_title(title):
-    """ Convert title to t_<md5sum> form """
-    string_hash = hashlib.md5(
-        title.encode('utf-8')).hexdigest()
-    return _PREFIX_TITLE + string_hash
 
 
 def _fetch_field(form, name):
@@ -76,7 +69,7 @@ def _validate_fields(form):
         raise ValueError(
             "Invalid value for '{0}' field".format(_FIELD_OPERATION))
 
-    _ensure_field_present(form, _FIELD_TITLE)
+    _ensure_field_present(form, _FIELD_ID)
 
     if operation == _VALUE_OPERATION_MARK:
         _ensure_field_present(form, _FIELD_MAC)
@@ -86,12 +79,12 @@ def _validate_fields(form):
         _ensure_field_present(form, _FIELD_MAC)
 
 
-def _validate_title(title):
+def _validate_id(string_id):
     """ Check whether project JSON contains
-    given title (download/parse/check)
+    given id (download/parse/check)
     """
     if not project_parser.ProjectParser(
-            project_fetcher.fetch()).has_title(title):
+            project_fetcher.fetch()).has_id(int(string_id)):
         raise ValueError("Given title not found in project JSON")
 
 
@@ -112,11 +105,8 @@ def _add_mark(form):
     """ Validate all needed fields and
     add mark via database module
     """
-    text_title = _fetch_field(form, _FIELD_TITLE)
-    _validate_title(text_title)
-
-    title = _hash_title(
-        _fetch_field(form, _FIELD_TITLE))
+    text_id = _fetch_field(form, _FIELD_ID)
+    _validate_id(text_id)
 
     mac = _fetch_field(form, _FIELD_MAC)
     _validate_mac(mac)
@@ -125,22 +115,21 @@ def _add_mark(form):
     _validate_mark(mark)
 
     with database.Database() as db:
-        db.add_mark(title, mac, mark)
+        db.add_mark(text_id, mac, mark)
 
 
 def _query(form, result):
     """ Validate all needed fields and
     query title information via database module
     """
-    title = _hash_title(
-        _fetch_field(form, _FIELD_TITLE))
+    text_id = _fetch_field(form, _FIELD_ID)
 
     result[_FIELD_UP] = 0
     result[_FIELD_DOWN] = 0
 
     with database.Database() as db:
         try:
-            summary = db.get_summary(title)
+            summary = db.get_summary(text_id)
             result[_FIELD_UP] = summary[0]
             result[_FIELD_DOWN] = summary[1]
         except ValueError:
@@ -153,8 +142,7 @@ def _my_mark(form, result):
     query mark for given title and mac
     via database module
     """
-    title = _hash_title(
-        _fetch_field(form, _FIELD_TITLE))
+    text_id = _fetch_field(form, _FIELD_ID)
 
     mac = _fetch_field(form, _FIELD_MAC)
     _validate_mac(mac)
@@ -164,7 +152,7 @@ def _my_mark(form, result):
     with database.Database() as db:
         try:
             result[_FIELD_MARK] = db.find_mark(
-                title, mac)
+                text_id, mac)
         except ValueError:
             pass
     return result
