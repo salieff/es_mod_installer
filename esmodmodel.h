@@ -50,7 +50,7 @@ public:
 
 signals:
     void appTitleReceived(const QString &text);
-    void appHelpReceived(const QString &text);
+    void appHelpReceived(const QString &text, bool fromServer = true);
     void esIndexReceived();
     void listSorted(SortMode m);
 
@@ -74,6 +74,8 @@ public slots:
     void sortList(SortMode m);
     void filterByKeywords(QString str);
 
+    void helpRead(QString str);
+
 protected:
     QHash<int, QByteArray> roleNames() const;
 
@@ -94,6 +96,7 @@ private:
     QList<ESModElement *> m_elements;
 
     SortMode m_lastSortMode;
+    QString m_helpText;
 };
 
 #endif // ESMODMODEL_H

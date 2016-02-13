@@ -1,4 +1,5 @@
 #include <QDir>
+#include <QJsonDocument>
 #include <QJsonArray>
 #include <QMessageBox>
 
@@ -8,17 +9,19 @@ ESModElement::ESModElement(QObject *parent, State s, int p)
     : QObject(parent),
       id(-1),
       title(QStringLiteral("Test sample mod name")),
+      langs(QStringList() << "Ru" << "En" <<"Spa"),
+      status("окончен"),
       state(s),
       progress(p),
       size(0),
       timestamp(0),
       mylikemark(LikeMarkNotFound),
-      likemarkscount(0),
-      dislikemarkscount(0),
+      likemarkscount(-1),
+      dislikemarkscount(-1),
       guiblocked(ByUnknown),
       m_localSize(0),
       m_localTimestamp(0),
-      m_modelIndex(0)
+      m_modelIndex(-1)
 {
     connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
     connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
@@ -75,7 +78,12 @@ void ESModElement::Delete()
 
 void ESModElement::SendLike(LikeType l)
 {
-
+    QString setLikeReq = QString("http://es.191.ru/cgi-bin/ratingsystem/rating_web.py?operation=mark&id=%1&mac=%2&mark=%3")\
+            .arg(id)\
+            .arg(AsyncDownloader::getMacAddress())\
+            .arg(l == DislikeMark ? 0 : 1);
+    QNetworkReply *setLikeRep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(setLikeReq)));
+    connect(setLikeRep, SIGNAL(finished()), this, SLOT(myLikePosted()));
 }
 
 void ESModElement::RequestHeaders()
@@ -91,6 +99,8 @@ void ESModElement::RequestHeaders()
     m_asyncUnzipper.wait();
 
     m_asyncDownloader.downloadFileList(uri, files, path, true);
+
+    sendLikesRequests();
 }
 
 QString ESModElement::errorString()
@@ -272,6 +282,68 @@ void ESModElement::unzipperOverwriteRequest(QString fname)
     m_asyncUnzipper.setOverwriteFlags((b == QMessageBox::YesToAll || b == QMessageBox::Yes), b == QMessageBox::YesToAll);
 }
 
+static bool checkLikeResponse(QNetworkReply *rep, QJsonObject &obj)
+{
+    rep->deleteLater();
+
+    if (rep->error() != QNetworkReply::NoError)
+        return false;
+
+    QByteArray data = rep->readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+
+    if (doc.isNull())
+        return false;
+
+    if (!doc.isObject())
+        return false;
+
+    obj = doc.object();
+
+    if (obj["result"].toString() != "ok")
+        return false;
+
+    return true;
+}
+
+void ESModElement::allLikesReceived()
+{
+    QJsonObject obj;
+    if (!checkLikeResponse(dynamic_cast<QNetworkReply *>(sender()), obj))
+        return;
+
+    likemarkscount = obj["up"].toInt();
+    dislikemarkscount = obj["down"].toInt();
+
+    emit stateChanged();
+}
+
+void ESModElement::myLikeReceived()
+{
+    QJsonObject obj;
+    if (!checkLikeResponse(dynamic_cast<QNetworkReply *>(sender()), obj))
+        return;
+
+    int imrk = obj["mark"].toInt();
+    if (imrk < 0)
+        mylikemark = LikeMarkNotFound;
+    else if (imrk == 0)
+        mylikemark = DislikeMark;
+    else
+        mylikemark = LikeMark;
+
+    emit stateChanged();
+}
+
+void ESModElement::myLikePosted()
+{
+    QJsonObject obj;
+    if (!checkLikeResponse(dynamic_cast<QNetworkReply *>(sender()), obj))
+        return;
+
+    sendLikesRequests();
+}
+
 QJsonObject ESModElement::SerializeToDB()
 {
     QJsonArray files_arr;
@@ -375,6 +447,19 @@ void ESModElement::changeState(State s)
     guiblocked = NoBlock;
     state = s;
     emit stateChanged();
+}
+
+void ESModElement::sendLikesRequests()
+{
+    QString myLikeReq = QString("http://es.191.ru/cgi-bin/ratingsystem/rating_web.py?operation=mymark&id=%1&mac=%2")\
+            .arg(id)\
+            .arg(AsyncDownloader::getMacAddress());
+    QNetworkReply *myLikeRep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(myLikeReq)));
+    connect(myLikeRep, SIGNAL(finished()), this, SLOT(myLikeReceived()));
+
+    QString allLikeReq = QString("http://es.191.ru/cgi-bin/ratingsystem/rating_web.py?operation=query&id=%1").arg(id);
+    QNetworkReply *allLikeRep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(allLikeReq)));
+    connect(allLikeRep, SIGNAL(finished()), this, SLOT(allLikesReceived()));
 }
 
 bool ESModElement::idEquals(ESModElement *el)

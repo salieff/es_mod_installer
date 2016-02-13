@@ -63,8 +63,8 @@ Rectangle {
             source: "/icons/mail.png"
             mmwidth: 6
             mmheight: 6
-            // state: "NORMAL"
-            state: "PULSE"
+            property bool pulsed: false
+            state: "NORMAL"
 
             SequentialAnimation on opacity {
                 id: opacityAnim
@@ -79,17 +79,13 @@ Rectangle {
                     name: "NORMAL"
                     PropertyChanges { target: iButton; source: "/icons/mail.png"}
                     PropertyChanges { target: iButton; opacity: 1}
-                    PropertyChanges { target: opacityAnim; running: false}
+                    PropertyChanges { target: opacityAnim; running: iButton.pulsed}
                 },
                 State {
                     name: "CLOSE"
                     PropertyChanges { target: iButton; opacity: 1}
                     PropertyChanges { target: opacityAnim; running: false}
                     PropertyChanges { target: button; source: "/icons/abort.png"}
-                },
-                State {
-                    name: "PULSE"
-                    PropertyChanges { target: opacityAnim; running: true}
                 }
             ]
 

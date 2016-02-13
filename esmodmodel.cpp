@@ -61,19 +61,6 @@ ESModModel::~ESModModel()
 
 void ESModModel::addModElement(ESModElement *element)
 {
-    if (m_initialElements.empty())
-    {
-        element->mylikemark = ESModElement::LikeMarkNotFound;
-        element->likemarkscount = 0;
-        element->dislikemarkscount = 0;
-    }
-    else
-    {
-        element->mylikemark = (ESModElement::LikeType)(qrand() % 3);
-        element->likemarkscount = qrand() % 100;
-        element->dislikemarkscount = qrand() % 100;
-    }
-
     m_initialElements << element;
     connect(element, SIGNAL(stateChanged()), this, SLOT(elementChanged()));
     connect(element, SIGNAL(saveMe()), this, SLOT(SaveLocalModsDB()));
@@ -202,6 +189,8 @@ void ESModModel::ESModIndexDownloaded()
     LoadLocalModsDB(local_elements);
 
     QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
+    rep->deleteLater();
+
     if (rep->error() == QNetworkReply::NoError)
     {
         QByteArray data = rep->readAll();
@@ -248,7 +237,6 @@ void ESModModel::ESModIndexDownloaded()
         el->RequestHeaders();
 
     emit esIndexReceived();
-    rep->deleteLater();
 }
 
 void ESModModel::ESModIndexError(QNetworkReply::NetworkError code)
@@ -359,6 +347,10 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
     // FIXME: Can't sort by size or date until headers weren't received
     // m_lastSortMode = (ESModModel::SortMode)obj["sortmode"].toInt();
 
+    m_helpText = obj["helptext"].toString();
+    if (!m_helpText.isEmpty())
+        emit appHelpReceived(m_helpText, false);
+
     QJsonArray arr = obj["packs"].toArray();
     for (int i = 0; i < arr.size(); ++i)
     {
@@ -379,6 +371,7 @@ void ESModModel::SaveLocalModsDB()
 
     QJsonObject *obj = new QJsonObject;
     obj->insert("sortmode", (int)m_lastSortMode);
+    obj->insert("helptext", m_helpText);
     obj->insert("packs", arr);
     m_JsonWriter.write(obj);
 }
@@ -388,7 +381,8 @@ static const char *statusNamesArr[] = { \
     "в разработке", \
     "заморожен", \
     "демо", \
-    "надстройка" \
+    "надстройка", \
+    "обучаловка" \
 };
 
 static bool lessThanAsServer(ESModElement *a, ESModElement *b)
@@ -562,6 +556,12 @@ void ESModModel::filterByKeywords(QString str)
     qSort(m_elements.begin(), m_elements.end(), lessThanKeyword);
     ReindexElements();
     endResetModel();
+}
+
+void ESModModel::helpRead(QString str)
+{
+    m_helpText = str;
+    SaveLocalModsDB();
 }
 
 void ESModModel::ReindexElements()

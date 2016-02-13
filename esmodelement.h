@@ -96,6 +96,9 @@ private slots:
     void unpackProgress(int p);
     void filesDeleted();
     void unzipperOverwriteRequest(QString fname);
+    void allLikesReceived();
+    void myLikeReceived();
+    void myLikePosted();
 
 signals:
     void stateChanged();
@@ -109,6 +112,7 @@ private:
     void blockGui(GuiBlockReason b);
     void changeState(State s);
 
+    void sendLikesRequests();
     bool idEquals(ESModElement *el);
 
     AsyncDownloader m_asyncDownloader;

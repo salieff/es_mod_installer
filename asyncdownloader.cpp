@@ -2,12 +2,14 @@
 #include <QNetworkReply>
 #include <QByteArray>
 #include <QDir>
+#include <QNetworkInterface>
 
 #include "asyncdownloader.h"
 
 // #define NET_BUFFER_SIZE 1024
 
 QNetworkAccessManager * AsyncDownloader::NetworkManager = NULL;
+QString AsyncDownloader::m_myMacAddress;
 
 AsyncDownloader::AsyncDownloader(QObject *parent)
     : QObject(parent),
@@ -202,4 +204,31 @@ bool AsyncDownloader::checkOverwrite(QString fname)
 
     m_alwaysOverwrite = (b == QMessageBox::YesToAll);
     return (b == QMessageBox::YesToAll || b == QMessageBox::Yes);
+}
+
+QString AsyncDownloader::getMacAddress()
+{
+    if (m_myMacAddress.isEmpty())
+    {
+        QList<QNetworkInterface> allIfaces = QNetworkInterface::allInterfaces();
+        foreach (QNetworkInterface i, allIfaces)
+        {
+            if (!i.isValid())
+                continue;
+
+            if (i.flags() & QNetworkInterface::IsLoopBack)
+                continue;
+
+            if (!(i.flags() & QNetworkInterface::IsUp))
+                continue;
+
+            if (!(i.flags() & QNetworkInterface::IsRunning))
+                continue;
+
+            m_myMacAddress = i.hardwareAddress();
+            break;
+        }
+    }
+
+    return m_myMacAddress;
 }

@@ -38,7 +38,15 @@ Rectangle {
         view.enabled = false
         visible = true
         opacity = 0.95
+
+        if (closeButton.pulsed)
+        {
+            esModel.helpRead(helpText.text)
+            closeButton.pulsed = false
+        }
+
         closeButton.state = "CLOSE"
+
         return true
     }
 
@@ -63,7 +71,12 @@ Rectangle {
 
             Connections {
                 target: esModel
-                onAppHelpReceived: helpText.text = text
+                onAppHelpReceived: {
+                    if (helpText.text != text && fromServer)
+                        closeButton.pulsed = true
+
+                    helpText.text = text
+                }
             }
         }
     }

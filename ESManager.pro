@@ -1,8 +1,11 @@
 TEMPLATE = app
 
-QT += qml quick widgets
+QT += qml quick widgets network
 
-linux-g++: QT += webengine
+linux-g++: {
+    QT += webengine
+    CONFIG += console
+}
 
 
 SOURCES += main.cpp \

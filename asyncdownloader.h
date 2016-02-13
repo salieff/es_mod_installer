@@ -29,6 +29,8 @@ public:
     QStringList downloadedFiles();
     void getHeadersData(double &sz, double &tm);
 
+    static QString getMacAddress();
+
 signals:
     void progress(int);
     void finished();
@@ -66,6 +68,8 @@ private:
     AsyncFileWriter m_file;
 
     bool m_alwaysOverwrite;
+
+    static QString m_myMacAddress;
 };
 
 #endif // ASYNCDOWNLOADER_H
