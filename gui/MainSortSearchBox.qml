@@ -78,6 +78,14 @@ Rectangle {
                         case ESModModel.ByDateDown :
                             sortText.text = "Dt↓"
                             break;
+
+                        case ESModModel.ByScore :
+                            sortText.text = "5+"
+                            break;
+
+                        case ESModModel.ByVotesCount :
+                            sortText.text = "웃"
+                            break;
                         }
                     }
                 }

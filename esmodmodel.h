@@ -31,13 +31,15 @@ public:
     };
 
     enum SortMode {
-        AsServer   = 0,
-        ByNameUp   = 1,
-        ByNameDown = 2,
-        BySizeUp   = 3,
-        BySizeDown = 4,
-        ByDateUp   = 5,
-        ByDateDown = 6
+        AsServer     = 0,
+        ByNameUp     = 1,
+        ByNameDown   = 2,
+        BySizeUp     = 3,
+        BySizeDown   = 4,
+        ByDateUp     = 5,
+        ByDateDown   = 6,
+        ByScore      = 7,
+        ByVotesCount = 8
     };
     Q_ENUMS(SortMode)
 

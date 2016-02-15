@@ -75,7 +75,8 @@ DISTFILES += \
     android/build.gradle \
     android/gradle/wrapper/gradle-wrapper.properties \
     android/gradlew.bat \
-    Info.plist
+    Info.plist \
+    android/assets/help/index.html
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 ios: QMAKE_INFO_PLIST = $$PWD/Info.plist

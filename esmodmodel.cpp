@@ -17,10 +17,6 @@ ESModModel::ESModModel(QObject *parent)
       m_JsonWriter(this),
       m_lastSortMode(AsServer)
 {
-#if !defined(ANDROID) && !defined(Q_OS_IOS)
-    // AsyncDownloader::NetworkManager.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
-#endif
-
 #if defined(Q_OS_IOS)
     m_ESModsFolder = ESFolderForIOS(QStringList() \
                                     << "/User/Containers/Bundle/Application" \
@@ -406,11 +402,17 @@ static bool lessThanAsServer(ESModElement *a, ESModElement *b)
 
 static bool lessThanByName0(ESModElement *a, ESModElement *b)
 {
+    if (a->title == b->title)
+        return lessThanAsServer(a, b);
+
     return a->title < b->title;
 }
 
 static bool lessThanByName1(ESModElement *a, ESModElement *b)
 {
+    if (a->title == b->title)
+        return lessThanAsServer(a, b);
+
     return a->title >= b->title;
 }
 
@@ -423,6 +425,9 @@ static bool lessThanBySize0(ESModElement *a, ESModElement *b)
     double sz2 = b->size;
     if (sz2 == 0)
         sz2 = b->m_localSize;
+
+    if (sz1 == sz2)
+        return lessThanAsServer(a, b);
 
     return sz1 < sz2;
 }
@@ -437,6 +442,9 @@ static bool lessThanBySize1(ESModElement *a, ESModElement *b)
     if (sz2 == 0)
         sz2 = b->m_localSize;
 
+    if (sz1 == sz2)
+        return lessThanAsServer(a, b);
+
     return sz1 >= sz2;
 }
 
@@ -449,6 +457,9 @@ static bool lessThanByDate0(ESModElement *a, ESModElement *b)
     double tm2 = b->timestamp;
     if (tm2 == 0)
         tm2 = b->m_localTimestamp;
+
+    if (tm1 == tm2)
+        return lessThanAsServer(a, b);
 
     return tm1 < tm2;
 }
@@ -463,7 +474,43 @@ static bool lessThanByDate1(ESModElement *a, ESModElement *b)
     if (tm2 == 0)
         tm2 = b->m_localTimestamp;
 
+    if (tm1 == tm2)
+        return lessThanAsServer(a, b);
+
     return tm1 >= tm2;
+}
+
+static float calcFiveScore(ESModElement *el)
+{
+    if (el->likemarkscount <= 0 && el->dislikemarkscount <= 0)
+        return 0;
+
+    if (el->likemarkscount <= 0)
+        return 1.0;
+
+    return 1.0 + el->likemarkscount * 4.5 / (el->likemarkscount + el->dislikemarkscount);
+}
+
+static bool lessThanByScore(ESModElement *a, ESModElement *b)
+{
+    float sa = calcFiveScore(a);
+    float sb = calcFiveScore(b);
+
+    if (sa == sb)
+        return lessThanAsServer(a, b);
+
+    return sa >= sb;
+}
+
+static bool lessThanByVotesCount(ESModElement *a, ESModElement *b)
+{
+    int vca = a->likemarkscount + a->dislikemarkscount;
+    int vcb = b->likemarkscount + b->dislikemarkscount;
+
+    if (vca == vcb)
+        return lessThanAsServer(a, b);
+
+    return vca >= vcb;
 }
 
 typedef bool (*lessThanSortFunc)(ESModElement *a, ESModElement *b);
@@ -474,7 +521,9 @@ static const lessThanSortFunc lessThanArray[] = { \
     lessThanBySize0, \
     lessThanBySize1, \
     lessThanByDate0, \
-    lessThanByDate1 \
+    lessThanByDate1, \
+    lessThanByScore, \
+    lessThanByVotesCount \
 };
 
 void ESModModel::sortList(SortMode m)

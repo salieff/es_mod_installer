@@ -41,4 +41,14 @@ Menu {
         text: qsTr("By date 12.12.2015 → 1.1.1970")
         onTriggered: esModel.sortList(ESModModel.ByDateDown)
     }
+
+    MenuItem {
+        text: qsTr("By score")
+        onTriggered: esModel.sortList(ESModModel.ByScore)
+    }
+
+    MenuItem {
+        text: qsTr("By votes count")
+        onTriggered: esModel.sortList(ESModModel.ByVotesCount)
+    }
 }
