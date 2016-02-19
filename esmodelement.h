@@ -44,7 +44,7 @@ public:
     };
     Q_ENUMS(LikeType)
 
-    ESModElement(QObject *parent = NULL, State s = Unknown, int p = 100);
+    ESModElement(QString au = QString(), QString ap = QString(), QObject *parent = NULL, State st = Unknown, int pr = 100);
 
     void Download();
     void Abort();
@@ -57,7 +57,7 @@ public:
 
     QJsonObject SerializeToDB();
     void DeserializeFromDB(const QJsonObject &obj);
-    void DeserializeFromNetwork(const QJsonObject &obj, QString overridePath = QString());
+    bool DeserializeFromNetwork(const QJsonObject &obj);
 
     void TryToPickupFrom(QList<ESModElement *> &list);
 
@@ -65,9 +65,7 @@ public:
     QString title;
     QStringList langs;
     QString status;
-    QString uri;
     QString infouri;
-    QString path;
     QStringList files;
 
     State state;
@@ -118,6 +116,9 @@ private:
     AsyncDownloader m_asyncDownloader;
     AsyncUnzipper m_asyncUnzipper;
     AsyncDeleter m_asyncDeleter;
+
+    QString m_uri;
+    QString m_path;
 };
 
 #endif // ESMODELEMENT_H

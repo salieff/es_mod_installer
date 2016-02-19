@@ -5,14 +5,25 @@
 
 #include "esmodelement.h"
 
-ESModElement::ESModElement(QObject *parent, State s, int p)
+#define LIKES_CGI_URL "http://es.191.ru/cgi-bin/ratingsystem/rating_web.py"
+
+#if defined(Q_OS_IOS)
+    #define MY_PLATFORM "ios"
+#elif defined(ANDROID)
+    #define MY_PLATFORM "android"
+#else
+//    #define MY_PLATFORM "ios"
+    #define MY_PLATFORM "android"
+#endif
+
+ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, int pr)
     : QObject(parent),
       id(-1),
       title(QStringLiteral("Test sample mod name")),
       langs(QStringList() << "Ru" << "En" <<"Spa"),
       status("окончен"),
-      state(s),
-      progress(p),
+      state(st),
+      progress(pr),
       size(0),
       timestamp(0),
       mylikemark(LikeMarkNotFound),
@@ -21,7 +32,9 @@ ESModElement::ESModElement(QObject *parent, State s, int p)
       guiblocked(ByUnknown),
       m_localSize(0),
       m_localTimestamp(0),
-      m_modelIndex(-1)
+      m_modelIndex(-1),
+      m_uri(au),
+      m_path(ap)
 {
     connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
     connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
@@ -39,7 +52,7 @@ void ESModElement::Download()
     if (state != Available && state != InstalledHasUpdate && state != Failed)
         return;
 
-    if (files.empty() || uri.isEmpty())
+    if (files.empty() || m_uri.isEmpty())
         return;
 
     blockGui(ByDownload);
@@ -50,7 +63,7 @@ void ESModElement::Download()
 
     connect(this, SIGNAL(abortProcessing()), &m_asyncDownloader, SLOT(abort()));
 
-    if (!m_asyncDownloader.downloadFileList(uri, files, path))
+    if (!m_asyncDownloader.downloadFileList(m_uri, files, m_path))
         changeState(Failed);
     else
         changeState(Downloading);
@@ -78,7 +91,8 @@ void ESModElement::Delete()
 
 void ESModElement::SendLike(LikeType l)
 {
-    QString setLikeReq = QString("http://es.191.ru/cgi-bin/ratingsystem/rating_web.py?operation=mark&id=%1&mac=%2&mark=%3")\
+    QString setLikeReq = QString("%1?operation=mark&id=%2&mac=%3&mark=%4")\
+            .arg(LIKES_CGI_URL)\
             .arg(id)\
             .arg(AsyncDownloader::getMacAddress())\
             .arg(l == DislikeMark ? 0 : 1);
@@ -88,7 +102,7 @@ void ESModElement::SendLike(LikeType l)
 
 void ESModElement::RequestHeaders()
 {
-    if (files.empty() || uri.isEmpty())
+    if (files.empty() || m_uri.isEmpty())
     {
         changeState(Installed);
         return;
@@ -98,7 +112,7 @@ void ESModElement::RequestHeaders()
     m_asyncDownloader.wait();
     m_asyncUnzipper.wait();
 
-    m_asyncDownloader.downloadFileList(uri, files, path, true);
+    m_asyncDownloader.downloadFileList(m_uri, files, QString(), true);
 
     sendLikesRequests();
 }
@@ -199,11 +213,11 @@ void ESModElement::filesDownloaded()
     QStringList zipList;
     foreach (const QString &zipFile, files)
         if (zipFile.endsWith(".zip", Qt::CaseInsensitive))
-            zipList << path + zipFile;
+            zipList << m_path + zipFile;
 
     connect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()));
 
-    if (m_asyncUnzipper.unzipList(zipList, path))
+    if (m_asyncUnzipper.unzipList(zipList, m_path))
         changeState(Unpacking);
     else
         changeState(Failed);
@@ -387,25 +401,31 @@ void ESModElement::DeserializeFromDB(const QJsonObject &obj)
         langs << langs_arr[i].toString();
 }
 
-void ESModElement::DeserializeFromNetwork(const QJsonObject &obj, QString overridePath)
+bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
 {
+    bool myPlatforFound = false;
+    QJsonArray platf_arr = obj["platforms"].toArray();
+    for (int i = 0; i < platf_arr.size(); ++i)
+        if (platf_arr[i].toString().trimmed() == MY_PLATFORM)
+        {
+            myPlatforFound = true;
+            break;
+        }
+
+    if (!myPlatforFound)
+        return false;
+
     id = obj["idmod"].toInt(-1);
     title = obj["title"].toString().trimmed();
     status = obj["status"].toString().trimmed();
     langs = obj["lang"].toString().trimmed().split(QRegExp("[,\\s]+"), QString::SkipEmptyParts);
-    uri = obj["uri"].toString().trimmed();
-    infouri = obj["infouri"].toString().trimmed();
+    infouri = obj[QString("infouri_") + MY_PLATFORM].toString().trimmed();
 
-    path = obj["path"].toString().trimmed();
+    QJsonArray files_arr = obj[QString("files_") + MY_PLATFORM].toArray();
+    for (int i = 0; i < files_arr.size(); ++i)
+        files << files_arr[i].toString().trimmed();
 
-#ifndef ANDROID
-    if (!overridePath.isEmpty())
-        path = overridePath;
-#endif
-
-    QJsonArray files_arr = obj["files"].toArray();
-    for (int j = 0; j < files_arr.size(); ++j)
-        files << files_arr[j].toString().trimmed();
+    return true;
 }
 
 void ESModElement::TryToPickupFrom(QList<ESModElement *> &list)
@@ -451,13 +471,14 @@ void ESModElement::changeState(State s)
 
 void ESModElement::sendLikesRequests()
 {
-    QString myLikeReq = QString("http://es.191.ru/cgi-bin/ratingsystem/rating_web.py?operation=mymark&id=%1&mac=%2")\
+    QString myLikeReq = QString("%1?operation=mymark&id=%2&mac=%3")\
+            .arg(LIKES_CGI_URL)\
             .arg(id)\
             .arg(AsyncDownloader::getMacAddress());
     QNetworkReply *myLikeRep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(myLikeReq)));
     connect(myLikeRep, SIGNAL(finished()), this, SLOT(myLikeReceived()));
 
-    QString allLikeReq = QString("http://es.191.ru/cgi-bin/ratingsystem/rating_web.py?operation=query&id=%1").arg(id);
+    QString allLikeReq = QString("%1?operation=query&id=%2").arg(LIKES_CGI_URL).arg(id);
     QNetworkReply *allLikeRep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(allLikeReq)));
     connect(allLikeRep, SIGNAL(finished()), this, SLOT(allLikesReceived()));
 }

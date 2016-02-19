@@ -24,9 +24,9 @@ bool AsyncFileWriter::open(QString &destdir, QString &fname)
     m_buffer.clear();
     m_file.unsetError();
 
-    if (!QDir().mkpath(destdir))
+    if (!QDir().mkpath(QFileInfo(destdir + fname).dir().path()))
     {
-        m_errorString = tr("Can't create directory ") + destdir;
+        m_errorString = tr("Can't create directory ") + QFileInfo(destdir + fname).dir().path();
         m_wasError = true;
         return false;
     }

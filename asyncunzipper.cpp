@@ -102,6 +102,8 @@ void AsyncUnzipper::run()
             break;
         }
 
+        QDir().rmpath(QFileInfo(zipFile).dir().path());
+
         if (aborted())
             break;
     }

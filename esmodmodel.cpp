@@ -9,8 +9,9 @@
 
 #include "esmodmodel.h"
 
-#define ES_MOD_INDEX_URL "http://191.ru/es/project1.json"
-#define ANDROID_ES_MOD_DB_PATH "/sdcard/Android/data/su.sovietgames.everlasting_summer/files/"
+#define ES_MOD_INDEX_SERVER "http://191.ru/es/"
+#define ES_MOD_INDEX_NAME "project2.json"
+#define ANDROID_ES_MODS_FOLDER "/sdcard/Android/data/su.sovietgames.everlasting_summer/files/"
 
 ESModModel::ESModModel(QObject *parent)
     : QAbstractListModel(parent),
@@ -34,16 +35,14 @@ ESModModel::ESModModel(QObject *parent)
     }
 
     QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Mods are located in [") + m_ESModsFolder + "]\n" + iosFolderTrace);
+    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("My MAC-address is [") + AsyncDownloader::getMacAddress() + "]");
 #elif defined(ANDROID)
-    m_ESModsFolder = ANDROID_ES_MOD_DB_PATH;
+    m_ESModsFolder = ANDROID_ES_MODS_FOLDER;
 #else
     m_ESModsFolder = QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/";
 #endif
 
-    m_JsonWriter.setDBFolder(m_ESModsFolder);
-    m_JsonWriter.start();
-
-    QNetworkReply *rep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(ES_MOD_INDEX_URL)));
+    QNetworkReply *rep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(QString(ES_MOD_INDEX_SERVER) + ES_MOD_INDEX_NAME)));
     connect(rep, SIGNAL(finished()), this, SLOT(ESModIndexDownloaded()));
     connect(rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(ESModIndexError(QNetworkReply::NetworkError)));
 }
@@ -90,16 +89,8 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         return element->langs.join(",");
         break;
 
-    case UriRole:
-        return element->uri;
-        break;
-
     case InfoUriRole:
         return element->infouri;
-        break;
-
-    case PathRole:
-        return element->path;
         break;
 
     case FilesRole:
@@ -163,9 +154,7 @@ QHash<int, QByteArray> ESModModel::roleNames() const
     roles[TitleRole] = "title";
     roles[StatusRole] = "status";
     roles[LangsRole] = "langs";
-    roles[UriRole] = "uri";
     roles[InfoUriRole] = "infouri";
-    roles[PathRole] = "path";
     roles[FilesRole] = "files";
     roles[StateRole] = "modstate";
     roles[ProgressRole] = "progress";
@@ -186,6 +175,9 @@ void ESModModel::ESModIndexDownloaded()
 
     QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
     rep->deleteLater();
+
+    m_JsonWriter.setDBFolder(m_ESModsFolder); // Only after LoadLocalModsDB(), which can change m_ESModsFolder
+    m_JsonWriter.start();
 
     if (rep->error() == QNetworkReply::NoError)
     {
@@ -216,10 +208,16 @@ void ESModModel::ESModIndexDownloaded()
             QJsonArray arr = obj["packs"].toArray();
             for (int i = 0; i < arr.size(); ++i)
             {
-                ESModElement *el = new ESModElement(this);
-                el->DeserializeFromNetwork(arr[i].toObject(), m_ESModsFolder);
-                el->TryToPickupFrom(local_elements);
-                addModElement(el);
+                ESModElement *el = new ESModElement(ES_MOD_INDEX_SERVER, m_ESModsFolder, this);
+                if (el->DeserializeFromNetwork(arr[i].toObject()))
+                {
+                    el->TryToPickupFrom(local_elements);
+                    addModElement(el);
+                }
+                else
+                {
+                    delete el;
+                }
             }
         }
     }
@@ -347,10 +345,12 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
     if (!m_helpText.isEmpty())
         emit appHelpReceived(m_helpText, false);
 
+    m_ESModsFolder = obj["modsfolder"].toString(m_ESModsFolder);
+
     QJsonArray arr = obj["packs"].toArray();
     for (int i = 0; i < arr.size(); ++i)
     {
-        ESModElement *el = new ESModElement(this);
+        ESModElement *el = new ESModElement(ES_MOD_INDEX_SERVER, m_ESModsFolder, this);
         el->DeserializeFromDB(arr[i].toObject());
         l << el;
     }
@@ -369,6 +369,7 @@ void ESModModel::SaveLocalModsDB()
     obj->insert("sortmode", (int)m_lastSortMode);
     obj->insert("helptext", m_helpText);
     obj->insert("packs", arr);
+    obj->insert("modsfolder", m_ESModsFolder);
     m_JsonWriter.write(obj);
 }
 
