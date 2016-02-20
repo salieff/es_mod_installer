@@ -10,10 +10,11 @@ class AsyncJsonWriter : public QThread
 {
     Q_OBJECT
 public:
+    static QString configFileName();
+
     AsyncJsonWriter(QObject * parent = 0);
     virtual ~AsyncJsonWriter();
 
-    void setDBFolder(QString dirname);
     void write(QJsonObject *obj);
     void close();
 
@@ -21,7 +22,6 @@ protected:
     virtual void run();
 
 private:
-    QString m_esModDbPath;
     QJsonObject *m_jsonObject;
     QMutex m_jsonMutex;
     QWaitCondition m_jsonCondition;

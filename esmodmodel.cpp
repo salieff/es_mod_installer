@@ -6,6 +6,7 @@
 #include <QNetworkProxy>
 #include <QSettings>
 #include <QApplication>
+#include <QStandardPaths>
 
 #include "esmodmodel.h"
 
@@ -176,7 +177,6 @@ void ESModModel::ESModIndexDownloaded()
     QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
     rep->deleteLater();
 
-    m_JsonWriter.setDBFolder(m_ESModsFolder); // Only after LoadLocalModsDB(), which can change m_ESModsFolder
     m_JsonWriter.start();
 
     if (rep->error() == QNetworkReply::NoError)
@@ -231,6 +231,8 @@ void ESModModel::ESModIndexDownloaded()
         el->RequestHeaders();
 
     emit esIndexReceived();
+
+    SaveLocalModsDB();
 }
 
 void ESModModel::ESModIndexError(QNetworkReply::NetworkError code)
@@ -314,9 +316,18 @@ void ESModModel::elementNeedRemove()
 
 bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
 {
-    QFile f(m_ESModsFolder + ".esmanager_installed.db");
+    bool migrateFlag = false;
+    QFile f(AsyncJsonWriter::configFileName());
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
-        return false;
+    {
+        // Backward compatibility for old versions
+        f.unsetError();
+        f.setFileName(QDir(m_ESModsFolder).filePath(".esmanager_installed.db"));
+        if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+            return false;
+
+        migrateFlag = true;
+    }
 
     QByteArray data = f.readAll();
     f.close();
@@ -353,6 +364,13 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
         ESModElement *el = new ESModElement(ES_MOD_INDEX_SERVER, m_ESModsFolder, this);
         el->DeserializeFromDB(arr[i].toObject());
         l << el;
+    }
+
+    if (migrateFlag)
+    {
+        // Remove old config and directory if empty
+        f.remove();
+        QDir().rmpath(QFileInfo(f).dir().path());
     }
 
     return true;
@@ -492,17 +510,6 @@ static float calcFiveScore(ESModElement *el)
     return 1.0 + el->likemarkscount * 4.5 / (el->likemarkscount + el->dislikemarkscount);
 }
 
-static bool lessThanByScore(ESModElement *a, ESModElement *b)
-{
-    float sa = calcFiveScore(a);
-    float sb = calcFiveScore(b);
-
-    if (sa == sb)
-        return lessThanAsServer(a, b);
-
-    return sa >= sb;
-}
-
 static bool lessThanByVotesCount(ESModElement *a, ESModElement *b)
 {
     int vca = a->likemarkscount + a->dislikemarkscount;
@@ -512,6 +519,17 @@ static bool lessThanByVotesCount(ESModElement *a, ESModElement *b)
         return lessThanAsServer(a, b);
 
     return vca >= vcb;
+}
+
+static bool lessThanByScore(ESModElement *a, ESModElement *b)
+{
+    float sa = calcFiveScore(a);
+    float sb = calcFiveScore(b);
+
+    if (sa == sb)
+        return lessThanByVotesCount(a, b);
+
+    return sa >= sb;
 }
 
 typedef bool (*lessThanSortFunc)(ESModElement *a, ESModElement *b);

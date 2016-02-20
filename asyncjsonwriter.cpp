@@ -1,8 +1,14 @@
 #include <QJsonDocument>
+#include <QStandardPaths>
 #include <QFile>
-
 #include <QDir>
+
 #include "asyncjsonwriter.h"
+
+QString AsyncJsonWriter::configFileName()
+{
+    return QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)).filePath("org.salieff.esmodinstaller.installed.json");
+}
 
 AsyncJsonWriter::AsyncJsonWriter(QObject *parent)
     : QThread(parent),
@@ -14,11 +20,6 @@ AsyncJsonWriter::AsyncJsonWriter(QObject *parent)
 AsyncJsonWriter::~AsyncJsonWriter()
 {
     delete m_jsonObject;
-}
-
-void AsyncJsonWriter::setDBFolder(QString dirname)
-{
-    m_esModDbPath = dirname;
 }
 
 void AsyncJsonWriter::close()
@@ -68,7 +69,10 @@ void AsyncJsonWriter::run()
         delete doc;
         delete obj;
 
-        QFile f(m_esModDbPath + ".esmanager_installed.db");
+        if (!QDir().mkpath(QFileInfo(configFileName()).dir().path()))
+            continue;
+
+        QFile f(configFileName());
         if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
             continue;
 
