@@ -772,7 +772,7 @@ QString ESModModel::ESTraceFolderForIOS(QStringList &dirs)
                 continue;
 
             iosDebugLogString += "      FOUND!\n";
-            return QDir(fiapp.filePath()).filePath("/tmp/");
+            return QDir(fiuuid.filePath()).filePath("/tmp/");
         }
     }
 
