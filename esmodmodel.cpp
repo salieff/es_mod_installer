@@ -7,6 +7,7 @@
 #include <QSettings>
 #include <QApplication>
 #include <QStandardPaths>
+#include <QFileDialog>
 
 #include "esmodmodel.h"
 
@@ -42,6 +43,8 @@ ESModModel::ESModModel(QObject *parent)
 #else
     m_ESModsFolder = QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/";
 #endif
+
+    emit currentModsFolder(m_ESModsFolder);
 
     QNetworkReply *rep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(QString(ES_MOD_INDEX_SERVER) + ES_MOD_INDEX_NAME)));
     connect(rep, SIGNAL(finished()), this, SLOT(ESModIndexDownloaded()));
@@ -356,7 +359,10 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
     if (!m_helpText.isEmpty())
         emit appHelpReceived(m_helpText, false);
 
+#ifndef Q_OS_IOS
     m_ESModsFolder = obj["modsfolder"].toString(m_ESModsFolder);
+    emit currentModsFolder(m_ESModsFolder);
+#endif
 
     QJsonArray arr = obj["packs"].toArray();
     for (int i = 0; i < arr.size(); ++i)
@@ -387,7 +393,9 @@ void ESModModel::SaveLocalModsDB()
     obj->insert("sortmode", (int)m_lastSortMode);
     obj->insert("helptext", m_helpText);
     obj->insert("packs", arr);
+#ifndef Q_OS_IOS
     obj->insert("modsfolder", m_ESModsFolder);
+#endif
     m_JsonWriter.write(obj);
 }
 
@@ -630,6 +638,17 @@ void ESModModel::helpRead(QString str)
 {
     m_helpText = str;
     SaveLocalModsDB();
+}
+
+void ESModModel::changeModsFolder(QString f)
+{
+    f.remove(QRegExp("^file://"));
+    if (!f.isEmpty())
+    {
+        m_ESModsFolder = f;
+        SaveLocalModsDB();
+        emit currentModsFolder(m_ESModsFolder);
+    }
 }
 
 void ESModModel::ReindexElements()

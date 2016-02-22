@@ -53,6 +53,7 @@ signals:
     void appHelpReceived(const QString &text, bool fromServer = true);
     void esIndexReceived();
     void listSorted(SortMode m);
+    void currentModsFolder(QString newFolder);
 
 public slots:
     void ESModIndexDownloaded();
@@ -75,6 +76,7 @@ public slots:
     void filterByKeywords(QString str);
 
     void helpRead(QString str);
+    void changeModsFolder(QString f);
 
 protected:
     QHash<int, QByteArray> roleNames() const;

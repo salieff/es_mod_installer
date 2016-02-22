@@ -1,4 +1,4 @@
-import QtQuick 2.3
+import QtQuick 2.5
 import QtQuick.Layouts 1.2
 
 Rectangle {
@@ -55,6 +55,19 @@ Rectangle {
             Connections {
                 target: esModel
                 onAppTitleReceived: appTitleText.text = text
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onPressAndHold: mainMenu.popup()
+                onContainsPressChanged: {
+                    if (containsPress) {
+                        appTitleText.color = "blue"
+                    }
+                    else {
+                        appTitleText.color = "black"
+                    }
+                }
             }
         }
 

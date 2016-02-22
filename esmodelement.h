@@ -111,6 +111,8 @@ private:
     void changeState(State s);
 
     void sendLikesRequests();
+    void sendStatistics(bool inst = true);
+
     bool idEquals(ESModElement *el);
 
     AsyncDownloader m_asyncDownloader;

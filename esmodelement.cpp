@@ -6,14 +6,15 @@
 #include "esmodelement.h"
 
 #define LIKES_CGI_URL "http://es.191.ru/cgi-bin/ratingsystem/rating_web.py"
+#define STATS_CGI_URL LIKES_CGI_URL
 
 #if defined(Q_OS_IOS)
     #define MY_PLATFORM "ios"
 #elif defined(ANDROID)
     #define MY_PLATFORM "android"
 #else
-//    #define MY_PLATFORM "ios"
-    #define MY_PLATFORM "android"
+    #define MY_PLATFORM "ios"
+//    #define MY_PLATFORM "android"
 #endif
 
 ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, int pr)
@@ -182,6 +183,7 @@ void ESModElement::zipListUnpacked()
     m_localSize = size;
 
     emit saveMe();
+    sendStatistics();
     changeState(InstalledAvailable);
 }
 
@@ -257,6 +259,7 @@ void ESModElement::filesDeleted()
         break;
 
     case InstalledAvailable :
+        sendStatistics(false);
         changeState(Available);
         break;
 
@@ -268,11 +271,13 @@ void ESModElement::filesDeleted()
         }
         if (guiblocked == ByDelete) // By delete button
         {
+            sendStatistics(false);
             changeState(Available);
         }
         break;
 
     case Installed :
+        sendStatistics(false);
         state = Unknown;
         deleteLater();
         emit removeMe();
@@ -481,6 +486,17 @@ void ESModElement::sendLikesRequests()
     QString allLikeReq = QString("%1?operation=query&id=%2").arg(LIKES_CGI_URL).arg(id);
     QNetworkReply *allLikeRep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(allLikeReq)));
     connect(allLikeRep, SIGNAL(finished()), this, SLOT(allLikesReceived()));
+}
+
+void ESModElement::sendStatistics(bool inst)
+{
+    QString statReq = QString("%1?operation=statistics&id=%2&mac=%3&state=%4")\
+            .arg(STATS_CGI_URL)\
+            .arg(id)\
+            .arg(AsyncDownloader::getMacAddress())\
+            .arg(inst ? "installed" : "deleted");
+    QNetworkReply *myStatRep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(statReq)));
+    connect(myStatRep, SIGNAL(finished()), myStatRep, SLOT(deleteLater()));
 }
 
 bool ESModElement::idEquals(ESModElement *el)
