@@ -59,15 +59,14 @@ ApplicationWindow {
         view: mainListView
     }
 
-    /*
     onClosing: {
-        if (infoPanel.hide() || infoUriView.hide() || likeRect.hide())
+        if (infoPanel.hide() || infoUriView.hide() || likeRect.hide() || tracebackPanel.hide() || buttonSelector.activeFocus == false)
         {
             close.accepted = false
             appTitle.button.state = "NORMAL"
+            buttonSelector.forceActiveFocus()
         }
     }
-    */
 
     Menu {
         id: mainMenu
