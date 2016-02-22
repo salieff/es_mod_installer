@@ -58,6 +58,7 @@ public:
     QJsonObject SerializeToDB();
     void DeserializeFromDB(const QJsonObject &obj);
     bool DeserializeFromNetwork(const QJsonObject &obj);
+    void SetInstallPath(QString p);
 
     void TryToPickupFrom(QList<ESModElement *> &list);
 

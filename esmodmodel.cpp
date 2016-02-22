@@ -7,7 +7,7 @@
 #include <QSettings>
 #include <QApplication>
 #include <QStandardPaths>
-#include <QFileDialog>
+#include <QClipboard>
 
 #include "esmodmodel.h"
 
@@ -32,11 +32,25 @@ ESModModel::ESModModel(QObject *parent)
 
     if (m_ESModsFolder.isEmpty())
     {
-        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder\n") + iosFolderTrace);
+        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder\n") + iosDebugLogString);
         QApplication::quit();
     }
 
-    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Mods are located in [") + m_ESModsFolder + "]\n" + iosFolderTrace);
+    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Mods are located in [") + m_ESModsFolder + "]\n" + iosDebugLogString);
+    iosDebugLogString.clear();
+
+    m_traceFolderForIos = ESTraceFolderForIOS(QStringList() \
+                                              << "/User/Containers/Data/Application" \
+                                              << "/var/mobile/Containers/Data/Application");
+
+    if (m_traceFolderForIos.isEmpty())
+    {
+        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer trace logs folder\n") + iosDebugLogString);
+        QApplication::quit();
+    }
+
+    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Traces are located in [") + m_traceFolderForIos + "]\n" + iosDebugLogString);
+
     QMessageBox::information(NULL, tr("Everlasting Summer"), tr("My MAC-address is [") + AsyncDownloader::getMacAddress() + "]");
 #elif defined(ANDROID)
     m_ESModsFolder = ANDROID_ES_MODS_FOLDER;
@@ -46,7 +60,7 @@ ESModModel::ESModModel(QObject *parent)
 
     emit currentModsFolder(m_ESModsFolder);
 
-    QNetworkReply *rep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(QString(ES_MOD_INDEX_SERVER) + ES_MOD_INDEX_NAME)));
+    QNetworkReply *rep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(ES_MOD_INDEX_SERVER).resolved(QUrl(ES_MOD_INDEX_NAME))));
     connect(rep, SIGNAL(finished()), this, SLOT(ESModIndexDownloaded()));
     connect(rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(ESModIndexError(QNetworkReply::NetworkError)));
 }
@@ -646,9 +660,26 @@ void ESModModel::changeModsFolder(QString f)
     if (!f.isEmpty())
     {
         m_ESModsFolder = f;
+
+        foreach (ESModElement *el, m_initialElements)
+            el->SetInstallPath(m_ESModsFolder);
+
         SaveLocalModsDB();
         emit currentModsFolder(m_ESModsFolder);
     }
+}
+
+void ESModModel::copyTraceback(bool forLog)
+{
+    QString fname = ESTracebackFileName(forLog);
+    QFile f(fname);
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+
+    QString s = QString::fromLocal8Bit(f.readAll());
+    QApplication::clipboard()->setText(s);
+
+    emit tracebackText(s);
 }
 
 void ESModModel::ReindexElements()
@@ -660,34 +691,88 @@ void ESModModel::ReindexElements()
         m_elements[i]->m_modelIndex = i;
 }
 
+QString ESModModel::ESTracebackFileName(bool forLog)
+{
+#if defined(Q_OS_IOS)
+    if (forLog)
+        return QDir(m_traceFolderForIos).filePath("renpy-errors.txt");
+    else
+        return QDir(m_traceFolderForIos).filePath("renpy-traceback.txt");
+#else
+    if (forLog)
+        return QDir(m_ESModsFolder).filePath("log.txt");
+    else
+        return QDir(m_ESModsFolder).filePath("traceback.txt");
+#endif
+}
+
 #ifdef Q_OS_IOS
 QString ESModModel::ESFolderForIOS(QStringList &dirs)
 {
     foreach (QString dir, dirs) // Top application directories
     {
-        iosFolderTrace += dir + "\n";
+        iosDebugLogString += dir + "\n";
         QFileInfoList uuidlist = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
         foreach (QFileInfo fiuuid, uuidlist) // Application UUIDs directories
         {
-            iosFolderTrace += "  " + fiuuid.filePath() + "\n";
+            iosDebugLogString += "  " + fiuuid.filePath() + "\n";
             QFileInfoList applist = QDir(fiuuid.filePath()).entryInfoList(QStringList("*.app"), QDir::Dirs | QDir::NoDotAndDotDot);
             foreach (QFileInfo fiapp, applist) // *.app directories
             {
-                iosFolderTrace += "    " + fiapp.filePath() + "\n";
-                QFileInfo iplist(fiapp.filePath() + "/Info.plist");
+                iosDebugLogString += "    " + fiapp.filePath() + "\n";
+                QFileInfo iplist(QDir(fiapp.filePath()).filePath("Info.plist"));
                 if (!iplist.isFile())
                     continue;
 
-                iosFolderTrace += "      Info.plist\n";
+                iosDebugLogString += "      Info.plist\n";
 
                 QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("CFBundleIdentifier").toString();
-                iosFolderTrace += "      " + bunid + "\n";
+                iosDebugLogString += "      " + bunid + "\n";
                 if (bunid != "com.mifki.everlastingsummer")
                     continue;
 
-                iosFolderTrace += "      FOUND!\n";
-                return fiapp.filePath() + "/scripts/game/";
+                iosDebugLogString += "      FOUND!\n";
+                return QDir(fiapp.filePath()).filePath("scripts/game/");
             }
+        }
+    }
+
+    return QString();
+}
+
+QString ESModModel::ESTraceFolderForIOS(QStringList &dirs)
+{
+    // iOS < 8
+    if (m_ESModsFolder.startsWith("/User/Applications/") || m_ESModsFolder.startsWith("/var/mobile/Applications/"))
+    {
+        QString ret = m_ESModsFolder;
+        ret.remove(QRegExp("/.*\\.app/scripts/game/*$"));
+        ret += "/tmp/";
+        return ret;
+    }
+
+    // iOS >= 8
+    foreach (QString dir, dirs) // Top data directories
+    {
+        iosDebugLogString += dir + "\n";
+        QFileInfoList uuidlist = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
+        foreach (QFileInfo fiuuid, uuidlist) // Application UUIDs directories
+        {
+            iosDebugLogString += "  " + fiuuid.filePath() + "\n";
+
+            QFileInfo iplist(QDir(fiuuid.filePath()).filePath("com.apple.mobile_container_manager.metadata.plist"));
+            if (!iplist.isFile())
+                continue;
+
+            iosDebugLogString += "      com.apple.mobile_container_manager.metadata.plist\n";
+
+            QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("MCMMetadataIdentifier").toString();
+            iosDebugLogString += "      " + bunid + "\n";
+            if (bunid != "com.mifki.everlastingsummer")
+                continue;
+
+            iosDebugLogString += "      FOUND!\n";
+            return QDir(fiapp.filePath()).filePath("/tmp/");
         }
     }
 

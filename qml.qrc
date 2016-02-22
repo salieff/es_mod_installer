@@ -36,5 +36,6 @@
         <file>icons/update_press.png</file>
         <file>icons/help.png</file>
         <file>icons/mail.png</file>
+        <file>gui/MainTracebackPanel.qml</file>
     </qresource>
 </RCC>

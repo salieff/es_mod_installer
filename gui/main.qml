@@ -35,6 +35,12 @@ ApplicationWindow {
         closeButton: appTitle.button
     }
 
+    MainTracebackPanel {
+        id: tracebackPanel
+        view: mainListView
+        closeButton: appTitle.button
+    }
+
     MainWebView {
         id: infoUriView
         height: parent.height - appTitle.height
@@ -70,7 +76,7 @@ ApplicationWindow {
         MenuItem {
             text: qsTr("Change mods install path")
             onTriggered: {
-                if (infoPanel.hide() || infoUriView.hide() || likeRect.hide())
+                if (infoPanel.hide() || infoUriView.hide() || likeRect.hide() || tracebackPanel.hide())
                     appTitle.button.state = "NORMAL"
 
                 fileDialog.open()
@@ -79,10 +85,12 @@ ApplicationWindow {
 
         MenuItem {
             text: qsTr("Traceback")
+            onTriggered: esModel.copyTraceback()
         }
 
         MenuItem {
             text: qsTr("Log")
+            onTriggered: esModel.copyTraceback(true)
         }
 
         MenuItem {
@@ -92,7 +100,7 @@ ApplicationWindow {
     }
 
     FileDialog {
-        id: fileDialog
+        id: fileDialog            
         title: qsTr("Change mods install path")
         selectFolder: true
         sidebarVisible: false
@@ -129,7 +137,7 @@ ApplicationWindow {
                 break;
 
             case Qt.Key_Back:
-                if (infoPanel.hide() || infoUriView.hide() || likeRect.hide())
+                if (infoPanel.hide() || infoUriView.hide() || likeRect.hide() || tracebackPanel.hide())
                     appTitle.button.state = "NORMAL"
                 else
                     Qt.quit()

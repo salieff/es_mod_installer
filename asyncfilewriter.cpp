@@ -24,14 +24,17 @@ bool AsyncFileWriter::open(QString &destdir, QString &fname)
     m_buffer.clear();
     m_file.unsetError();
 
-    if (!QDir().mkpath(QFileInfo(destdir + fname).dir().path()))
+    QString fullFname = QDir(destdir).filePath(fname);
+    QString fullDir = QFileInfo(fullFname).dir().path();
+
+    if (!QDir().mkpath(fullDir))
     {
-        m_errorString = tr("Can't create directory ") + QFileInfo(destdir + fname).dir().path();
+        m_errorString = tr("Can't create directory ") + fullDir;
         m_wasError = true;
         return false;
     }
 
-    m_file.setFileName(destdir + fname);
+    m_file.setFileName(fullFname);
     if (!m_file.open(QIODevice::WriteOnly))
     {
         m_wasError = true;

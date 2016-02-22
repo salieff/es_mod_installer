@@ -162,7 +162,7 @@ bool AsyncUnzipper::unpackZip(QString zipFile, bool calcSizeOnly)
                 return false;
             }
 
-            if (!saveCurrentUnpFile(ufd, m_destDir + fname))
+            if (!saveCurrentUnpFile(ufd, QDir(m_destDir).filePath(fname)))
                 return false;
 
             if (unzCloseCurrentFile(ufd) != UNZ_OK)

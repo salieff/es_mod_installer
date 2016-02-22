@@ -108,11 +108,11 @@ void AsyncDownloader::fileWritten()
 
     if (m_headersOnly)
     {
-        new_rep = AsyncDownloader::NetworkManager->head(QNetworkRequest(QUrl(m_url + m_files[m_currFileIndex])));
+        new_rep = AsyncDownloader::NetworkManager->head(QNetworkRequest(QUrl(m_url).resolved(QUrl(m_files[m_currFileIndex]))));
     }
     else
     {
-        if (!checkOverwrite(m_destDir + m_files[m_currFileIndex]))
+        if (!checkOverwrite(QDir(m_destDir).filePath(m_files[m_currFileIndex])))
         {
             m_wasAbort = true;
             m_errorString = tr("Aborted by user");
@@ -128,9 +128,9 @@ void AsyncDownloader::fileWritten()
             return;
         }
 
-        m_localFiles << m_destDir + m_files[m_currFileIndex];
+        m_localFiles << QDir(m_destDir).filePath(m_files[m_currFileIndex]);
 
-        new_rep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(m_url + m_files[m_currFileIndex])));
+        new_rep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(m_url).resolved(QUrl(m_files[m_currFileIndex]))));
         connect(this, SIGNAL(abortDownload()), new_rep, SLOT(abort()));
         connect(new_rep, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(downloadProgress(qint64, qint64)));
         connect(new_rep, SIGNAL(readyRead()), this, SLOT(readData()));

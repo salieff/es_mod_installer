@@ -54,6 +54,7 @@ signals:
     void esIndexReceived();
     void listSorted(SortMode m);
     void currentModsFolder(QString newFolder);
+    void tracebackText(QString text);
 
 public slots:
     void ESModIndexDownloaded();
@@ -78,6 +79,8 @@ public slots:
     void helpRead(QString str);
     void changeModsFolder(QString f);
 
+    void copyTraceback(bool forLog = false);
+
 protected:
     QHash<int, QByteArray> roleNames() const;
 
@@ -85,9 +88,13 @@ private:
     bool LoadLocalModsDB(QList<ESModElement *> &l);
     void ReindexElements();
 
+    QString ESTracebackFileName(bool forLog = false);
+
 #ifdef Q_OS_IOS
     QString ESFolderForIOS(QStringList &dirs);
-    QString iosFolderTrace;
+    QString ESTraceFolderForIOS(QStringList &dirs);
+    QString iosDebugLogString;
+    QString m_traceFolderForIos;
 #endif
 
     QString m_ESModsFolder;

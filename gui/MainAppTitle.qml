@@ -110,12 +110,14 @@ Rectangle {
                         infoRect.hide()
                         webView.hide()
                         likePanel.hide()
+                        tracebackPanel.hide()
                         parent.state = "NORMAL"
                     }
                     else
                     {
                         webView.hide()
                         likePanel.hide()
+                        tracebackPanel.hide()
                         infoRect.show()
                     }
                 }

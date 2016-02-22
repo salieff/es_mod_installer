@@ -215,7 +215,7 @@ void ESModElement::filesDownloaded()
     QStringList zipList;
     foreach (const QString &zipFile, files)
         if (zipFile.endsWith(".zip", Qt::CaseInsensitive))
-            zipList << m_path + zipFile;
+            zipList << QDir(m_path).filePath(zipFile);
 
     connect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()));
 
@@ -431,6 +431,11 @@ bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
         files << files_arr[i].toString().trimmed();
 
     return true;
+}
+
+void ESModElement::SetInstallPath(QString p)
+{
+    m_path = p;
 }
 
 void ESModElement::TryToPickupFrom(QList<ESModElement *> &list)
