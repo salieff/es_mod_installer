@@ -721,7 +721,7 @@ QString ESModModel::ESFolderForIOS(QStringList &dirs)
             {
                 iosDebugLogString += "    " + fiapp.filePath() + "\n";
 
-                QFileInfoList plistFiles = QDir(fiapp.filePath()).entryInfoList(QStringList("*.plist"), QDir::Files);
+                QFileInfoList plistFiles = QDir(fiapp.filePath()).entryInfoList(QStringList("*.plist"), QDir::Files | QDir::Hidden);
                 foreach (QFileInfo iplist, plistFiles)
                 {
                     iosDebugLogString += "      " + iplist.filePath() + "\n";
@@ -761,7 +761,7 @@ QString ESModModel::ESTraceFolderForIOS(QStringList &dirs)
         {
             iosDebugLogString += "  " + fiuuid.filePath() + "\n";
 
-            QFileInfoList plistFiles = QDir(fiuuid.filePath()).entryInfoList(QStringList("*.plist"), QDir::Files);
+            QFileInfoList plistFiles = QDir(fiuuid.filePath()).entryInfoList(QStringList("*.plist"), QDir::Files | QDir::Hidden);
             foreach (QFileInfo iplist, plistFiles)
             {
                 iosDebugLogString += "      " + iplist.filePath() + "\n";
@@ -772,7 +772,7 @@ QString ESModModel::ESTraceFolderForIOS(QStringList &dirs)
                     continue;
 
                 iosDebugLogString += "      FOUND!\n";
-                return QDir(fiuuid.filePath()).filePath("/tmp/");
+                return QDir(fiuuid.filePath()).filePath("tmp/");
             }
         }
     }

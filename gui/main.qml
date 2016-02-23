@@ -73,6 +73,7 @@ ApplicationWindow {
         title: qsTr("Main Menu")
 
         MenuItem {
+            visible: Qt.platform.os !== "ios"
             text: qsTr("Change mods install path")
             onTriggered: {
                 if (infoPanel.hide() || infoUriView.hide() || likeRect.hide() || tracebackPanel.hide())
@@ -99,7 +100,7 @@ ApplicationWindow {
     }
 
     FileDialog {
-        id: fileDialog            
+        id: fileDialog
         title: qsTr("Change mods install path")
         selectFolder: true
         sidebarVisible: false

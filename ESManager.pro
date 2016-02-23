@@ -75,13 +75,12 @@ DISTFILES += \
     android/build.gradle \
     android/gradle/wrapper/gradle-wrapper.properties \
     android/gradlew.bat \
-    Info.plist \
     android/assets/help/index.html
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 ios {
-    QMAKE_INFO_PLIST = $$PWD/Info.plist
+    QMAKE_INFO_PLIST = $$PWD/ESInfo.plist
     ios_icon.files = $$files($$PWD/ios/AppIcon*.png)
     QMAKE_BUNDLE_DATA += ios_icon
     app_launch_images.files = $$files($$PWD/ios/LaunchImage*.png)
