@@ -103,7 +103,7 @@ Rectangle {
             font.pointSize: 25
             placeholderText: qsTr("Name filter")
 
-            onEditingFinished: {
+            onAccepted: {
                 esModel.filterByKeywords(searchText.text)
                 buttonSelector.forceActiveFocus()
             }
