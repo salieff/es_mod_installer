@@ -720,19 +720,20 @@ QString ESModModel::ESFolderForIOS(QStringList &dirs)
             foreach (QFileInfo fiapp, applist) // *.app directories
             {
                 iosDebugLogString += "    " + fiapp.filePath() + "\n";
-                QFileInfo iplist(QDir(fiapp.filePath()).filePath("Info.plist"));
-                if (!iplist.isFile())
-                    continue;
 
-                iosDebugLogString += "      Info.plist\n";
+                QFileInfoList plistFiles = QDir(fiapp.filePath()).entryInfoList(QStringList("*.plist"), QDir::Files);
+                foreach (QFileInfo iplist, plistFiles)
+                {
+                    iosDebugLogString += "      " + iplist.filePath() + "\n";
 
-                QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("CFBundleIdentifier").toString();
-                iosDebugLogString += "      " + bunid + "\n";
-                if (bunid != "com.mifki.everlastingsummer")
-                    continue;
+                    QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("CFBundleIdentifier").toString();
+                    iosDebugLogString += "      " + bunid + "\n";
+                    if (bunid != "com.mifki.everlastingsummer")
+                        continue;
 
-                iosDebugLogString += "      FOUND!\n";
-                return QDir(fiapp.filePath()).filePath("scripts/game/");
+                    iosDebugLogString += "      FOUND!\n";
+                    return QDir(fiapp.filePath()).filePath("scripts/game/");
+                }
             }
         }
     }
@@ -760,19 +761,19 @@ QString ESModModel::ESTraceFolderForIOS(QStringList &dirs)
         {
             iosDebugLogString += "  " + fiuuid.filePath() + "\n";
 
-            QFileInfo iplist(QDir(fiuuid.filePath()).filePath("com.apple.mobile_container_manager.metadata.plist"));
-            if (!iplist.isFile())
-                continue;
+            QFileInfoList plistFiles = QDir(fiuuid.filePath()).entryInfoList(QStringList("*.plist"), QDir::Files);
+            foreach (QFileInfo iplist, plistFiles)
+            {
+                iosDebugLogString += "      " + iplist.filePath() + "\n";
 
-            iosDebugLogString += "      com.apple.mobile_container_manager.metadata.plist\n";
+                QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("MCMMetadataIdentifier").toString();
+                iosDebugLogString += "      " + bunid + "\n";
+                if (bunid != "com.mifki.everlastingsummer")
+                    continue;
 
-            QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("MCMMetadataIdentifier").toString();
-            iosDebugLogString += "      " + bunid + "\n";
-            if (bunid != "com.mifki.everlastingsummer")
-                continue;
-
-            iosDebugLogString += "      FOUND!\n";
-            return QDir(fiuuid.filePath()).filePath("/tmp/");
+                iosDebugLogString += "      FOUND!\n";
+                return QDir(fiuuid.filePath()).filePath("/tmp/");
+            }
         }
     }
 
