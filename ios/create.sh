@@ -35,7 +35,7 @@ declare -a LAUNCH_ARR=( \
     'LaunchImage-Portrait.png' '768x1004' \
     'LaunchImage-Portrait@2x.png' '1536x2008' )
 
-IN_ICON='../icons/icon.png'
+IN_ICON='icon.png'
 
 function processIcon() {
 while (( "$#" ))
