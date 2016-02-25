@@ -2,9 +2,6 @@ import QtQuick 2.3
 import QtWebView 1.0
 
 WebView {
-    property ListView view
-    property MMImage closeButton
-
     visible: false
 
     anchors {
@@ -14,10 +11,12 @@ WebView {
         margins: 5
     }
 
+    height: parent.height - mainAppTitle.height
+
     function hide() {
         if (visible) {
             visible = false
-            view.enabled = true
+            mainListView.enabled = true
             return true
         }
         return false
@@ -27,28 +26,16 @@ WebView {
         if (visible)
             return false
 
-        view.enabled = false
+        mainListView.enabled = false
         visible = true
-        closeButton.state = "CLOSE"
+        mainAppTitle.closeButton.state = "CLOSE"
         return true
     }
 
     Connections {
-        target: view
+        target: mainListView
         onInfoUriSignal: {
-            if (uriStr.indexOf("qrc:/") == 0)
-            {
-                show()
-                var xhr = new XMLHttpRequest;
-                xhr.open("GET", uriStr);
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === XMLHttpRequest.DONE) {
-                        loadHtml(xhr.responseText, "qrc:/help")
-                    }
-                }
-                xhr.send();
-            }
-            else if (uriStr)
+            if (uriStr)
             {
                 show()
                 if (url !== uriStr)

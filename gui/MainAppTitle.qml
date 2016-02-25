@@ -2,11 +2,7 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.2
 
 Rectangle {
-    property MainInfoPanel infoRect
-    property MainWebView webView
-    property MainLikePanel likePanel
-
-    property MMImage button: iButton
+    property alias closeButton: mailCloseButton
 
     anchors {
         top: parent.top
@@ -42,9 +38,9 @@ Rectangle {
                     if (Qt.platform.os === "android")
                         mainListView.infoUriSignal("file:///android_asset/help/index.html")
                     else if (Qt.platform.os === "ios")
-                        mainListView.infoUriSignal(fileDialog.shortcuts.home + "/help.html")
+                        mainListView.infoUriSignal(modsPathDialog.shortcuts.home + "/help.html")
                     else
-                        mainListView.infoUriSignal(fileDialog.shortcuts.home + "/Work/ESManager_github/es_mod_installer/help.html")
+                        mainListView.infoUriSignal(modsPathDialog.shortcuts.home + "/Work/ESManager_github/es_mod_installer/help/help.html")
                 }
             }
         }
@@ -79,7 +75,7 @@ Rectangle {
         }
 
         MMImage {
-            id: iButton
+            id: mailCloseButton
             source: "/icons/mail.png"
             mmwidth: 6
             mmheight: 6
@@ -97,15 +93,15 @@ Rectangle {
             states: [
                 State {
                     name: "NORMAL"
-                    PropertyChanges { target: iButton; source: "/icons/mail.png"}
-                    PropertyChanges { target: iButton; opacity: 1}
-                    PropertyChanges { target: opacityAnim; running: iButton.pulsed}
+                    PropertyChanges { target: mailCloseButton; source: "/icons/mail.png"}
+                    PropertyChanges { target: mailCloseButton; opacity: 1}
+                    PropertyChanges { target: opacityAnim; running: mailCloseButton.pulsed}
                 },
                 State {
                     name: "CLOSE"
-                    PropertyChanges { target: iButton; opacity: 1}
+                    PropertyChanges { target: mailCloseButton; opacity: 1}
                     PropertyChanges { target: opacityAnim; running: false}
-                    PropertyChanges { target: button; source: "/icons/abort.png"}
+                    PropertyChanges { target: mailCloseButton; source: "/icons/abort.png"}
                 }
             ]
 
@@ -114,18 +110,13 @@ Rectangle {
                 onClicked: {
                     if (parent.state == "CLOSE")
                     {
-                        infoRect.hide()
-                        webView.hide()
-                        likePanel.hide()
-                        tracebackPanel.hide()
+                        mainWindow.hideAllPanels()
                         parent.state = "NORMAL"
                     }
                     else
                     {
-                        webView.hide()
-                        likePanel.hide()
-                        tracebackPanel.hide()
-                        infoRect.show()
+                        mainWindow.hideAllPanels()
+                        mainInfoPanel.show()
                     }
                 }
             }

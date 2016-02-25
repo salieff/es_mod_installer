@@ -3,7 +3,6 @@ import QtQuick.Controls 1.2
 import org.salieff.esmodinstaller 1.0
 
 Menu {
-    id: sortMenu
     title: qsTr("Sort mode")
 
     MenuItem {

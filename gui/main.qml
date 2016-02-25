@@ -9,124 +9,57 @@ ApplicationWindow {
     title: qsTr("ES Manager")
     visible: true
 
+    MainBalloon {
+        id: mainBalloon
+    }
+
     MainListView {
         id: mainListView
-        anchors {
-            top: appTitle.bottom
-            bottom: sortSearchBox.top
-        }
     }
 
     MainAppTitle {
-        id: appTitle
-        infoRect: infoPanel
-        webView: infoUriView
-        likePanel: likeRect
+        id: mainAppTitle
     }
 
     MainSortSearchBox {
-        id: sortSearchBox
-        menu: sortMenu
+        id: mainSortSearchBox
     }
 
     MainInfoPanel {
-        id: infoPanel
-        view: mainListView
-        closeButton: appTitle.button
+        id: mainInfoPanel
     }
 
     MainTracebackPanel {
-        id: tracebackPanel
-        view: mainListView
-        closeButton: appTitle.button
+        id: mainTracebackPanel
     }
 
     MainWebView {
-        id: infoUriView
-        height: parent.height - appTitle.height
-        closeButton: appTitle.button
-        view: mainListView
+        id: mainWebView
     }
 
     MainSortMenu {
-        id: sortMenu
+        id: mainSortMenu
     }
 
     MainLikePanel {
-        id: likeRect
-        self: likeRect
-        closeButton: appTitle.button
-        view: mainListView
+        id: mainLikePanel
     }
 
-    onClosing: {
-        if (infoPanel.hide() || infoUriView.hide() || likeRect.hide() || tracebackPanel.hide() || buttonSelector.activeFocus == false)
-        {
-            close.accepted = false
-            appTitle.button.state = "NORMAL"
-            buttonSelector.forceActiveFocus()
-        }
-    }
-
-    Menu {
+    MainMenu {
         id: mainMenu
-        title: qsTr("Main Menu")
-
-        MenuItem {
-            visible: Qt.platform.os !== "ios"
-            text: qsTr("Change mods install path")
-            onTriggered: {
-                if (infoPanel.hide() || infoUriView.hide() || likeRect.hide() || tracebackPanel.hide())
-                    appTitle.button.state = "NORMAL"
-
-                fileDialog.open()
-            }
-        }
-
-        MenuItem {
-            text: qsTr("Traceback")
-            onTriggered: esModel.copyTraceback()
-        }
-
-        MenuItem {
-            text: qsTr("Log")
-            onTriggered: esModel.copyTraceback(true)
-        }
-
-        MenuItem {
-            text: qsTr("Exit")
-            onTriggered: Qt.quit()
-        }
     }
 
-    FileDialog {
-        id: fileDialog
-        title: qsTr("Change mods install path")
-        selectFolder: true
-        sidebarVisible: false
-        selectMultiple: false
-
-        onAccepted: {
-            console.log("You chose: " + fileDialog.fileUrl)
-            fileDialog.close()
-            buttonSelector.forceActiveFocus()
-            esModel.changeModsFolder(fileDialog.fileUrl)
-        }
-
-        onRejected: {
-            console.log("Canceled")
-            fileDialog.close()
-            buttonSelector.forceActiveFocus()
-        }
+    ModsPathDialog {
+        id: modsPathDialog
     }
 
     Connections {
         target: esModel
-        onCurrentModsFolder: fileDialog.folder = "file://" + newFolder
+        onCurrentModsFolder: modsPathDialog.folder = "file://" + newFolder
     }
 
     Item {
-        id: buttonSelector
+        id: mainButtonSelector
         anchors.fill: parent
         focus: true
         Keys.onPressed: {
@@ -137,15 +70,28 @@ ApplicationWindow {
                 break;
 
             case Qt.Key_Back:
-                if (infoPanel.hide() || infoUriView.hide() || likeRect.hide() || tracebackPanel.hide())
-                    appTitle.button.state = "NORMAL"
-                else
+                if (!hideAllPanels())
                     Qt.quit()
                 break;
             }
 
-            console.log('ES Key pressed : ' + event.key)
             event.accepted = true;
         }
+    }
+
+    onClosing: {
+        if (hideAllPanels())
+            close.accepted = false
+    }
+
+    function hideAllPanels() {
+        if (mainInfoPanel.hide() || mainWebView.hide() || mainLikePanel.hide() || mainTracebackPanel.hide() || mainButtonSelector.activeFocus == false)
+        {
+            mainAppTitle.closeButton.state = "NORMAL"
+            mainButtonSelector.forceActiveFocus()
+            return true
+        }
+
+        return false
     }
 }

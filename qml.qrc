@@ -37,5 +37,8 @@
         <file>icons/help.png</file>
         <file>icons/mail.png</file>
         <file>gui/MainTracebackPanel.qml</file>
+        <file>gui/MainBalloon.qml</file>
+        <file>gui/MainMenu.qml</file>
+        <file>gui/ModsPathDialog.qml</file>
     </qresource>
 </RCC>

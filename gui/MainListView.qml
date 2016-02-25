@@ -5,6 +5,8 @@ ListView {
     model: esModel
     delegate: Delegate {}
     anchors {
+        top: mainAppTitle.bottom
+        bottom: mainSortSearchBox.top
         left: parent.left
         right: parent.right
         margins: 10
@@ -26,7 +28,7 @@ ListView {
     }
 
     BusyIndicator {
-        id: viewBusyIndicator
+        id: busyIndicator
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.margins: 40
@@ -36,7 +38,7 @@ ListView {
 
         Connections {
             target: esModel
-            onEsIndexReceived: viewBusyIndicator.running = false;
+            onEsIndexReceived: busyIndicator.running = false;
         }
     }
 

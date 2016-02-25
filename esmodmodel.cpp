@@ -32,11 +32,15 @@ ESModModel::ESModModel(QObject *parent)
 
     if (m_ESModsFolder.isEmpty())
     {
+        copyToClipboard(iosDebugLogString, tr("Debug data was copied to clipboard");
         QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder\n") + iosDebugLogString);
-        QApplication::quit();
+    }
+    else
+    {
+        emit balloonText(tr("Mod's folder found"));
     }
 
-    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Mods are located in [") + m_ESModsFolder + "]\n" + iosDebugLogString);
+    //QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Mods are located in [") + m_ESModsFolder + "]\n" + iosDebugLogString);
     iosDebugLogString.clear();
 
     m_traceFolderForIos = ESTraceFolderForIOS(QStringList() \
@@ -45,13 +49,16 @@ ESModModel::ESModModel(QObject *parent)
 
     if (m_traceFolderForIos.isEmpty())
     {
+        copyToClipboard(iosDebugLogString, tr("Debug data was copied to clipboard");
         QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer trace logs folder\n") + iosDebugLogString);
-        QApplication::quit();
+    }
+    else
+    {
+        emit balloonText(tr("Trace's folder found"));
     }
 
-    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Traces are located in [") + m_traceFolderForIos + "]\n" + iosDebugLogString);
-
-    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("My MAC-address is [") + AsyncDownloader::getMacAddress() + "]");
+    //QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Traces are located in [") + m_traceFolderForIos + "]\n" + iosDebugLogString);
+    //QMessageBox::information(NULL, tr("Everlasting Summer"), tr("My MAC-address is [") + AsyncDownloader::getMacAddress() + "]");
 #elif defined(ANDROID)
     m_ESModsFolder = ANDROID_ES_MODS_FOLDER;
 #else
@@ -677,7 +684,7 @@ void ESModModel::copyTraceback(bool forLog)
         return;
 
     QString s = QString::fromLocal8Bit(f.readAll());
-    QApplication::clipboard()->setText(s);
+    copyToClipboard(s, QString(forLog ? tr("Log") : tr("Traceback")) + tr(" was copied into clipboard"));
 
     emit tracebackText(s);
 }
@@ -704,6 +711,12 @@ QString ESModModel::ESTracebackFileName(bool forLog)
     else
         return QDir(m_ESModsFolder).filePath("traceback.txt");
 #endif
+}
+
+void ESModModel::copyToClipboard(QString &txt, QString msg)
+{
+    QApplication::clipboard()->setText(txt);
+    emit balloonText(msg);
 }
 
 #ifdef Q_OS_IOS

@@ -5,7 +5,6 @@ import QtQuick.Controls 1.2
 import org.salieff.esmodinstaller 1.0
 
 Rectangle {
-    property Menu menu
     height: sortSearchLayout.implicitHeight + 20 + radius
     anchors {
         bottom: parent.bottom
@@ -93,7 +92,7 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: menu.popup()
+                onClicked: mainSortMenu.popup()
             }
         }
 
@@ -105,7 +104,7 @@ Rectangle {
 
             onAccepted: {
                 esModel.filterByKeywords(searchText.text)
-                buttonSelector.forceActiveFocus()
+                mainButtonSelector.forceActiveFocus()
             }
         }
 
@@ -119,7 +118,7 @@ Rectangle {
                 onClicked: {
                     searchText.text = ""
                     esModel.filterByKeywords(searchText.text)
-                    buttonSelector.forceActiveFocus()
+                    mainButtonSelector.forceActiveFocus()
                 }
             }
         }
@@ -133,7 +132,7 @@ Rectangle {
                 anchors.fill: parent
                 onClicked: {
                     esModel.filterByKeywords(searchText.text)
-                    buttonSelector.forceActiveFocus()
+                    mainButtonSelector.forceActiveFocus()
                 }
             }
 

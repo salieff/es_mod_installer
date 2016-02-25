@@ -1,10 +1,7 @@
 import QtQuick 2.3
 
 Rectangle {
-    property ListView view
-    property MMImage closeButton
-
-    height: parent.height - appTitle.height
+    height: parent.height - mainAppTitle.height
     anchors {
         bottom: parent.bottom
         left: parent.left
@@ -20,7 +17,7 @@ Rectangle {
 
     onOpacityChanged: if (opacity == 0) {
                           visible = false
-                          view.enabled = true
+                          mainListView.enabled = true
                       }
 
     function hide() {
@@ -35,10 +32,10 @@ Rectangle {
         if (visible)
             return false
 
-        view.enabled = false
+        mainListView.enabled = false
         visible = true
         opacity = 0.95
-        closeButton.state = "CLOSE"
+        mainAppTitle.closeButton.state = "CLOSE"
 
         return true
     }
@@ -65,9 +62,7 @@ Rectangle {
                 target: esModel
                 onTracebackText: {
                     tracebackText.text = text
-                    infoPanel.hide()
-                    infoUriView.hide()
-                    likeRect.hide()
+                    mainWindow.hideAllPanels()
                     show()
                 }
             }

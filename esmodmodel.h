@@ -55,6 +55,7 @@ signals:
     void listSorted(SortMode m);
     void currentModsFolder(QString newFolder);
     void tracebackText(QString text);
+    void balloonText(QString text);
 
 public slots:
     void ESModIndexDownloaded();
@@ -89,6 +90,8 @@ private:
     void ReindexElements();
 
     QString ESTracebackFileName(bool forLog = false);
+
+    void copyToClipboard(QString &txt, QString msg);
 
 #ifdef Q_OS_IOS
     QString ESFolderForIOS(QStringList &dirs);

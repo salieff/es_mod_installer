@@ -1,10 +1,7 @@
 import QtQuick 2.3
 
 Rectangle {
-    property ListView view
-    property MMImage closeButton
-
-    height: parent.height - appTitle.height
+    height: parent.height - mainAppTitle.height
     anchors {
         bottom: parent.bottom
         left: parent.left
@@ -20,7 +17,7 @@ Rectangle {
 
     onOpacityChanged: if (opacity == 0) {
                           visible = false
-                          view.enabled = true
+                          mainListView.enabled = true
                       }
 
     function hide() {
@@ -35,17 +32,17 @@ Rectangle {
         if (visible)
             return false
 
-        view.enabled = false
+        mainListView.enabled = false
         visible = true
         opacity = 0.95
 
-        if (closeButton.pulsed)
+        if (mainAppTitle.closeButton.pulsed)
         {
-            esModel.helpRead(helpText.text)
-            closeButton.pulsed = false
+            esModel.helpRead(infoText.text)
+            mainAppTitle.closeButton.pulsed = false
         }
 
-        closeButton.state = "CLOSE"
+        mainAppTitle.closeButton.state = "CLOSE"
 
         return true
     }
@@ -59,10 +56,10 @@ Rectangle {
     Flickable {
         anchors.fill: parent;
         anchors.margins: 10
-        contentHeight: helpText.implicitHeight
+        contentHeight: infoText.implicitHeight
 
         Text {
-            id: helpText
+            id: infoText
             width: parent.width
             font.pointSize: 18
             wrapMode: Text.Wrap
@@ -71,10 +68,10 @@ Rectangle {
             Connections {
                 target: esModel
                 onAppHelpReceived: {
-                    if (helpText.text != text && fromServer)
-                        closeButton.pulsed = true
+                    if (infoText.text != text && fromServer)
+                        mainAppTitle.closeButton.pulsed = true
 
-                    helpText.text = text
+                    infoText.text = text
                 }
             }
         }

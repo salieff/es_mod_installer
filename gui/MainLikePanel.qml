@@ -3,10 +3,6 @@ import QtQuick.Layouts 1.2
 import org.salieff.esmodinstaller 1.0
 
 Rectangle {
-    property ListView view
-    property var self
-    property MMImage closeButton
-
     width: likeRectLayout.implicitWidth + 40
     height: likeRectLayout.implicitHeight + 40
     anchors.centerIn: parent
@@ -22,7 +18,7 @@ Rectangle {
 
     onOpacityChanged: if (opacity == 0) {
                           visible = false
-                          view.enabled = true
+                          mainListView.enabled = true
                       }
 
     function hide() {
@@ -37,10 +33,10 @@ Rectangle {
         if (visible)
             return false
 
-        view.enabled = false
+        mainListView.enabled = false
         visible = true
         opacity = 0.95
-        closeButton.state = "CLOSE"
+        mainAppTitle.closeButton.state = "CLOSE"
         return true
     }
 
@@ -69,7 +65,7 @@ Rectangle {
                 anchors.fill: parent
 
                 onPressed: {
-                    if (self.myLike !== ESModElement.LikeMark)
+                    if (myLike !== ESModElement.LikeMark)
                     {
                         likeImg.opacity = 1
                         dislikeImg.opacity = 0.3
@@ -77,12 +73,12 @@ Rectangle {
                 }
 
                 onReleased: {
-                    if (self.myLike !== ESModElement.LikeMark)
+                    if (myLike !== ESModElement.LikeMark)
                     {
-                        self.myLike = ESModElement.LikeMark
+                        myLike = ESModElement.LikeMark
                         esModel.SendLike(itemIndex, ESModElement.LikeMark)
-                        closeButton.state = "NORMAL"
-                        self.hide()
+                        mainAppTitle.closeButton.state = "NORMAL"
+                        hide()
                     }
                 }
             }
@@ -100,7 +96,7 @@ Rectangle {
                 anchors.fill: parent
 
                 onPressed: {
-                    if (self.myLike !== ESModElement.DislikeMark)
+                    if (myLike !== ESModElement.DislikeMark)
                     {
                         likeImg.opacity = 0.3
                         dislikeImg.opacity = 1
@@ -108,12 +104,12 @@ Rectangle {
                 }
 
                 onReleased: {
-                    if (self.myLike !== ESModElement.DislikeMark)
+                    if (myLike !== ESModElement.DislikeMark)
                     {
-                        self.myLike = ESModElement.DislikeMark
+                        myLike = ESModElement.DislikeMark
                         esModel.SendLike(itemIndex, ESModElement.DislikeMark)
-                        closeButton.state = "NORMAL"
-                        self.hide()
+                        mainAppTitle.closeButton.state = "NORMAL"
+                        hide()
                     }
                 }
             }
@@ -160,7 +156,7 @@ Rectangle {
     }
 
     Connections {
-        target: view
+        target: mainListView
         onLikeBoxSignal: {
             if (!visible)
             {
@@ -203,7 +199,7 @@ Rectangle {
                 else
                     likeMiniRow.visible = true
 
-                view.enabled = false
+                mainListView.enabled = false
 
                 var tlen = modeldata.title.length
                 var maxlen = 25
@@ -212,8 +208,8 @@ Rectangle {
                 else
                     likeTitle.text = modeldata.title.substring(0, (maxlen - 3) / 2) + "..." + modeldata.title.substring(tlen - (maxlen - 3) / 2)
 
-                self.itemIndex = modeldata.index
-                self.myLike = modeldata.mylikemark
+                itemIndex = modeldata.index
+                myLike = modeldata.mylikemark
                 show()
             }
         }
