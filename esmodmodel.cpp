@@ -32,7 +32,7 @@ ESModModel::ESModModel(QObject *parent)
 
     if (m_ESModsFolder.isEmpty())
     {
-        copyToClipboard(iosDebugLogString, tr("Debug data was copied to clipboard");
+        copyToClipboard(iosDebugLogString, tr("Debug data was copied to clipboard"));
         QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder\n") + iosDebugLogString);
     }
     else
@@ -49,7 +49,7 @@ ESModModel::ESModModel(QObject *parent)
 
     if (m_traceFolderForIos.isEmpty())
     {
-        copyToClipboard(iosDebugLogString, tr("Debug data was copied to clipboard");
+        copyToClipboard(iosDebugLogString, tr("Debug data was copied to clipboard"));
         QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer trace logs folder\n") + iosDebugLogString);
     }
     else

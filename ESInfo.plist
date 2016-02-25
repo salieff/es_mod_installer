@@ -63,7 +63,7 @@
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>UILaunchStoryboardName</key>
-		<string>LaunchScreen</string>
+		<string>ESLaunch</string>
 		<key>UILaunchImageFile</key>
 		<string>LaunchImage</string>
 		<key>UILaunchImages</key>

@@ -83,7 +83,7 @@ ios {
     QMAKE_INFO_PLIST = $$PWD/ESInfo.plist
     ios_icon.files = $$PWD/ios/icon.png $$files($$PWD/ios/AppIcon*.png)
     QMAKE_BUNDLE_DATA += ios_icon
-    app_launch_images.files = $$files($$PWD/ios/LaunchImage*.png)
+    app_launch_images.files = $$PWD/ios/ESLaunch.xib $$files($$PWD/ios/LaunchImage*.png)
     QMAKE_BUNDLE_DATA += app_launch_images
     app_help_topic.files = $$files($$PWD/ios/help.html)
     QMAKE_BUNDLE_DATA += app_help_topic
