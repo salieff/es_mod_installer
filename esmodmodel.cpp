@@ -673,6 +673,7 @@ void ESModModel::changeModsFolder(QString f)
 
         SaveLocalModsDB();
         emit currentModsFolder(m_ESModsFolder);
+        emit balloonText(tr("Mod's folder changed to ") + m_ESModsFolder);
     }
 }
 

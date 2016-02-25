@@ -2,8 +2,8 @@ import QtQuick 2.3
 
 Rectangle {
     z: 1
-    width: balloonText.implicitWidth + 20
-    height: balloonText.implicitHeight + 20
+    width: balloonText.contentWidth + 20
+    height: balloonText.contentHeight + 20
     anchors.centerIn: parent
     radius: 10
     color: "black"
@@ -16,7 +16,11 @@ Rectangle {
         id: balloonText
         anchors.centerIn: parent
         font.pointSize: 18
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
         color: "white"
+        wrapMode: Text.Wrap
+        width: mainWindow.width - 30
     }
 
     SequentialAnimation on opacity {

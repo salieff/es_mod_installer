@@ -29,8 +29,8 @@ Rectangle {
     }
 
     function show() {
-        if (visible)
-            return false
+        // if (visible)
+        //    return false
 
         mainListView.enabled = false
         visible = true
