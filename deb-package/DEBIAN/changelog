@@ -1,53 +1,70 @@
+esmanager (1.0-1) stable; urgency=medium
+
+  * Implemented support of new index which iOS mod's contains too
+  * Implemented mod's folder customization for Android
+  * Implemented renpy traceback and log displaying and copying to clipboard
+  * Implemented Installation/deletion statistics sending
+  * Implemented autosearch mod's and trace's folders on iOS
+  * Implemented launch-screen displaying while loading
+  * Many bugfixes, GUI and internal algorithms improvements
+
+ --  Alexander S. Salieff <salieff@mail.ru>  Sun, 28 Feb 2016 03:45:54 +0300
+
 esmanager (0.9-1) stable; urgency=medium
 
-* Version 0.9
+  * Added sort by score and by votes count
+  * Help topic improved a bit
 
---  Alexander S. Salieff <salieff@mail.ru>  Tue, 09 Feb 2016 17:06:39 +0300
+ --  Alexander S. Salieff <salieff@mail.ru>  Mon, 15 Feb 2016 23:15:35 +0300
 
 esmanager (0.8-1) stable; urgency=medium
 
-* Version 0.8
+  * Implemented voting system
+  * While tap mod's titles highlight by red
+  * Built-in help topic written
+  * Readme button redesigned, got new icon and blinks when new message is available
+  * Readme button turns into close button when any window is opened
 
---  Alexander S. Salieff <salieff@mail.ru>  Tue, 09 Feb 2016 17:06:38 +0300
+ --  Alexander S. Salieff <salieff@mail.ru>  Sun, 14 Feb 2016 04:47:50 +0300
 
 esmanager (0.7-1) stable; urgency=medium
 
-* Version 0.7
+  * Implemented support of new, extended index
+  * Design improved, supported mod's languages displayed as icons with flags
+  * Size and date received from server from real files
+  * Implemenetd sort by name/size/date
+  * Implemented keyword filter
+  * Implemented description page displaying by tap mod's title
+  * Implemented displaying little readme, received from server
 
---  Alexander S. Salieff <salieff@mail.ru>  Tue, 09 Feb 2016 17:06:37 +0300
+ --  Alexander S. Salieff <salieff@mail.ru>  Thu, 31 Dec 2015 03:12:00 +0300
 
 esmanager (0.6-1) stable; urgency=medium
 
-* Version 0.6
+  * GUI redesigned with point-metrics and DPI calculations. Fonts and icons have same physical sizes on various screens as result
+  * Implemented files overwrite request
+  * Improved GUI responsibility
+  * Disk operations isolated in separate thread to avoid GUI freezes
+  * Now application have name - ES Mod Installer (org.salieff.esmodinstaller) and icon
 
---  Alexander S. Salieff <salieff@mail.ru>  Tue, 09 Feb 2015 17:06:37 +0300
-
-esmanager (0.5-1) stable; urgency=medium
-
-* Version 0.5
-
---  Alexander S. Salieff <salieff@mail.ru>  Tue, 09 Feb 2014 17:06:37 +0300
+ --  Alexander S. Salieff <salieff@mail.ru>  Mon, 21 Dec 2015 22:16:00 +0300
 
 esmanager (0.4-1) stable; urgency=medium
 
-* Version 0.4
+  * Memory leaks fixed
+  * Race conditions fixed
 
---  Alexander S. Salieff <salieff@mail.ru>  Tue, 09 Feb 2013 17:06:37 +0300
+ --  Alexander S. Salieff <salieff@mail.ru>  Fri, 18 Dec 2015 22:56:00 +0300
 
 esmanager (0.3-1) stable; urgency=medium
 
-* Version 0.3
+  * Update button implemented
+  * While deletion generated   *.rpyc files will be deleted too
 
---  Alexander S. Salieff <salieff@mail.ru>  Tue, 09 Feb 2012 17:06:37 +0300
-
-esmanager (0.2-1) stable; urgency=medium
-
-* Version 0.2
-
---  Alexander S. Salieff <salieff@mail.ru>  Tue, 09 Feb 2011 17:06:37 +0300
+ --  Alexander S. Salieff <salieff@mail.ru>  Fri, 18 Dec 2015 04:40:00 +0300
 
 esmanager (0.1-1) stable; urgency=medium
 
-* Version 0.1
+  * Initial release
 
---  Alexander S. Salieff <salieff@mail.ru>  Tue, 09 Feb 2010 17:06:37 +0300
+ --  Alexander S. Salieff <salieff@mail.ru>  Wed, 16 Dec 2015 22:30:00 +0300

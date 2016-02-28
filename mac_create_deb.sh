@@ -12,4 +12,4 @@ find /tmp/deb-package/Applications -type f -exec md5sum '{}' ';' | sed -e 's;/tm
 
 VERS=`cat /tmp/deb-package/DEBIAN/control | grep 'Version:' | sed -e 's/Version: //'`
 
-fakeroot dpkg-deb -Zgzip --build /tmp/deb-package /tmp/esmanager_"$VERS"_iphoneos-arm.deb
+fakeroot dpkg-deb -Zgzip --build /tmp/deb-package /tmp/org.salieff.esmodinstaller_"$VERS"_iphoneos-arm.deb
