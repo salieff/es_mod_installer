@@ -1,7 +1,7 @@
 Package: org.salieff.esmodinstaller
 Name: ES Mod Installer
-Version: 1.0-1
-Section: utils
+Version: 1.0-3
+Section: Games
 Depends: firmware (>= 5.0)
 Architecture: iphoneos-arm
 Description: Everlasting Summer mods installer
@@ -10,4 +10,5 @@ Description: Everlasting Summer mods installer
 Homepage: https://github.com/salieff/es_mod_installer
 Author: Alexander S. Salieff <salieff@mail.ru>
 Maintainer: Alexander S. Salieff <salieff@mail.ru>
-Installed-Size: 35980
+Icon: file:///Applications/ESManager.app/icon.png
+Installed-Size: 123

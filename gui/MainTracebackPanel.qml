@@ -32,6 +32,8 @@ Rectangle {
         // if (visible)
         //    return false
 
+        mainWindow.hideAllPanels()
+
         mainListView.enabled = false
         visible = true
         opacity = 0.95
@@ -62,7 +64,6 @@ Rectangle {
                 target: esModel
                 onTracebackText: {
                     tracebackText.text = text
-                    mainWindow.hideAllPanels()
                     show()
                 }
             }

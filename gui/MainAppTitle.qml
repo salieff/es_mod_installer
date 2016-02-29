@@ -115,7 +115,7 @@ Rectangle {
                     }
                     else
                     {
-                        mainWindow.hideAllPanels()
+                        // mainWindow.hideAllPanels()
                         mainInfoPanel.show()
                     }
                 }

@@ -16,6 +16,7 @@ WebView {
     function hide() {
         if (visible) {
             visible = false
+            // stop()
             mainListView.enabled = true
             return true
         }
@@ -23,8 +24,10 @@ WebView {
     }
 
     function show() {
-        if (visible)
-            return false
+        // if (visible)
+        //    return false
+
+        mainWindow.hideAllPanels()
 
         mainListView.enabled = false
         visible = true
