@@ -30,6 +30,7 @@ SIZEKB=`du -skL '/tmp/deb-package/Applications/ESManager.app' | awk '{ print $1;
 perl -p -i -e 's/Installed-Size: \d+/Installed-Size: '"${SIZEKB}"'/g' '/tmp/deb-package/DEBIAN/control'
 
 VERS=`cat '/tmp/deb-package/DEBIAN/control' | grep 'Version:' | sed -e 's/Version: //'`
+NAME=`cat './deb-package/DEBIAN/control' | grep 'Package:' | sed -e 's/Package: //'`
 
-rm -f "/tmp/org.salieff.esmodinstaller_${VERS}_iphoneos-arm.deb"
-fakeroot dpkg-deb -Zgzip --build '/tmp/deb-package' "/tmp/org.salieff.esmodinstaller_${VERS}_iphoneos-arm.deb"
+rm -f "/tmp/${NAME}_${VERS}_iphoneos-arm.deb"
+fakeroot dpkg-deb -Zgzip --build '/tmp/deb-package' "/tmp/${NAME}_${VERS}_iphoneos-arm.deb"
