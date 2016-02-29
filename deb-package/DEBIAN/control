@@ -7,7 +7,7 @@ Architecture: iphoneos-arm
 Description: Everlasting Summer mods installer
  Utility which provides iOS-converted and verified mod-packs.
  Allows install, remove, update mod-packs, read descriptions and vote with likes/dislikes.
-Homepage: https://github.com/salieff/es_mod_installer
+Homepage: http://191.ru/es/
 Author: Alexander S. Salieff <salieff@mail.ru>
 Maintainer: Alexander S. Salieff <salieff@mail.ru>
 Icon: file:///Applications/ESManager.app/icon.png
