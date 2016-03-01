@@ -1,189 +1,189 @@
-      1 000000 Xerox
-      1 0003AA Watlow
-      1 00044B Nvidia
-      1 000789 Dongwon Systems
-      1 000AF5 Airgo Networks
-      1 000CE7 MediaTek
-      1 000CF1 Intel
-      1 00117F Neotune Information Technology
-      1 001240 Amoi Electronics
-      1 00172F NeuLion Incorporated
-      1 0018E4 Yiguang
-      1 001D07 Shenzhen Sang Fei Consumer Communications
-      1 00738D Shenzhen Tinno Mobile Technology
-      1 009008 HanA Systems
-      1 00F46F Samsung Electronics
-      1 041BBA Samsung Electronics
-      1 080027 Oracle VirtualBox virtual NIC
-      1 083D88 Samsung Electronics
-      1 08ECA9 Samsung Electronics
-      1 08FD0E Samsung Electronics
-      1 0CB319 Samsung Electronics
-      1 10C37B Asustek Computer
-      1 10D38A Samsung Electronics
-      1 149FE8 Lenovo Mobile Communication Technology
-      1 18002D Sony Mobile Communications AB
-      1 1CB094 HTC
-      1 2002AF Murata Manufacturing
-      1 201A06 Compal Information (kunshan)
-      1 206E9C Samsung Electronics
-      1 2082C0 Xiaomi Communications
-      1 20D390 Samsung Electronics
-      1 305A3A Asustek Computer
-      1 343111 Samsung Electronics
-      1 382DD1 Samsung Electronics
-      1 382DE8 Samsung Electronics
-      1 3CCB7C TCT mobile
-      1 40B0FA LG Electronics
-      1 40B837 Sony Mobile Communications AB
-      1 40C62A Shanghai Jing Ren Electronic Technology
-      1 40F308 Murata Manufacturing
-      1 503275 Samsung Electronics
-      1 509F27 Huawei Technologies
-      1 542758 Motorola (Wuhan) Mobility Technologies Communication
-      1 5440AD Samsung Electronics
-      1 54E4BD Fn-link Technology Limited
-      1 5C3C27 Samsung Electronics
-      1 5CF8A1 Murata Manufacturing
-      1 60512C TCT mobile limited
-      1 60A44C Asustek Computer
-      1 60D9A0 Lenovo Mobile Communication Technology
-      1 680571 Samsung Electronics
-      1 6C5F1C Lenovo Mobile Communication Technology
-      1 6C94F8 Apple
-      1 70723C Huawei Technologies
-      1 7824AF Asustek Computer
-      1 7840E4 Samsung Electronics
-      1 78F882 LG Electronics (Mobile Communications)
-      1 7C7D3D Huawei Technologies
-      1 7CF90E Samsung Electronics
-      1 804E81 Samsung Electronics
-      1 80618F Shenzhen sangfei consumer communications
-      1 80656D Samsung Electronics
-      1 80CF41 Lenovo Mobile Communication Technology
-      1 80D09B Huawei Technologies
-      1 84119E Samsung Electronics
-      1 842E27 Samsung Electronics
-      1 843838 Samsung Electro Mechanics
-      1 8455A5 Samsung Electronics
-      1 847303 Letv Mobile and Intelligent Information Technology (Beijing)
-      1 848EDF Sony Mobile Communications AB
-      1 88329B Samsung Electro Mechanics
-      1 883314 Texas Instruments
-      1 88C9D0 LG Electronics
-      1 8C18D9 Shenzhen RF Technology
-      1 8C3AE3 LG Electronics
-      1 8CD17B CG Mobile
-      1 90E7C4 HTC
-      1 94350A Samsung Electronics
-      1 94D859 TCT mobile
-      1 94DBC9 AzureWave Technology
-      1 980D2E HTC
-      1 983B16 Ampak Technology
-      1 98F170 Murata Manufacturing
-      1 9C0298 Samsung Electronics
-      1 A09169 LG Electronics
-      1 A0E453 Sony Mobile Communications AB
-      1 A87C01 Samsung Electronics
-      1 A8A668 zte
-      1 AC3613 Samsung Electronics
-      1 B0E03C TCT mobile
-      1 B4527E Sony Mobile Communications AB
-      1 B857D8 Samsung Electronics
-      1 BC0F2B Fortune Techgroup
-      1 BC20A4 Samsung Electronics
-      1 BC4486 Samsung Electronics
-      1 BC72B1 Samsung Electronics
-      1 BCF5AC LG Electronics
-      1 C0BDD1 Samsung Electro Mechanics
-      1 C4072F Huawei Technologies
-      1 C49A02 LG Electronics (Mobile Communicaitons)
-      1 C88550 Apple
-      1 CC07AB Samsung Electronics
-      1 CCFA00 LG Electronics
-      1 D02DB3 Huawei Technologies
-      1 D05162 Sony Mobile Communications AB
-      1 D087E2 Samsung Electronics
-      1 D09DAB TCT mobile
-      1 D0B33F Shenzhen Tinno Mobile Technology
-      1 D40B1A HTC
-      1 D4970B Xiaomi Communications
-      1 D83C69 Shenzhen Tinno Mobile Technology
-      1 D855A3 zte
-      1 D8E56D TCT Mobile Limited
-      1 DC85DE AzureWave Technology
-      1 E42354 Shenzhen Fuzhi Software Technology
-      1 E492FB Samsung Electronics
-      1 E8B4C8 Samsung Electronics
-      1 EC1F72 Samsung Electro Mechanics
-      1 F025B7 Samsung Electro Mechanics
-      1 F06BCA Samsung Electronics
-      1 F409D8 Samsung Electro Mechanics
-      1 F40E22 Samsung Electronics
-      1 F49FF3 Huawei Technologies
-      1 F8B156 Dell
-      1 FC64BA Xiaomi Communications
-      2 0022F4 Ampak Technology
-      2 00EEBD HTC
-      2 08EE8B Samsung Electronics
-      2 103B59 Samsung Electronics
-      2 10D542 Samsung Electronics
-      2 1C994C Murata Manufacturing
-      2 2C54CF LG Electronics
-      2 307512 Sony Mobile Communications AB
-      2 3423BA Samsung Electro Mechanics
-      2 344DF7 LG Electronics
-      2 38AA3C Samsung Electro-mechanics
-      2 40CBA8 Huawei Technologies
-      2 446D6C Samsung Electronics
-      2 48A22D Shenzhen Huaxuchang Telecom Technology
-      2 4C3C16 Samsung Electronics
-      2 4CAA16 AzureWave Technologies (Shanghai)
-      2 502E5C HTC
-      2 581243 AcSiP Technology
-      2 584822 Sony Mobile Communications AB
-      2 5C2E59 Samsung Electronics
-      2 5CFF35 Wistron
-      2 64899A LG Electronics
-      2 700BC0 Dewav Technology Company
-      2 7C0BC6 Samsung Electronics
-      2 80717A Huawei Technologies
-      2 8C7716 Longcheer Telecommunication Limited
-      2 902181 Shanghai Huaqin Telecom Technology
-      2 A03299 Lenovo (Beijing)
-      2 AC9E17 Asustek Computer
-      2 BCEE7B Asustek Computer
-      2 C43ABE Sony Mobile Communications AB
-      2 C8DDC9 Lenovo Mobile Communication Technology
-      2 CC07E4 Lenovo Mobile Communication Technology
-      2 D850E6 Asustek Computer
-      2 E8508B Samsung Electro Mechanics
-      2 EC9BF3 Samsung Electro Mechanics
-      2 F48B32 Xiaomi Communications
-      2 F832E4 Asustek Computer
-      2 FC3D93 Longcheer Telecommunication Limited
-      3 0003AB Bridge Information Systems
-      3 10A5D0 Murata Manufacturing
-      3 44D4E0 Sony Mobile Communications AB
-      3 503CC4 Lenovo Mobile Communication Technology
-      3 50F0D3 Samsung Electronics
-      3 54A050 Asustek Computer
-      3 74042B Lenovo Mobile Communication (Wuhan) Company Limited
-      3 98FFD0 Lenovo Mobile Communication Technology
-      3 D05BA8 zte
-      3 E02CB2 Lenovo Mobile Communication (Wuhan) Company Limited
-      4 70720D Lenovo Mobile Communication Technology
-      4 88708C Lenovo Mobile Communication Technology
-      4 88A73C Ragentek Technology Group
-      4 8C99E6 TCT Mobile Limited
-      4 B86491 CK Telecom
-      4 DCCEBC Shenzhen JSR Technology
-      4 E0CBEE Samsung Electronics
-      5 1436C6 Lenovo Mobile Communication Technology
-      5 683E34 Meizu Technology
-      5 8CC5E1 ShenZhen Konka Telecommunication Technology
-      5 EC1D7F zte
-      6 EC89F5 Lenovo Mobile Communication Technology
-      7 AC3870 Lenovo Mobile Communication Technology
-     12 000822 InPro Comm
      70 000000 Unknown
+     12 000822 InPro Comm
+      7 AC3870 Lenovo Mobile Communication Technology
+      6 EC89F5 Lenovo Mobile Communication Technology
+      5 EC1D7F zte
+      5 8CC5E1 ShenZhen Konka Telecommunication Technology
+      5 683E34 Meizu Technology
+      5 1436C6 Lenovo Mobile Communication Technology
+      4 E0CBEE Samsung Electronics
+      4 DCCEBC Shenzhen JSR Technology
+      4 B86491 CK Telecom
+      4 8C99E6 TCT Mobile Limited
+      4 88A73C Ragentek Technology Group
+      4 88708C Lenovo Mobile Communication Technology
+      4 70720D Lenovo Mobile Communication Technology
+      3 E02CB2 Lenovo Mobile Communication (Wuhan) Company Limited
+      3 D05BA8 zte
+      3 98FFD0 Lenovo Mobile Communication Technology
+      3 74042B Lenovo Mobile Communication (Wuhan) Company Limited
+      3 54A050 Asustek Computer
+      3 50F0D3 Samsung Electronics
+      3 503CC4 Lenovo Mobile Communication Technology
+      3 44D4E0 Sony Mobile Communications AB
+      3 10A5D0 Murata Manufacturing
+      3 0003AB Bridge Information Systems
+      2 FC3D93 Longcheer Telecommunication Limited
+      2 F832E4 Asustek Computer
+      2 F48B32 Xiaomi Communications
+      2 EC9BF3 Samsung Electro Mechanics
+      2 E8508B Samsung Electro Mechanics
+      2 D850E6 Asustek Computer
+      2 CC07E4 Lenovo Mobile Communication Technology
+      2 C8DDC9 Lenovo Mobile Communication Technology
+      2 C43ABE Sony Mobile Communications AB
+      2 BCEE7B Asustek Computer
+      2 AC9E17 Asustek Computer
+      2 A03299 Lenovo (Beijing)
+      2 902181 Shanghai Huaqin Telecom Technology
+      2 8C7716 Longcheer Telecommunication Limited
+      2 80717A Huawei Technologies
+      2 7C0BC6 Samsung Electronics
+      2 700BC0 Dewav Technology Company
+      2 64899A LG Electronics
+      2 5CFF35 Wistron
+      2 5C2E59 Samsung Electronics
+      2 584822 Sony Mobile Communications AB
+      2 581243 AcSiP Technology
+      2 502E5C HTC
+      2 4CAA16 AzureWave Technologies (Shanghai)
+      2 4C3C16 Samsung Electronics
+      2 48A22D Shenzhen Huaxuchang Telecom Technology
+      2 446D6C Samsung Electronics
+      2 40CBA8 Huawei Technologies
+      2 38AA3C Samsung Electro-mechanics
+      2 344DF7 LG Electronics
+      2 3423BA Samsung Electro Mechanics
+      2 307512 Sony Mobile Communications AB
+      2 2C54CF LG Electronics
+      2 1C994C Murata Manufacturing
+      2 10D542 Samsung Electronics
+      2 103B59 Samsung Electronics
+      2 08EE8B Samsung Electronics
+      2 00EEBD HTC
+      2 0022F4 Ampak Technology
+      1 FC64BA Xiaomi Communications
+      1 F8B156 Dell
+      1 F49FF3 Huawei Technologies
+      1 F40E22 Samsung Electronics
+      1 F409D8 Samsung Electro Mechanics
+      1 F06BCA Samsung Electronics
+      1 F025B7 Samsung Electro Mechanics
+      1 EC1F72 Samsung Electro Mechanics
+      1 E8B4C8 Samsung Electronics
+      1 E492FB Samsung Electronics
+      1 E42354 Shenzhen Fuzhi Software Technology
+      1 DC85DE AzureWave Technology
+      1 D8E56D TCT Mobile Limited
+      1 D855A3 zte
+      1 D83C69 Shenzhen Tinno Mobile Technology
+      1 D4970B Xiaomi Communications
+      1 D40B1A HTC
+      1 D0B33F Shenzhen Tinno Mobile Technology
+      1 D09DAB TCT mobile
+      1 D087E2 Samsung Electronics
+      1 D05162 Sony Mobile Communications AB
+      1 D02DB3 Huawei Technologies
+      1 CCFA00 LG Electronics
+      1 CC07AB Samsung Electronics
+      1 C88550 Apple
+      1 C49A02 LG Electronics (Mobile Communicaitons)
+      1 C4072F Huawei Technologies
+      1 C0BDD1 Samsung Electro Mechanics
+      1 BCF5AC LG Electronics
+      1 BC72B1 Samsung Electronics
+      1 BC4486 Samsung Electronics
+      1 BC20A4 Samsung Electronics
+      1 BC0F2B Fortune Techgroup
+      1 B857D8 Samsung Electronics
+      1 B4527E Sony Mobile Communications AB
+      1 B0E03C TCT mobile
+      1 AC3613 Samsung Electronics
+      1 A8A668 zte
+      1 A87C01 Samsung Electronics
+      1 A0E453 Sony Mobile Communications AB
+      1 A09169 LG Electronics
+      1 9C0298 Samsung Electronics
+      1 98F170 Murata Manufacturing
+      1 983B16 Ampak Technology
+      1 980D2E HTC
+      1 94DBC9 AzureWave Technology
+      1 94D859 TCT mobile
+      1 94350A Samsung Electronics
+      1 90E7C4 HTC
+      1 8CD17B CG Mobile
+      1 8C3AE3 LG Electronics
+      1 8C18D9 Shenzhen RF Technology
+      1 88C9D0 LG Electronics
+      1 883314 Texas Instruments
+      1 88329B Samsung Electro Mechanics
+      1 848EDF Sony Mobile Communications AB
+      1 847303 Letv Mobile and Intelligent Information Technology (Beijing)
+      1 8455A5 Samsung Electronics
+      1 843838 Samsung Electro Mechanics
+      1 842E27 Samsung Electronics
+      1 84119E Samsung Electronics
+      1 80D09B Huawei Technologies
+      1 80CF41 Lenovo Mobile Communication Technology
+      1 80656D Samsung Electronics
+      1 80618F Shenzhen sangfei consumer communications
+      1 804E81 Samsung Electronics
+      1 7CF90E Samsung Electronics
+      1 7C7D3D Huawei Technologies
+      1 78F882 LG Electronics (Mobile Communications)
+      1 7840E4 Samsung Electronics
+      1 7824AF Asustek Computer
+      1 70723C Huawei Technologies
+      1 6C94F8 Apple
+      1 6C5F1C Lenovo Mobile Communication Technology
+      1 680571 Samsung Electronics
+      1 60D9A0 Lenovo Mobile Communication Technology
+      1 60A44C Asustek Computer
+      1 60512C TCT mobile limited
+      1 5CF8A1 Murata Manufacturing
+      1 5C3C27 Samsung Electronics
+      1 54E4BD Fn-link Technology Limited
+      1 5440AD Samsung Electronics
+      1 542758 Motorola (Wuhan) Mobility Technologies Communication
+      1 509F27 Huawei Technologies
+      1 503275 Samsung Electronics
+      1 40F308 Murata Manufacturing
+      1 40C62A Shanghai Jing Ren Electronic Technology
+      1 40B837 Sony Mobile Communications AB
+      1 40B0FA LG Electronics
+      1 3CCB7C TCT mobile
+      1 382DE8 Samsung Electronics
+      1 382DD1 Samsung Electronics
+      1 343111 Samsung Electronics
+      1 305A3A Asustek Computer
+      1 20D390 Samsung Electronics
+      1 2082C0 Xiaomi Communications
+      1 206E9C Samsung Electronics
+      1 201A06 Compal Information (kunshan)
+      1 2002AF Murata Manufacturing
+      1 1CB094 HTC
+      1 18002D Sony Mobile Communications AB
+      1 149FE8 Lenovo Mobile Communication Technology
+      1 10D38A Samsung Electronics
+      1 10C37B Asustek Computer
+      1 0CB319 Samsung Electronics
+      1 08FD0E Samsung Electronics
+      1 08ECA9 Samsung Electronics
+      1 083D88 Samsung Electronics
+      1 080027 Oracle VirtualBox virtual NIC
+      1 041BBA Samsung Electronics
+      1 00F46F Samsung Electronics
+      1 009008 HanA Systems
+      1 00738D Shenzhen Tinno Mobile Technology
+      1 001D07 Shenzhen Sang Fei Consumer Communications
+      1 0018E4 Yiguang
+      1 00172F NeuLion Incorporated
+      1 001240 Amoi Electronics
+      1 00117F Neotune Information Technology
+      1 000CF1 Intel
+      1 000CE7 MediaTek
+      1 000AF5 Airgo Networks
+      1 000789 Dongwon Systems
+      1 00044B Nvidia
+      1 0003AA Watlow
+      1 000000 Xerox
