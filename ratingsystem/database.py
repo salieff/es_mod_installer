@@ -22,6 +22,11 @@ CREATE TABLE `{0}`.`summary` ( `Title` CHAR(34) NOT NULL ,
 `Up` INT NOT NULL , `Down` INT NOT NULL ) ENGINE = InnoDB;
 """.format(config.database_name)
 
+_sql_query_create_statistics_table = """
+CREATE TABLE `{0}`.`statistics` ( `ModId` INT NOT NULL ,
+`Mac` CHAR(17) NOT NULL , InstallTime DATETIME, DeleteTime DATETIME ) ENGINE = InnoDB;
+""".format(config.database_name)
+
 
 _sql_query_delete_table = """
 DROP TABLE `{0}`.`{1}`;
@@ -73,9 +78,27 @@ SELECT * FROM `summary`
 WHERE `Title` = '{0}'
 """
 
-_UP_VOTE = 1
-_DWON_VOTE = 0
+_sql_query_add_statistics = """
+INSERT INTO `statistics` (`ModId`, `Mac`, `InstallTime`)
+VALUES ('{0}', '{1}', NOW())
+"""
 
+_sql_query_find_statistics_by_id_and_mac = """
+SELECT * FROM `statistics`
+WHERE `ModId` = '{0}' AND `Mac` = '{1}' AND `DeleteTime` IS NULL
+"""
+_sql_query_update_statistics = """
+UPDATE `statistics` SET `DeleteTime` = NOW()
+WHERE `ModId` = '{0}' AND `Mac` = '{1}' AND `DeleteTime` IS NULL
+ORDER BY `InstallTime` DESC
+LIMIT 1
+"""
+
+_UP_VOTE = 1
+_DOWN_VOTE = 0
+
+_STAT_INSTALLED = r"installed"
+_STAT_DELETED = r"deleted"
 
 class Database:
     """ Class for handling
@@ -121,6 +144,14 @@ class Database:
         Fields: title, up, down
         """
         query = _sql_query_create_summary_table
+        self._execute(query)
+
+    def _create_statistics_table(self):
+        """ Create  table for storing
+        installation statistics
+        Fields: modid, mac, installtime, deletetime
+        """
+        query = _sql_query_create_statistics_table
         self._execute(query)
 
     def _delete_table(self, name):
@@ -215,6 +246,23 @@ class Database:
             return self._change_summary_to_upvote
         return self._change_summary_to_downvote
 
+    def _add_statistics(self, text_id, mac):
+        """ Add statistics table row """
+        query = _sql_query_add_statistics.format(text_id, mac)
+        self._execute(query)
+
+    def _if_statistics_exists(self, text_id, mac):
+        """ Check if uncompleted statistics row exists for given id and mac """
+        query = _sql_query_find_statistics_by_id_and_mac.format(text_id, mac)
+        return len(self._execute(query)) > 0
+
+    def _update_statistics(self, text_id, mac):
+        """ Set deletion time to now for uncompleted statistics row
+        with greatest installation time, given id and mac
+        """
+        query = _sql_query_update_statistics.format(text_id, mac)
+        self._execute(query)
+
     def add_mark(self, title, mac, mark):
         """ Full cycle public add mark method.
         Creates all tables if don't exist,
@@ -268,3 +316,20 @@ class Database:
             raise ValueError("Not found")
 
         return (query_result[0][1], query_result[0][2])
+
+    def add_statistics(self, text_id, mac, state)
+        """ Public add statistics method.
+        Creates table if doesn't exist,
+        and add statistics
+        """
+        if not self._if_table_exists("statistics"):
+            self._create_statistics_table()
+
+        if state == _STAT_INSTALLED:
+            self._add_statistics(text_id, mac)
+            return
+
+        if not self._if_statistics_exists(text_id, mac):
+            self._add_statistics(text_id, mac)
+
+        self._update_statistics(text_id, mac)

@@ -22,15 +22,20 @@ _FIELD_MARK = r"mark"
 _FIELD_RESULT = r"result"
 _FIELD_UP = r"up"
 _FIELD_DOWN = r"down"
+_FIELD_STATE = r"state"
 
 _VALUE_OPERATION_MARK = r"mark"
 _VALUE_OPERATION_QUERY = r"query"
 _VALUE_OPERATION_MYMARK = r"mymark"
+_VALUE_OPERATION_STAT = r"statistics"
 
 _VALUE_RESULT_OK = r"ok"
 
 _VALUE_MARK_UP = 1
 _VALUE_MARK_DOWN = 0
+
+_VALUE_STAT_INSTALLED = r"installed"
+_VALUE_STAT_DELETED = r"deleted"
 
 _PREFIX_TITLE = r"t_"
 
@@ -65,7 +70,8 @@ def _validate_fields(form):
     if operation not in [
             _VALUE_OPERATION_MARK,
             _VALUE_OPERATION_QUERY,
-            _VALUE_OPERATION_MYMARK]:
+            _VALUE_OPERATION_MYMARK,
+            _VALUE_OPERATION_STAT]:
         raise ValueError(
             "Invalid value for '{0}' field".format(_FIELD_OPERATION))
 
@@ -78,6 +84,9 @@ def _validate_fields(form):
     if operation == _VALUE_OPERATION_MYMARK:
         _ensure_field_present(form, _FIELD_MAC)
 
+    if operation == _VALUE_OPERATION_STAT:
+        _ensure_field_present(form, _FIELD_MAC)
+        _ensure_field_present(form, _FIELD_STATE)
 
 def _validate_id(string_id):
     """ Check whether project JSON contains
@@ -100,6 +109,12 @@ def _validate_mark(mark):
         raise ValueError("Invalid mark. Expected: {0}".format(
             "|".join(str(x) for x in[_VALUE_MARK_UP, _VALUE_MARK_DOWN])))
 
+def _validate_state(mark):
+    """ Check state. Only installed/deleted available for now """
+    if mark not in [_VALUE_STAT_INSTALLED, _VALUE_STAT_DELETED]:
+        raise ValueError("Invalid state. Expected: {0}".format(
+            "|".join(str(x) for x in[_VALUE_STAT_INSTALLED, _VALUE_STAT_DELETED])))
+
 
 def _add_mark(form):
     """ Validate all needed fields and
@@ -116,6 +131,22 @@ def _add_mark(form):
 
     with database.Database() as db:
         db.add_mark(text_id, mac, mark)
+
+def _add_statistics(form):
+    """ Validate all needed fields and
+    add installation statistics via database module
+    """
+    text_id = _fetch_field(form, _FIELD_ID)
+    _validate_id(text_id)
+
+    mac = _fetch_field(form, _FIELD_MAC)
+    _validate_mac(mac)
+
+    state = _fetch_field(form, _FIELD_STATE)
+    _validate_state(state)
+
+    with database.Database() as db:
+        db.add_statistics(text_id, mac, state)
 
 
 def _query(form, result):
@@ -173,6 +204,8 @@ try:
         _query(form, result)
     if operation == _VALUE_OPERATION_MYMARK:
         result = _my_mark(form, result)
+    if operation == _VALUE_OPERATION_STAT:
+        _add_statistics(form)
 
 except Exception as e:
     result[_FIELD_RESULT] = str(e)
