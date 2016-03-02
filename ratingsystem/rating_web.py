@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/var/www/cgi-bin/ratingsystem/bin/python
 # -*- coding: utf-8 -*-
 
 """ CGI gate for rating system.
@@ -109,9 +109,9 @@ def _validate_mark(mark):
         raise ValueError("Invalid mark. Expected: {0}".format(
             "|".join(str(x) for x in[_VALUE_MARK_UP, _VALUE_MARK_DOWN])))
 
-def _validate_state(mark):
+def _validate_state(state):
     """ Check state. Only installed/deleted available for now """
-    if mark not in [_VALUE_STAT_INSTALLED, _VALUE_STAT_DELETED]:
+    if state not in [_VALUE_STAT_INSTALLED, _VALUE_STAT_DELETED]:
         raise ValueError("Invalid state. Expected: {0}".format(
             "|".join(str(x) for x in[_VALUE_STAT_INSTALLED, _VALUE_STAT_DELETED])))
 

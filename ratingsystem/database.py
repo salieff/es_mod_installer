@@ -8,7 +8,7 @@ import MySQLdb
 _sql_query_if_table_exists = """
 SELECT COUNT(*)
 FROM information_schema.tables
-WHERE table_name = '{0}';
+WHERE table_name = '{0}' AND table_schema = '{1}';
 """
 
 _sql_query_create_title_table = """
@@ -128,7 +128,7 @@ class Database:
 
     def _if_table_exists(self, name):
         """ Check if the table with given name exists """
-        query = _sql_query_if_table_exists.format(name)
+        query = _sql_query_if_table_exists.format(name, config.database_name)
         return self._execute(query)[0][0] > 0
 
     def _create_title_table(self, name):
@@ -317,7 +317,7 @@ class Database:
 
         return (query_result[0][1], query_result[0][2])
 
-    def add_statistics(self, text_id, mac, state)
+    def add_statistics(self, text_id, mac, state):
         """ Public add statistics method.
         Creates table if doesn't exist,
         and add statistics
