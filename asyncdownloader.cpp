@@ -3,12 +3,18 @@
 #include <QByteArray>
 #include <QDir>
 #include <QNetworkInterface>
+#include <QNetworkProxy>
+
+#ifdef ANDROID
+#include <QAndroidJniObject>
+#endif
 
 #include "asyncdownloader.h"
 
 // #define NET_BUFFER_SIZE 1024
+#define ES_USER_AGENT "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 5 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.99 Mobile Safari/537.36"
 
-QNetworkAccessManager * AsyncDownloader::NetworkManager = NULL;
+QNetworkAccessManager * AsyncDownloader::m_networkManager = NULL;
 QString AsyncDownloader::m_myMacAddress;
 
 AsyncDownloader::AsyncDownloader(QObject *parent)
@@ -108,7 +114,7 @@ void AsyncDownloader::fileWritten()
 
     if (m_headersOnly)
     {
-        new_rep = AsyncDownloader::NetworkManager->head(QNetworkRequest(QUrl(m_url).resolved(QUrl(m_files[m_currFileIndex]))));
+        new_rep = AsyncDownloader::head(m_url, m_files[m_currFileIndex]);
     }
     else
     {
@@ -130,7 +136,7 @@ void AsyncDownloader::fileWritten()
 
         m_localFiles << QDir(m_destDir).filePath(m_files[m_currFileIndex]);
 
-        new_rep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(m_url).resolved(QUrl(m_files[m_currFileIndex]))));
+        new_rep = AsyncDownloader::m_networkManager->get(QNetworkRequest(QUrl(m_url).resolved(QUrl(m_files[m_currFileIndex]))));
         connect(this, SIGNAL(abortDownload()), new_rep, SLOT(abort()));
         connect(new_rep, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(downloadProgress(qint64, qint64)));
         connect(new_rep, SIGNAL(readyRead()), this, SLOT(readData()));
@@ -206,6 +212,17 @@ bool AsyncDownloader::checkOverwrite(QString fname)
     return (b == QMessageBox::YesToAll || b == QMessageBox::Yes);
 }
 
+void AsyncDownloader::createNetworkManager(QObject *parent)
+{
+    if (m_networkManager == NULL)
+    {
+        m_networkManager = new QNetworkAccessManager(parent);
+#if !defined(ANDROID) && !defined(Q_OS_IOS)
+        m_networkManager->setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+#endif
+    }
+}
+
 QString AsyncDownloader::getMacAddress()
 {
     if (m_myMacAddress.isEmpty())
@@ -231,4 +248,56 @@ QString AsyncDownloader::getMacAddress()
     }
 
     return m_myMacAddress;
+}
+
+QString AsyncDownloader::getDeviceUID()
+{
+#ifdef ANDROID
+    QAndroidJniObject myID = QAndroidJniObject::fromString("android_id");
+    QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative", "activity", "()Landroid/app/Activity;");
+    QAndroidJniObject appctx = activity.callObjectMethod("getApplicationContext","()Landroid/content/Context;");
+    QAndroidJniObject contentR = appctx.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
+    QAndroidJniObject result = QAndroidJniObject::callStaticObjectMethod("android/provider/Settings$Secure","getString", "(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;",contentR.object<jobject>(), myID.object<jstring>());
+
+    return result.toString();
+#endif
+    return QString();
+}
+
+QNetworkReply * AsyncDownloader::get(QString url)
+{
+    return get(QUrl(url));
+}
+
+QNetworkReply * AsyncDownloader::get(QString baseUrl, QString fileUrl)
+{
+    return get(QUrl(baseUrl).resolved(QUrl(fileUrl)));
+}
+
+QNetworkReply * AsyncDownloader::get(QUrl url)
+{
+    QNetworkRequest r;
+    r.setUrl(url);
+    r.setRawHeader("User-Agent", ES_USER_AGENT);
+
+    return m_networkManager->get(r);
+}
+
+QNetworkReply * AsyncDownloader::head(QString url)
+{
+    return head(QUrl(url));
+}
+
+QNetworkReply * AsyncDownloader::head(QString baseUrl, QString fileUrl)
+{
+    return head(QUrl(baseUrl).resolved(QUrl(fileUrl)));
+}
+
+QNetworkReply * AsyncDownloader::head(QUrl url)
+{
+    QNetworkRequest r;
+    r.setUrl(url);
+    r.setRawHeader("User-Agent", ES_USER_AGENT);
+
+    return m_networkManager->head(r);
 }

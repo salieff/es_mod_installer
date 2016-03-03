@@ -16,8 +16,6 @@ class AsyncDownloader : public QObject
 {
     Q_OBJECT
 public:
-    static QNetworkAccessManager *NetworkManager;
-
     explicit AsyncDownloader(QObject *parent = 0);
     virtual ~AsyncDownloader();
 
@@ -29,7 +27,15 @@ public:
     QStringList downloadedFiles();
     void getHeadersData(double &sz, double &tm);
 
+    static void createNetworkManager(QObject *parent = NULL);
     static QString getMacAddress();
+    static QString getDeviceUID();
+    static QNetworkReply * get(QString url);
+    static QNetworkReply * get(QString baseUrl, QString fileUrl);
+    static QNetworkReply * get(QUrl url);
+    static QNetworkReply * head(QString url);
+    static QNetworkReply * head(QString baseUrl, QString fileUrl);
+    static QNetworkReply * head(QUrl url);
 
 signals:
     void progress(int);
@@ -69,6 +75,7 @@ private:
 
     bool m_alwaysOverwrite;
 
+    static QNetworkAccessManager *m_networkManager;
     static QString m_myMacAddress;
 };
 

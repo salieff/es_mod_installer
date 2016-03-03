@@ -2,8 +2,6 @@
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
 #include <QQmlContext>
-#include <QNetworkAccessManager>
-#include <QNetworkProxy>
 #include <QtGlobal>
 
 #if !defined(ANDROID) && !defined(Q_OS_IOS)
@@ -17,10 +15,9 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    AsyncDownloader::NetworkManager = new QNetworkAccessManager(&app);
+    AsyncDownloader::createNetworkManager(&app);
 
 #if !defined(ANDROID) && !defined(Q_OS_IOS)
-    // AsyncDownloader::NetworkManager->setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
     QtWebEngine::initialize();
 #endif
 

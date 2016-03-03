@@ -2,6 +2,10 @@ TEMPLATE = app
 
 QT += qml quick widgets network
 
+android {
+    QT += androidextras
+}
+
 linux-g++: {
     QT += webengine
     CONFIG += console

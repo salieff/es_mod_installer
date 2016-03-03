@@ -97,7 +97,7 @@ void ESModElement::SendLike(LikeType l)
             .arg(id)\
             .arg(AsyncDownloader::getMacAddress())\
             .arg(l == DislikeMark ? 0 : 1);
-    QNetworkReply *setLikeRep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(setLikeReq)));
+    QNetworkReply *setLikeRep = AsyncDownloader::get(setLikeReq);
     connect(setLikeRep, SIGNAL(finished()), this, SLOT(myLikePosted()));
 }
 
@@ -485,11 +485,11 @@ void ESModElement::sendLikesRequests()
             .arg(LIKES_CGI_URL)\
             .arg(id)\
             .arg(AsyncDownloader::getMacAddress());
-    QNetworkReply *myLikeRep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(myLikeReq)));
+    QNetworkReply *myLikeRep = AsyncDownloader::get(myLikeReq);
     connect(myLikeRep, SIGNAL(finished()), this, SLOT(myLikeReceived()));
 
     QString allLikeReq = QString("%1?operation=query&id=%2").arg(LIKES_CGI_URL).arg(id);
-    QNetworkReply *allLikeRep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(allLikeReq)));
+    QNetworkReply *allLikeRep = AsyncDownloader::get(allLikeReq);
     connect(allLikeRep, SIGNAL(finished()), this, SLOT(allLikesReceived()));
 }
 
@@ -500,7 +500,7 @@ void ESModElement::sendStatistics(bool inst)
             .arg(id)\
             .arg(AsyncDownloader::getMacAddress())\
             .arg(inst ? "installed" : "deleted");
-    QNetworkReply *myStatRep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(statReq)));
+    QNetworkReply *myStatRep = AsyncDownloader::get(statReq);
     connect(myStatRep, SIGNAL(finished()), myStatRep, SLOT(deleteLater()));
 }
 

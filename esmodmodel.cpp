@@ -61,13 +61,15 @@ ESModModel::ESModModel(QObject *parent)
     //QMessageBox::information(NULL, tr("Everlasting Summer"), tr("My MAC-address is [") + AsyncDownloader::getMacAddress() + "]");
 #elif defined(ANDROID)
     m_ESModsFolder = ANDROID_ES_MODS_FOLDER;
+    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("My MAC-address is [") + AsyncDownloader::getMacAddress() + "]\n" + \
+                                                             tr("My UID is [") + AsyncDownloader::getDeviceUID() + "]");
 #else
     m_ESModsFolder = QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/";
 #endif
 
     emit currentModsFolder(m_ESModsFolder);
 
-    QNetworkReply *rep = AsyncDownloader::NetworkManager->get(QNetworkRequest(QUrl(ES_MOD_INDEX_SERVER).resolved(QUrl(ES_MOD_INDEX_NAME))));
+    QNetworkReply *rep = AsyncDownloader::get(ES_MOD_INDEX_SERVER, ES_MOD_INDEX_NAME);
     connect(rep, SIGNAL(finished()), this, SLOT(ESModIndexDownloaded()));
     connect(rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(ESModIndexError(QNetworkReply::NetworkError)));
 }
