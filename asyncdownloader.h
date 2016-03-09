@@ -29,7 +29,7 @@ public:
 
     static void createNetworkManager(QObject *parent = NULL);
     static QString getMacAddress();
-    static QString getDeviceUID();
+    static QString getDeviceUDID();
     static QNetworkReply * get(QString url);
     static QNetworkReply * get(QString baseUrl, QString fileUrl);
     static QNetworkReply * get(QUrl url);
@@ -77,6 +77,7 @@ private:
 
     static QNetworkAccessManager *m_networkManager;
     static QString m_myMacAddress;
+    static QString m_myUDID;
 };
 
 #endif // ASYNCDOWNLOADER_H

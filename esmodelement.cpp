@@ -4,6 +4,7 @@
 #include <QMessageBox>
 
 #include "esmodelement.h"
+#include "statisticsmanager.h"
 
 #define LIKES_CGI_URL "http://es.191.ru/cgi-bin/ratingsystem/rating_web.py"
 #define STATS_CGI_URL LIKES_CGI_URL
@@ -92,10 +93,12 @@ void ESModElement::Delete()
 
 void ESModElement::SendLike(LikeType l)
 {
-    QString setLikeReq = QString("%1?operation=mark&id=%2&mac=%3&mark=%4")\
+    QString setLikeReq = QString("%1?operation=mark&id=%2&mac=%3&udid=%4&platform=%5&mark=%6")\
             .arg(LIKES_CGI_URL)\
             .arg(id)\
             .arg(AsyncDownloader::getMacAddress())\
+            .arg(AsyncDownloader::getDeviceUDID())\
+            .arg(MY_PLATFORM)\
             .arg(l == DislikeMark ? 0 : 1);
     QNetworkReply *setLikeRep = AsyncDownloader::get(setLikeReq);
     connect(setLikeRep, SIGNAL(finished()), this, SLOT(myLikePosted()));
@@ -481,10 +484,11 @@ void ESModElement::changeState(State s)
 
 void ESModElement::sendLikesRequests()
 {
-    QString myLikeReq = QString("%1?operation=mymark&id=%2&mac=%3")\
+    QString myLikeReq = QString("%1?operation=mymark&id=%2&mac=%3&udid=%4")\
             .arg(LIKES_CGI_URL)\
             .arg(id)\
-            .arg(AsyncDownloader::getMacAddress());
+            .arg(AsyncDownloader::getMacAddress())\
+            .arg(AsyncDownloader::getDeviceUDID());
     QNetworkReply *myLikeRep = AsyncDownloader::get(myLikeReq);
     connect(myLikeRep, SIGNAL(finished()), this, SLOT(myLikeReceived()));
 
@@ -495,13 +499,15 @@ void ESModElement::sendLikesRequests()
 
 void ESModElement::sendStatistics(bool inst)
 {
-    QString statReq = QString("%1?operation=statistics&id=%2&mac=%3&state=%4")\
+    QString statReq = QString("%1?operation=statistics&id=%2&mac=%3&udid=%4&platform=%5&state=%6")\
             .arg(STATS_CGI_URL)\
             .arg(id)\
             .arg(AsyncDownloader::getMacAddress())\
+            .arg(AsyncDownloader::getDeviceUDID())\
+            .arg(MY_PLATFORM)\
             .arg(inst ? "installed" : "deleted");
-    QNetworkReply *myStatRep = AsyncDownloader::get(statReq);
-    connect(myStatRep, SIGNAL(finished()), myStatRep, SLOT(deleteLater()));
+
+    StatisticsManager::getInstance()->addRequest(statReq);
 }
 
 bool ESModElement::idEquals(ESModElement *el)

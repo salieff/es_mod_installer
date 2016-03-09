@@ -36,7 +36,8 @@ SOURCES += main.cpp \
     asyncdownloader.cpp \
     asyncdeleter.cpp \
     asyncjsonwriter.cpp \
-    asyncfilewriter.cpp
+    asyncfilewriter.cpp \
+    statisticsmanager.cpp
 
 RESOURCES += qml.qrc
 
@@ -67,7 +68,9 @@ HEADERS += \
     asyncdownloader.h \
     asyncdeleter.h \
     asyncjsonwriter.h \
-    asyncfilewriter.h
+    asyncfilewriter.h \
+    ios_helpers.h \
+    statisticsmanager.h
 
 DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 IOAPI_NO_64
 
@@ -91,4 +94,9 @@ ios {
     QMAKE_BUNDLE_DATA += app_launch_images
     app_help_topic.files = $$files($$PWD/ios/help.html)
     QMAKE_BUNDLE_DATA += app_help_topic
+
+    OBJECTIVE_HEADERS += ios_helpers.h
+    OBJECTIVE_SOURCES += ios_helpers.mm
+
+    LIBS += -framework Foundation -framework CoreFoundation -framework UIKit
 }

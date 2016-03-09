@@ -10,12 +10,14 @@
 
 #include "esmodmodel.h"
 #include "asyncdownloader.h"
+#include "statisticsmanager.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
     AsyncDownloader::createNetworkManager(&app);
+    StatisticsManager::getInstance(&app);
 
 #if !defined(ANDROID) && !defined(Q_OS_IOS)
     QtWebEngine::initialize();

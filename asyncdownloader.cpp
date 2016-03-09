@@ -5,8 +5,12 @@
 #include <QNetworkInterface>
 #include <QNetworkProxy>
 
-#ifdef ANDROID
-#include <QAndroidJniObject>
+#if defined(Q_OS_IOS)
+    #include "ios_helpers.h"
+#elif defined(ANDROID)
+    #include <QAndroidJniObject>
+#else
+    // Desktop
 #endif
 
 #include "asyncdownloader.h"
@@ -16,6 +20,7 @@
 
 QNetworkAccessManager * AsyncDownloader::m_networkManager = NULL;
 QString AsyncDownloader::m_myMacAddress;
+QString AsyncDownloader::m_myUDID;
 
 AsyncDownloader::AsyncDownloader(QObject *parent)
     : QObject(parent),
@@ -250,18 +255,27 @@ QString AsyncDownloader::getMacAddress()
     return m_myMacAddress;
 }
 
-QString AsyncDownloader::getDeviceUID()
+QString AsyncDownloader::getDeviceUDID()
 {
-#ifdef ANDROID
-    QAndroidJniObject myID = QAndroidJniObject::fromString("android_id");
-    QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative", "activity", "()Landroid/app/Activity;");
-    QAndroidJniObject appctx = activity.callObjectMethod("getApplicationContext","()Landroid/content/Context;");
-    QAndroidJniObject contentR = appctx.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
-    QAndroidJniObject result = QAndroidJniObject::callStaticObjectMethod("android/provider/Settings$Secure","getString", "(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;",contentR.object<jobject>(), myID.object<jstring>());
+    if (m_myUDID.isEmpty())
+    {
+#if defined(Q_OS_IOS)
+        m_myUDID = ESIOSHelpers::UDID();
+#elif defined(ANDROID)
+        QAndroidJniObject myID = QAndroidJniObject::fromString("android_id");
+        QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative", "activity", "()Landroid/app/Activity;");
+        QAndroidJniObject appctx = activity.callObjectMethod("getApplicationContext","()Landroid/content/Context;");
+        QAndroidJniObject contentR = appctx.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
+        QAndroidJniObject result = QAndroidJniObject::callStaticObjectMethod("android/provider/Settings$Secure","getString", "(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;",contentR.object<jobject>(), myID.object<jstring>());
 
-    return result.toString();
+        m_myUDID = result.toString();
+#else
+    // Desktop
+        m_myUDID = QString("test0desktop1build");
 #endif
-    return QString();
+    }
+
+    return m_myUDID;
 }
 
 QNetworkReply * AsyncDownloader::get(QString url)
