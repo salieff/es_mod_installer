@@ -14,8 +14,8 @@
 #elif defined(ANDROID)
     #define MY_PLATFORM "android"
 #else
-    #define MY_PLATFORM "ios"
-//    #define MY_PLATFORM "android"
+//    #define MY_PLATFORM "ios"
+    #define MY_PLATFORM "android"
 #endif
 
 ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, int pr)
