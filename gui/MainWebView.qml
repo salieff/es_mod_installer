@@ -1,23 +1,26 @@
-import QtQuick 2.3
+import QtQuick 2.5
 import QtWebView 1.0
 
 WebView {
     visible: false
 
+    /*
     anchors {
-        bottom: parent.bottom
-        left: parent.left
-        right: parent.right
+        bottom: mainWindow.bottom
+        left: mainWindow.left
+        right: mainWindow.right
         margins: 5
     }
+    */
 
-    height: parent.height - mainAppTitle.height
+    width: mainWindow.width
+    height: mainWindow.height - mainAppTitle.height
 
     function hide() {
         if (visible) {
             visible = false
             // stop()
-            mainListView.enabled = true
+            mainLists.enabled = true
             return true
         }
         return false
@@ -29,14 +32,15 @@ WebView {
 
         mainWindow.hideAllPanels()
 
-        mainListView.enabled = false
+        mainLists.enabled = false
         visible = true
         mainAppTitle.closeButton.state = "CLOSE"
         return true
     }
 
+    /*
     Connections {
-        target: mainListView
+        target: mainWindow
         onInfoUriSignal: {
             if (uriStr)
             {
@@ -49,4 +53,5 @@ WebView {
             }
         }
     }
+    */
 }

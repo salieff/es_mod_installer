@@ -18,7 +18,7 @@ Rectangle {
 
     onOpacityChanged: if (opacity == 0) {
                           visible = false
-                          mainListView.enabled = true
+                          mainLists.enabled = true
                       }
 
     function hide() {
@@ -35,7 +35,7 @@ Rectangle {
 
         mainWindow.hideAllPanels()
 
-        mainListView.enabled = false
+        mainLists.enabled = false
         visible = true
         opacity = 0.95
         mainAppTitle.closeButton.state = "CLOSE"
@@ -158,7 +158,7 @@ Rectangle {
     }
 
     Connections {
-        target: mainListView
+        target: mainWindow
         onLikeBoxSignal: {
             if (!visible)
             {
@@ -201,7 +201,7 @@ Rectangle {
                 else
                     likeMiniRow.visible = true
 
-                mainListView.enabled = false
+                mainLists.enabled = false
 
                 var tlen = modeldata.title.length
                 var maxlen = 25

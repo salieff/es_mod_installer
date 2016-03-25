@@ -65,9 +65,10 @@ ESModModel::ESModModel(QObject *parent)
 #else
     m_ESModsFolder = QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/";
 #endif
-
+    /*
     QMessageBox::information(NULL, tr("Everlasting Summer"), tr("My MAC-address is [") + AsyncDownloader::getMacAddress() + "]\n" + \
                                                              tr("My UDID is [") + AsyncDownloader::getDeviceUDID() + "]");
+    */
 
     emit currentModsFolder(m_ESModsFolder);
 

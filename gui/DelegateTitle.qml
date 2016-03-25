@@ -62,7 +62,7 @@ ColumnLayout {
             if (modeldata.modstate === ESModElement.Failed)
                 esModel.ShowError(modeldata.index)
             else
-                outrect.ListView.view.infoUriSignal(infouri)
+                mainWindow.infoUriSignal(infouri)
         }
     }
 }

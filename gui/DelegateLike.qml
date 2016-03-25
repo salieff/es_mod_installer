@@ -86,9 +86,10 @@ RowLayout {
 
     MouseArea {
         anchors.fill: parent
+
         onClicked: {
             if (modeldata.likemarkscount >=0 && modeldata.dislikemarkscount >=0)
-                outrect.ListView.view.likeBoxSignal(modeldata)
+                mainWindow.likeBoxSignal(modeldata)
         }
     }
 }

@@ -12,6 +12,7 @@ MMImage {
 
     MouseArea {
         anchors.fill: parent
+
         onClicked: {
             if (modeldata.guiblocked === ESModElement.NoBlock)
                 esModel.Delete(index)

@@ -9,12 +9,15 @@ ApplicationWindow {
     title: qsTr("ES Manager")
     visible: true
 
+    signal infoUriSignal(string uriStr)
+    signal likeBoxSignal(var modeldata)
+
     MainBalloon {
         id: mainBalloon
     }
 
-    MainListView {
-        id: mainListView
+    MainLists {
+        id: mainLists
     }
 
     MainAppTitle {
@@ -33,8 +36,43 @@ ApplicationWindow {
         id: mainTracebackPanel
     }
 
+    /*
     MainWebView {
         id: mainWebView
+    }
+    */
+    Loader {
+        id: mainWebView
+        asynchronous: false
+        anchors.bottom: parent.bottom
+
+        function hide() {
+            return item.hide()
+        }
+
+        function show() {
+            return item.show()
+        }
+
+        Connections {
+            target: mainWindow
+            onInfoUriSignal: {
+                if (uriStr)
+                {
+                    if (mainWebView.status == Loader.Null) {
+                        var cmp = Qt.createComponent("MainWebView.qml")
+                        mainWebView.sourceComponent = cmp
+                    }
+
+                    mainWebView.show()
+                    if (mainWebView.item.url !== uriStr)
+                    {
+                        mainWebView.item.url = "about:blank"
+                        mainWebView.item.url = uriStr
+                    }
+                }
+            }
+        }
     }
 
     MainSortMenu {
@@ -72,6 +110,18 @@ ApplicationWindow {
             case Qt.Key_Back:
                 if (!hideAllPanels())
                     Qt.quit()
+                break;
+
+            case Qt.Key_1:
+                mainLists.state = "SERVER"
+                break;
+
+            case Qt.Key_2:
+                mainLists.state = "ALL"
+                break;
+
+            case Qt.Key_3:
+                mainLists.state = "LOCAL"
                 break;
             }
 

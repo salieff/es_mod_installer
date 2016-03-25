@@ -1,22 +1,52 @@
-import QtQuick 2.3
+import QtQuick 2.5
 import QtQuick.Controls 1.2
 
 ListView {
+    property string headerText
+
     model: esModel
     delegate: Delegate {}
     anchors {
-        top: mainAppTitle.bottom
-        bottom: mainSortSearchBox.top
-        left: parent.left
-        right: parent.right
+        top: parent.top
         margins: 10
     }
+    height: parent.height - anchors.margins*2
+    width: parent.width - anchors.margins*2
     spacing: 5
     // clip: true
     maximumFlickVelocity: 5000
+    headerPositioning: ListView.OverlayHeader
+    header: Item {
+        z: 2
+        width: parent.width
+        height: hdrRect.height + 10
+        anchors.horizontalCenter: parent.horizontalCenter
+        opacity: 0.75
 
-    signal infoUriSignal(string uriStr)
-    signal likeBoxSignal(var modeldata)
+        Rectangle {
+            id: hdrRect
+            width: hdrText.contentWidth + 20
+            height: hdrText.contentHeight + 20
+            anchors.horizontalCenter: parent.horizontalCenter
+            radius: 10
+            gradient: Gradient {
+                GradientStop { position: 0; color: "#FFFFFF" }
+                GradientStop { position: 1; color: "#A0A0A0" }
+            }
+
+
+            Text {
+                id: hdrText
+                anchors.centerIn: parent
+                font.pointSize: 18
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                style: Text.Raised
+                styleColor: "white"
+                text: headerText
+            }
+        }
+    }
 
     remove: Transition {
         NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 400 }
@@ -26,20 +56,4 @@ ListView {
     displaced: Transition {
         NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutBounce }
     }
-
-    BusyIndicator {
-        id: busyIndicator
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.margins: 40
-        width: 200
-        height: 200
-        running: true;
-
-        Connections {
-            target: esModel
-            onEsIndexReceived: busyIndicator.running = false;
-        }
-    }
-
 }

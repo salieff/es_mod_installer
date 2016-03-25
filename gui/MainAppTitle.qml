@@ -36,11 +36,11 @@ Rectangle {
                 anchors.fill: parent
                 onClicked: {
                     if (Qt.platform.os === "android")
-                        mainListView.infoUriSignal("file:///android_asset/help/index.html")
+                        mainWindow.infoUriSignal("file:///android_asset/help/index.html")
                     else if (Qt.platform.os === "ios")
-                        mainListView.infoUriSignal(modsPathDialog.shortcuts.home + "/help.html")
+                        mainWindow.infoUriSignal(modsPathDialog.shortcuts.home + "/help.html")
                     else
-                        mainListView.infoUriSignal(modsPathDialog.shortcuts.home + "/Work/ESManager_github/es_mod_installer/help/help.html")
+                        mainWindow.infoUriSignal(modsPathDialog.shortcuts.home + "/Work/ESManager_github/es_mod_installer/help/help.html")
                 }
             }
         }

@@ -17,7 +17,7 @@ Rectangle {
 
     onOpacityChanged: if (opacity == 0) {
                           visible = false
-                          mainListView.enabled = true
+                          mainLists.enabled = true
                       }
 
     function hide() {
@@ -34,7 +34,7 @@ Rectangle {
 
         mainWindow.hideAllPanels()
 
-        mainListView.enabled = false
+        mainLists.enabled = false
         visible = true
         opacity = 0.95
 
