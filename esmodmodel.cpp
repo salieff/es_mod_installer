@@ -730,7 +730,9 @@ void ESModModel::copyTraceback(bool forLog)
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
 
-    QString s = QString::fromLocal8Bit(f.readAll());
+    QDateTime modTime = QFileInfo(f).lastModified();
+    QString s = QString("[") + modTime.toString("yyyy-MM-dd hh:mm:ss t") + QString("]\n");
+    s += QString::fromLocal8Bit(f.readAll());
     copyToClipboard(s, QString(forLog ? tr("Log") : tr("Traceback")) + tr(" was copied into clipboard"));
 
     emit tracebackText(s);

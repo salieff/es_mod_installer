@@ -47,11 +47,17 @@ ApplicationWindow {
         anchors.bottom: parent.bottom
 
         function hide() {
-            return item.hide()
+            if (item)
+                return item.hide()
+            else
+                return false
         }
 
         function show() {
-            return item.show()
+            if (item)
+                return item.show()
+            else
+                return false
         }
 
         Connections {
