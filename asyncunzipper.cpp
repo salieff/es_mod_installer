@@ -137,18 +137,21 @@ bool AsyncUnzipper::unpackZip(QString zipFile, bool calcSizeOnly)
     do
     {
         unz_file_info finfo;
-        char fname[1025];
-        if (unzGetCurrentFileInfo(ufd, &finfo, fname, sizeof(fname) - 1, NULL, 0, NULL, 0) != UNZ_OK)
+        char fnameBuff[1025];
+        if (unzGetCurrentFileInfo(ufd, &finfo, fnameBuff, sizeof(fnameBuff) - 1, NULL, 0, NULL, 0) != UNZ_OK)
         {
             m_errorString = tr("Can't get current entry info in zip file ") + zipFile;
             return false;
         }
 
-        fname[sizeof(fname) - 1] = 0;
+        fnameBuff[sizeof(fnameBuff) - 1] = 0;
+        QString fname(fnameBuff);
 
         // We don't need in directories records
-        if (QString(fname).endsWith("/") && finfo.compressed_size == 0 && finfo.uncompressed_size == 0 && finfo.crc == 0)
+        if (fname.endsWith("/") && finfo.compressed_size == 0 && finfo.uncompressed_size == 0 && finfo.crc == 0)
             continue;
+
+        fname.remove(QRegExp("^/*")); // To avoid absolute paths
 
         if (calcSizeOnly)
         {
