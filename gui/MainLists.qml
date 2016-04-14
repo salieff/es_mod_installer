@@ -37,18 +37,21 @@ Item {
 
     MainListView {
         id: mainListViewServer
+        model: esServerModel
         anchors.right: parent.left
         headerText: qsTr("On Server →")
     }
 
     MainListView {
         id: mainListViewAll
+        model: esModel
         anchors.left: parent.left
         headerText: qsTr("← All →")
     }
 
     MainListView {
         id: mainListViewLocal
+        model: esInstalledModel
         anchors.left: parent.right
         headerText: qsTr("← Installed")
     }

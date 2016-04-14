@@ -15,7 +15,7 @@ Rectangle {
 
     property int itemIndex: -1
     property int myLike: ESModElement.LikeMarkNotFound
-
+    property var opModel
     onOpacityChanged: if (opacity == 0) {
                           visible = false
                           mainLists.enabled = true
@@ -78,7 +78,7 @@ Rectangle {
                     if (myLike !== ESModElement.LikeMark)
                     {
                         myLike = ESModElement.LikeMark
-                        esModel.SendLike(itemIndex, ESModElement.LikeMark)
+                        opModel.SendLike(itemIndex, ESModElement.LikeMark)
                         mainAppTitle.closeButton.state = "NORMAL"
                         hide()
                     }
@@ -109,7 +109,7 @@ Rectangle {
                     if (myLike !== ESModElement.DislikeMark)
                     {
                         myLike = ESModElement.DislikeMark
-                        esModel.SendLike(itemIndex, ESModElement.DislikeMark)
+                        opModel.SendLike(itemIndex, ESModElement.DislikeMark)
                         mainAppTitle.closeButton.state = "NORMAL"
                         hide()
                     }
@@ -212,6 +212,7 @@ Rectangle {
 
                 itemIndex = modeldata.index
                 myLike = modeldata.mylikemark
+                opModel = operationModel
                 show()
             }
         }

@@ -2,6 +2,8 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.2
 
 Rectangle {
+    id: mainDelegateContainer
+
     property int margin: 10
 
     anchors.horizontalCenter: parent.horizontalCenter

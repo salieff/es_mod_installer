@@ -44,27 +44,28 @@ MMImage {
 
         onClicked: {
             if (modeldata.guiblocked === ESModElement.NoBlock) {
+                var operationModel = mainDelegateContainer.ListView.view.model
                 switch (modeldata.modstate) {
                 case ESModElement.Available :
-                    esModel.Download(index)
+                    operationModel.Download(index)
                     break;
 
                 case ESModElement.Downloading :
                 case ESModElement.Unpacking :
-                    esModel.Abort(index)
+                    operationModel.Abort(index)
                     break;
 
                 case ESModElement.Failed :
-                    esModel.Retry(index)
+                    operationModel.Retry(index)
                     break;
 
                 case ESModElement.InstalledAvailable :
                 case ESModElement.Installed :
-                    esModel.Delete(index)
+                    operationModel.Delete(index)
                     break;
 
                 case ESModElement.InstalledHasUpdate :
-                    esModel.Update(index)
+                    operationModel.Update(index)
                     break;
                 }
             }

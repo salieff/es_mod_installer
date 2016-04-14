@@ -88,8 +88,11 @@ RowLayout {
         anchors.fill: parent
 
         onClicked: {
-            if (modeldata.likemarkscount >=0 && modeldata.dislikemarkscount >=0)
-                mainWindow.likeBoxSignal(modeldata)
+            if (modeldata.likemarkscount >=0 && modeldata.dislikemarkscount >= 0)
+            {
+                var operationModel = mainDelegateContainer.ListView.view.model
+                mainWindow.likeBoxSignal(operationModel, modeldata)
+            }
         }
     }
 }

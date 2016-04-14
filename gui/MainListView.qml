@@ -4,7 +4,6 @@ import QtQuick.Controls 1.2
 ListView {
     property string headerText
 
-    model: esModel
     delegate: Delegate {}
     anchors {
         top: parent.top

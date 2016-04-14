@@ -60,9 +60,14 @@ ColumnLayout {
 
         onClicked: {
             if (modeldata.modstate === ESModElement.Failed)
-                esModel.ShowError(modeldata.index)
+            {
+                var operationModel = mainDelegateContainer.ListView.view.model
+                operationModel.ShowError(modeldata.index)
+            }
             else
+            {
                 mainWindow.infoUriSignal(infouri)
+            }
         }
     }
 }

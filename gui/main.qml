@@ -10,7 +10,7 @@ ApplicationWindow {
     visible: true
 
     signal infoUriSignal(string uriStr)
-    signal likeBoxSignal(var modeldata)
+    signal likeBoxSignal(var operationModel, var modeldata)
 
     MainBalloon {
         id: mainBalloon

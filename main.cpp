@@ -9,6 +9,7 @@
 #endif
 
 #include "esmodmodel.h"
+#include "esinstalledmodmodel.h"
 #include "asyncdownloader.h"
 #include "statisticsmanager.h"
 
@@ -28,8 +29,16 @@ int main(int argc, char *argv[])
 
     ESModModel esmodel;
 
+    ESInstalledModModel esInstalledModel;
+    esInstalledModel.setSourceModel(&esmodel);
+
+    ESInstalledModModel esServerModel(true);
+    esServerModel.setSourceModel(&esmodel);
+
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("esModel", &esmodel);
+    engine.rootContext()->setContextProperty("esInstalledModel", &esInstalledModel);
+    engine.rootContext()->setContextProperty("esServerModel", &esServerModel);
     engine.load(QUrl(QStringLiteral("qrc:/gui/main.qml")));
 
     return app.exec();

@@ -15,7 +15,10 @@ MMImage {
 
         onClicked: {
             if (modeldata.guiblocked === ESModElement.NoBlock)
-                esModel.Delete(index)
+            {
+                var operationModel = mainDelegateContainer.ListView.view.model
+                operationModel.Delete(index)
+            }
         }
     }
 }
