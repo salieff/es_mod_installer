@@ -39,7 +39,7 @@ Item {
         id: mainListViewServer
         model: esServerModel
         anchors.right: parent.left
-        headerText: qsTr("On Server →")
+        headerText: qsTr("Not Installed →")
     }
 
     MainListView {

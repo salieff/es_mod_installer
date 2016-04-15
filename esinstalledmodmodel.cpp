@@ -19,12 +19,24 @@ bool ESInstalledModModel::filterAcceptsRow(int source_row, const QModelIndex &so
     QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
     int st = sourceModel()->data(ind, ESModModel::StateRole).toInt();
 
-    bool ret = (st == ESModElement::InstalledAvailable || st == ESModElement::InstalledHasUpdate || st == ESModElement::Installed);
+    switch (st) {
+    case ESModElement::Downloading :
+    case ESModElement::Unpacking :
+    case ESModElement::Failed :
+        return true;
 
-    if (inverseFilter)
-        return !ret;
+    case ESModElement::InstalledAvailable :
+    case ESModElement::InstalledHasUpdate :
+    case ESModElement::Installed :
+        return !inverseFilter;
 
-    return ret;
+    case ESModElement::Unknown :
+    case ESModElement::Available :
+    default :
+        break;
+    }
+
+    return inverseFilter;
 }
 
 #define REMAP_SOURCE_SLOT(method) \

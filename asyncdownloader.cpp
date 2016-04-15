@@ -293,6 +293,7 @@ QNetworkReply * AsyncDownloader::get(QUrl url)
     QNetworkRequest r;
     r.setUrl(url);
     r.setRawHeader("User-Agent", ES_USER_AGENT);
+    r.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
 
     return m_networkManager->get(r);
 }
@@ -312,6 +313,7 @@ QNetworkReply * AsyncDownloader::head(QUrl url)
     QNetworkRequest r;
     r.setUrl(url);
     r.setRawHeader("User-Agent", ES_USER_AGENT);
+    r.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
 
     return m_networkManager->head(r);
 }
