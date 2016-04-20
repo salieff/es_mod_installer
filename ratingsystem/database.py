@@ -94,6 +94,24 @@ ORDER BY `InstallTime` DESC
 LIMIT 1
 """
 
+_sql_query_find_statistics_by_period = """
+SELECT COUNT(*), SUM(IF(DeleteTime IS NULL, 1, 0)) FROM `statistics`
+WHERE `ModId` = '{0}' AND TIMESTAMPDIFF(HOUR, InstallTime, NOW()) <= '{1}'
+"""
+
+_sql_query_find_statistics = """
+SELECT COUNT(*), SUM(IF(DeleteTime IS NULL, 1, 0)) FROM `statistics`
+WHERE `ModId` = '{0}'
+"""
+
+_sql_query_find_statistics_lifetime = """
+SELECT
+AVG(TIMESTAMPDIFF(HOUR, InstallTime, IF(DeleteTime IS NULL, NOW(), DeleteTime))),
+MAX(TIMESTAMPDIFF(HOUR, InstallTime, IF(DeleteTime IS NULL, NOW(), DeleteTime)))
+FROM `statistics`
+WHERE `ModId` = '{0}' AND InstallTime IS NOT NULL AND DeleteTime IS NOT NULL AND InstallTime <> DeleteTime
+"""
+
 _UP_VOTE = 1
 _DOWN_VOTE = 0
 
@@ -263,6 +281,22 @@ class Database:
         query = _sql_query_update_statistics.format(text_id, mac)
         self._execute(query)
 
+    def _find_statictics(self, title, period):
+        """ Returns installations count, all and active,
+        for specified period
+        """
+        if period > 0:
+            query = _sql_query_find_statistics_by_period.format(title, period)
+        else:
+            query = _sql_query_find_statistics.format(title)
+        return self._execute(query)
+
+    def _find_lifetime(self, title):
+        """ Returns lifetime for mod, average and maximum
+        """
+        query = _sql_query_find_statistics_lifetime.format(title)
+        return self._execute(query)
+
     def add_mark(self, title, mac, mark):
         """ Full cycle public add mark method.
         Creates all tables if don't exist,
@@ -333,3 +367,28 @@ class Database:
             self._add_statistics(text_id, mac)
 
         self._update_statistics(text_id, mac)
+
+    def get_statistics(self, title, period):
+        """ Returns installations count, all and active,
+        for specified period
+        """
+        if not self._if_table_exists("statistics"):
+            raise ValueError("Not found")
+
+        query_result = self._find_statictics(title, period)
+        if len(query_result) == 0:
+            raise ValueError("Not found")
+
+        return (query_result[0][0], query_result[0][1])
+
+    def get_lifetime(self, title):
+        """ Returns lifetime for title, average and maximum
+        """
+        if not self._if_table_exists("statistics"):
+            raise ValueError("Not found")
+
+        query_result = self._find_lifetime(title)
+        if len(query_result) == 0:
+            raise ValueError("Not found")
+
+        return (query_result[0][0], query_result[0][1])
