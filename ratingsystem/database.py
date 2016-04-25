@@ -285,7 +285,7 @@ class Database:
         """ Returns installations count, all and active,
         for specified period
         """
-        if period > 0:
+        if period is None:
             query = _sql_query_find_statistics_by_period.format(title, period)
         else:
             query = _sql_query_find_statistics.format(title)
@@ -368,7 +368,7 @@ class Database:
 
         self._update_statistics(text_id, mac)
 
-    def get_statistics(self, title, period):
+    def get_statistics(self, title, period = None):
         """ Returns installations count, all and active,
         for specified period
         """
