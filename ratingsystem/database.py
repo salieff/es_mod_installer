@@ -286,9 +286,9 @@ class Database:
         for specified period
         """
         if period is None:
-            query = _sql_query_find_statistics_by_period.format(title, period)
-        else:
             query = _sql_query_find_statistics.format(title)
+        else:
+            query = _sql_query_find_statistics_by_period.format(title, period)
         return self._execute(query)
 
     def _find_lifetime(self, title):

@@ -98,6 +98,7 @@ def _validate_fields(form):
         _ensure_field_present(form, _FIELD_MAC)
         _ensure_field_present(form, _FIELD_STATE)
 
+
 def _validate_id(string_id):
     """ Check whether project JSON contains
     given id (download/parse/check)
@@ -118,6 +119,7 @@ def _validate_mark(mark):
     if mark not in [_VALUE_MARK_UP, _VALUE_MARK_DOWN]:
         raise ValueError("Invalid mark. Expected: {0}".format(
             "|".join(str(x) for x in[_VALUE_MARK_UP, _VALUE_MARK_DOWN])))
+
 
 def _validate_state(state):
     """ Check state. Only installed/deleted available for now """
@@ -141,6 +143,7 @@ def _add_mark(form):
 
     with database.Database() as db:
         db.add_mark(text_id, mac, mark)
+
 
 def _add_statistics(form):
     """ Validate all needed fields and
@@ -177,6 +180,7 @@ def _query(form, result):
             pass
     return result
 
+
 def _query_statistics(form, result):
     """ Validate all needed fields and
     query title installation statistics via database module
@@ -195,24 +199,25 @@ def _query_statistics(form, result):
     with database.Database() as db:
         try:
             statistics = db.get_statistics(text_id)
-            result[_FIELD_INSTCOUNT_ALL] = statistics[0]
-            result[_FIELD_INSTACTIVE_ALL] = statistics[1]
+            result[_FIELD_INSTCOUNT_ALL] = int(statistics[0])
+            result[_FIELD_INSTACTIVE_ALL] = int(statistics[1])
 
             statisticsmonth = db.get_statistics(text_id, 720)
-            result[_FIELD_INSTCOUNT_MONTH] = statisticsmonth[0]
-            result[_FIELD_INSTACTIVE_MONTH] = statisticsmonth[1]
+            result[_FIELD_INSTCOUNT_MONTH] = int(statisticsmonth[0])
+            result[_FIELD_INSTACTIVE_MONTH] = int(statisticsmonth[1])
 
             statisticsweek = db.get_statistics(text_id, 168)
-            result[_FIELD_INSTCOUNT_WEEK] = statisticsweek[0]
-            result[_FIELD_INSTACTIVE_WEEK] = statisticsweek[1]
+            result[_FIELD_INSTCOUNT_WEEK] = int(statisticsweek[0])
+            result[_FIELD_INSTACTIVE_WEEK] = int(statisticsweek[1])
 
             lifetime = db.get_lifetime(text_id)
-            result[_FIELD_LIFETIME_AVG] = lifetime[0]
-            result[_FIELD_LIFETIME_MAX] = lifetime[1]
+            result[_FIELD_LIFETIME_AVG] = int(lifetime[0])
+            result[_FIELD_LIFETIME_MAX] = int(lifetime[1])
 
         except ValueError:
             pass
     return result
+
 
 def _my_mark(form, result):
     """ Validate all needed fields and
@@ -234,6 +239,7 @@ def _my_mark(form, result):
             pass
     return result
 
+
 cgitb.enable()
 result = {_FIELD_RESULT: _VALUE_RESULT_OK}
 
@@ -253,7 +259,7 @@ try:
     if operation == _VALUE_OPERATION_STAT:
         _add_statistics(form)
     if operation == _VALUE_OPERATION_QUERYSTAT:
-        _query_statistics(form)
+        _query_statistics(form, result)
 
 except Exception as e:
     result[_FIELD_RESULT] = str(e)
