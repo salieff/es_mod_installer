@@ -31,6 +31,8 @@ _FIELD_INSTCOUNT_ALL = r"instcount_all"
 _FIELD_INSTACTIVE_ALL = r"instactive_all"
 _FIELD_LIFETIME_AVG = r"lifetime_avg"
 _FIELD_LIFETIME_MAX = r"lifetime_max"
+_FIELD_STATISTICS = r"statistics"
+_FIELD_MARKS = r"marks"
 
 _VALUE_OPERATION_MARK = r"mark"
 _VALUE_OPERATION_QUERY = r"query"
@@ -38,6 +40,7 @@ _VALUE_OPERATION_MYMARK = r"mymark"
 _VALUE_OPERATION_STAT = r"statistics"
 _VALUE_OPERATION_QUERYSTAT = r"querystatistics"
 _VALUE_OPERATION_QUERYALLSTAT = r"queryallstatistics"
+_VALUE_OPERATION_QUERYALLMARKS = r"queryallmarks"
 
 _VALUE_RESULT_OK = r"ok"
 
@@ -83,24 +86,35 @@ def _validate_fields(form):
             _VALUE_OPERATION_MYMARK,
             _VALUE_OPERATION_STAT,
             _VALUE_OPERATION_QUERYSTAT,
-            _VALUE_OPERATION_QUERYALLSTAT]:
+            _VALUE_OPERATION_QUERYALLSTAT,
+            _VALUE_OPERATION_QUERYALLMARKS]:
         raise ValueError(
             "Invalid value for '{0}' field".format(_FIELD_OPERATION))
 
-    if operation != _VALUE_OPERATION_QUERYALLSTAT:
-        _ensure_field_present(form, _FIELD_ID)
-
     if operation == _VALUE_OPERATION_MARK:
+        _ensure_field_present(form, _FIELD_ID)
         _ensure_field_present(form, _FIELD_MAC)
         _ensure_field_present(form, _FIELD_MARK)
 
+    if operation == _VALUE_OPERATION_QUERY:
+        _ensure_field_present(form, _FIELD_ID)
+
     if operation == _VALUE_OPERATION_MYMARK:
+        _ensure_field_present(form, _FIELD_ID)
         _ensure_field_present(form, _FIELD_MAC)
 
     if operation == _VALUE_OPERATION_STAT:
+        _ensure_field_present(form, _FIELD_ID)
         _ensure_field_present(form, _FIELD_MAC)
         _ensure_field_present(form, _FIELD_STATE)
 
+    if operation == _VALUE_OPERATION_QUERYSTAT:
+        _ensure_field_present(form, _FIELD_ID)
+
+    #if operation == _VALUE_OPERATION_QUERYALLSTAT:
+
+    if operation == _VALUE_OPERATION_QUERYALLMARKS:
+        _ensure_field_present(form, _FIELD_MAC)
 
 def _validate_id(string_id):
     """ Check whether project JSON contains
@@ -183,6 +197,30 @@ def _query(form, result):
             pass
     return result
 
+def _query_all_marks(form, result):
+    """ Validate all needed fields and
+    query all titles mark information via database module
+    """
+    mac = _fetch_field(form, _FIELD_MAC)
+    _validate_mac(mac)
+
+    result[_FIELD_MARKS] = []
+
+    with database.Database() as db:
+        try:
+            summary = db.get_global_summary(mac)
+            for record in summary:
+                idresult = {
+                    _FIELD_ID: int(record[0]),
+                    _FIELD_UP: int(record[1]),
+                    _FIELD_DOWN: int(record[2]),
+                    _FIELD_MARK: int(record[3]),
+                }
+                result[_FIELD_MARKS].append(idresult)
+
+        except ValueError:
+            pass
+    return result
 
 def _query_statistics(form, result):
     """ Validate all needed fields and
@@ -225,20 +263,25 @@ def _query_global_statistics(form, result):
     """ Validate all needed fields and
     query all titles installation statistics via database module
     """
+
+    result[_FIELD_STATISTICS] = []
+
     with database.Database() as db:
         try:
             statistics = db.get_global_statistics()
             for record in statistics:
-                idresult[_FIELD_ID] = int(record[0])
-                idresult[_FIELD_INSTCOUNT_ALL] = int(record[1])
-                idresult[_FIELD_INSTACTIVE_ALL] = int(record[2])
-                idresult[_FIELD_INSTCOUNT_MONTH] = int(record[3])
-                idresult[_FIELD_INSTACTIVE_MONTH] = int(record[4])
-                idresult[_FIELD_INSTCOUNT_WEEK] = int(record[5])
-                idresult[_FIELD_INSTACTIVE_WEEK] = int(record[6])
-                idresult[_FIELD_LIFETIME_AVG] = int(float(record[7]) + 0.5)
-                idresult[_FIELD_LIFETIME_MAX] = int(record[8])
-                result.append(idresult)
+                idresult = {
+                    _FIELD_ID: int(record[0]),
+                    _FIELD_INSTCOUNT_ALL: int(record[1]),
+                    _FIELD_INSTACTIVE_ALL: int(record[2]),
+                    _FIELD_INSTCOUNT_MONTH: int(record[3]),
+                    _FIELD_INSTACTIVE_MONTH: int(record[4]),
+                    _FIELD_INSTCOUNT_WEEK: int(record[5]),
+                    _FIELD_INSTACTIVE_WEEK: int(record[6]),
+                    _FIELD_LIFETIME_AVG: int(float(record[7]) + 0.5),
+                    _FIELD_LIFETIME_MAX: int(record[8]),
+                }
+                result[_FIELD_STATISTICS].append(idresult)
 
         except ValueError:
             pass
@@ -288,6 +331,8 @@ try:
         _query_statistics(form, result)
     if operation == _VALUE_OPERATION_QUERYALLSTAT:
         _query_global_statistics(form, result)
+    if operation == _VALUE_OPERATION_QUERYALLMARKS:
+        _query_all_marks(form, result)
 
 except Exception as e:
     result[_FIELD_RESULT] = str(e)

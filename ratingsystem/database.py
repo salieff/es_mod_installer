@@ -73,6 +73,10 @@ UPDATE `summary` SET `Up` = `Up` - 1, `Down` = `Down` + 1
 WHERE `Title` = '{0}'
 """
 
+_sql_query_find_summary = """
+SELECT * FROM `summary`
+"""
+
 _sql_query_find_summary_by_title = """
 SELECT * FROM `summary`
 WHERE `Title` = '{0}'
@@ -361,6 +365,28 @@ class Database:
             raise ValueError("Not found")
 
         return (query_result[0][1], query_result[0][2])
+
+    def get_global_summary(self, mac):
+        """ Find summary information for all titles """
+        if not self._if_table_exists("summary"):
+            raise ValueError("Not found")
+
+        stat_result = self._execute(_sql_query_find_summary)
+        if len(stat_result) == 0:
+            raise ValueError("Not found")
+
+        results = []
+        for record in stat_result:
+            titleid = record[0]
+            res = list(record)
+            mark_result = self._find_mark_raw(titleid, mac)
+            if len(mark_result) == 0:
+                res.append(-1)
+            else:
+                res.append(mark_result[0][1])
+            results.append(res)
+
+        return results
 
     def add_statistics(self, text_id, mac, state):
         """ Public add statistics method.
