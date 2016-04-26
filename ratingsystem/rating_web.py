@@ -37,6 +37,7 @@ _VALUE_OPERATION_QUERY = r"query"
 _VALUE_OPERATION_MYMARK = r"mymark"
 _VALUE_OPERATION_STAT = r"statistics"
 _VALUE_OPERATION_QUERYSTAT = r"querystatistics"
+_VALUE_OPERATION_QUERYALLSTAT = r"queryallstatistics"
 
 _VALUE_RESULT_OK = r"ok"
 
@@ -81,11 +82,13 @@ def _validate_fields(form):
             _VALUE_OPERATION_QUERY,
             _VALUE_OPERATION_MYMARK,
             _VALUE_OPERATION_STAT,
-            _VALUE_OPERATION_QUERYSTAT]:
+            _VALUE_OPERATION_QUERYSTAT,
+            _VALUE_OPERATION_QUERYALLSTAT]:
         raise ValueError(
             "Invalid value for '{0}' field".format(_FIELD_OPERATION))
 
-    _ensure_field_present(form, _FIELD_ID)
+    if operation != _VALUE_OPERATION_QUERYALLSTAT:
+        _ensure_field_present(form, _FIELD_ID)
 
     if operation == _VALUE_OPERATION_MARK:
         _ensure_field_present(form, _FIELD_MAC)
@@ -187,14 +190,14 @@ def _query_statistics(form, result):
     """
     text_id = _fetch_field(form, _FIELD_ID)
 
-    result[_FIELD_INSTCOUNT_ALL] = 0
-    result[_FIELD_INSTACTIVE_ALL] = 0
-    result[_FIELD_INSTCOUNT_MONTH] = 0
-    result[_FIELD_INSTACTIVE_MONTH] = 0
-    result[_FIELD_INSTCOUNT_WEEK] = 0
-    result[_FIELD_INSTACTIVE_WEEK] = 0
-    result[_FIELD_LIFETIME_AVG] = 0
-    result[_FIELD_LIFETIME_MAX] = 0
+    result[_FIELD_INSTCOUNT_ALL] = -1
+    result[_FIELD_INSTACTIVE_ALL] = -1
+    result[_FIELD_INSTCOUNT_MONTH] = -1
+    result[_FIELD_INSTACTIVE_MONTH] = -1
+    result[_FIELD_INSTCOUNT_WEEK] = -1
+    result[_FIELD_INSTACTIVE_WEEK] = -1
+    result[_FIELD_LIFETIME_AVG] = -1
+    result[_FIELD_LIFETIME_MAX] = -1
 
     with database.Database() as db:
         try:
@@ -211,8 +214,31 @@ def _query_statistics(form, result):
             result[_FIELD_INSTACTIVE_WEEK] = int(statisticsweek[1])
 
             lifetime = db.get_lifetime(text_id)
-            result[_FIELD_LIFETIME_AVG] = int(lifetime[0])
+            result[_FIELD_LIFETIME_AVG] = int(float(lifetime[0]) + 0.5)
             result[_FIELD_LIFETIME_MAX] = int(lifetime[1])
+
+        except ValueError:
+            pass
+    return result
+
+def _query_global_statistics(form, result):
+    """ Validate all needed fields and
+    query all titles installation statistics via database module
+    """
+    with database.Database() as db:
+        try:
+            statistics = db.get_global_statistics()
+            for record in statistics:
+                idresult[_FIELD_ID] = int(record[0])
+                idresult[_FIELD_INSTCOUNT_ALL] = int(record[1])
+                idresult[_FIELD_INSTACTIVE_ALL] = int(record[2])
+                idresult[_FIELD_INSTCOUNT_MONTH] = int(record[3])
+                idresult[_FIELD_INSTACTIVE_MONTH] = int(record[4])
+                idresult[_FIELD_INSTCOUNT_WEEK] = int(record[5])
+                idresult[_FIELD_INSTACTIVE_WEEK] = int(record[6])
+                idresult[_FIELD_LIFETIME_AVG] = int(float(record[7]) + 0.5)
+                idresult[_FIELD_LIFETIME_MAX] = int(record[8])
+                result.append(idresult)
 
         except ValueError:
             pass
@@ -260,6 +286,8 @@ try:
         _add_statistics(form)
     if operation == _VALUE_OPERATION_QUERYSTAT:
         _query_statistics(form, result)
+    if operation == _VALUE_OPERATION_QUERYALLSTAT:
+        _query_global_statistics(form, result)
 
 except Exception as e:
     result[_FIELD_RESULT] = str(e)

@@ -112,6 +112,17 @@ FROM `statistics`
 WHERE `ModId` = '{0}' AND InstallTime IS NOT NULL AND DeleteTime IS NOT NULL AND InstallTime <> DeleteTime
 """
 
+_sql_query_find_global_statistics = """
+SELECT `ModId`,
+COUNT(*), SUM(IF(`DeleteTime` IS NULL, 1, 0)),
+SUM(IF(TIMESTAMPDIFF(HOUR, `InstallTime`, NOW()) <= 720, 1, 0)), SUM(IF(TIMESTAMPDIFF(HOUR, `InstallTime`, NOW()) <= 720 && `DeleteTime` IS NULL, 1, 0)),
+SUM(IF(TIMESTAMPDIFF(HOUR, `InstallTime`, NOW()) <= 168, 1, 0)), SUM(IF(TIMESTAMPDIFF(HOUR, `InstallTime`, NOW()) <= 168 && `DeleteTime` IS NULL, 1, 0)),
+AVG(IF(`DeleteTime` IS NOT NULL && `InstallTime` <> `DeleteTime`, TIMESTAMPDIFF(HOUR, `InstallTime`, `DeleteTime`), NULL)),
+MAX(IF(`DeleteTime` IS NOT NULL && `InstallTime` <> `DeleteTime`, TIMESTAMPDIFF(HOUR, `InstallTime`, `DeleteTime`), NULL))
+FROM statistics
+GROUP BY ModId
+"""
+
 _UP_VOTE = 1
 _DOWN_VOTE = 0
 
@@ -392,3 +403,17 @@ class Database:
             raise ValueError("Not found")
 
         return (query_result[0][0], query_result[0][1])
+
+    def get_global_statistics(self):
+        """ Returns installations count, all and active,
+        for all period, lasth month and last week, followed by lifetime average and maximum,
+        for all mod-titles.
+        """
+        if not self._if_table_exists("statistics"):
+            raise ValueError("Not found")
+
+        query_result = self._execute(_sql_query_find_global_statistics)
+        if len(query_result) == 0:
+            raise ValueError("Not found")
+
+        return query_result
