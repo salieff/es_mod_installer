@@ -6,9 +6,6 @@
 #include "esmodelement.h"
 #include "statisticsmanager.h"
 
-#define LIKES_CGI_URL "http://es.191.ru/cgi-bin/ratingsystem/rating_web.py"
-#define STATS_CGI_URL LIKES_CGI_URL
-
 #if defined(Q_OS_IOS)
     #define MY_PLATFORM "ios"
 #elif defined(ANDROID)
@@ -31,6 +28,14 @@ ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, in
       mylikemark(LikeMarkNotFound),
       likemarkscount(-1),
       dislikemarkscount(-1),
+      insttotal(-1),
+      instactive(-1),
+      insttotalmonth(-1),
+      instactivemonth(-1),
+      insttotalweek(-1),
+      instactiveweek(-1),
+      lifetimeavg(-1),
+      lifetimemax(-1),
       guiblocked(ByUnknown),
       m_localSize(0),
       m_localTimestamp(0),
@@ -93,6 +98,11 @@ void ESModElement::Delete()
 
 void ESModElement::SendLike(LikeType l)
 {
+    mylikemark = LikeMarkNotFound;
+    likemarkscount = -1;
+    dislikemarkscount = -1;
+    emit stateChanged();
+
     QString setLikeReq = QString("%1?operation=mark&id=%2&mac=%3&udid=%4&platform=%5&mark=%6")\
             .arg(LIKES_CGI_URL)\
             .arg(id)\
@@ -117,8 +127,6 @@ void ESModElement::RequestHeaders()
     m_asyncUnzipper.wait();
 
     m_asyncDownloader.downloadFileList(m_uri, files, QString(), true);
-
-    sendLikesRequests();
 }
 
 QString ESModElement::errorString()
@@ -434,6 +442,38 @@ bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
         files << files_arr[i].toString().trimmed();
 
     return true;
+}
+
+void ESModElement::DeserializeFromAllLikesList(const QJsonObject &obj)
+{
+    if (obj["id"].toInt() != id)
+        return;
+
+    int imrk = obj["mark"].toInt();
+    if (imrk < 0)
+        mylikemark = LikeMarkNotFound;
+    else if (imrk == 0)
+        mylikemark = DislikeMark;
+    else
+        mylikemark = LikeMark;
+
+    likemarkscount = obj["up"].toInt();
+    dislikemarkscount = obj["down"].toInt();
+}
+
+void ESModElement::DeserializeFromAllStatisticsList(const QJsonObject &obj)
+{
+    if (obj["id"].toInt() != id)
+        return;
+
+    insttotal = obj["instcount_all"].toInt();
+    instactive = obj["instactive_all"].toInt();
+    insttotalmonth = obj["instcount_month"].toInt();
+    instactivemonth = obj["instactive_month"].toInt();
+    insttotalweek = obj["instcount_week"].toInt();
+    instactiveweek = obj["instactive_week"].toInt();
+    lifetimeavg = obj["lifetime_avg"].toInt();
+    lifetimemax = obj["lifetime_max"].toInt();
 }
 
 void ESModElement::SetInstallPath(QString p)

@@ -173,6 +173,38 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         return element->dislikemarkscount;
         break;
 
+    case InstallsTotalRole :
+        return element->insttotal;
+        break;
+
+    case InstallsActiveRole :
+        return element->instactive;
+        break;
+
+    case InstallsTotalMonthRole :
+        return element->insttotalmonth;
+        break;
+
+    case InstallsActiveMonthRole :
+        return element->instactivemonth;
+        break;
+
+    case InstallsTotalWeekRole :
+        return element->insttotalweek;
+        break;
+
+    case InstallsActiveWeekRole :
+        return element->instactiveweek;
+        break;
+
+    case LifeTimeAVGRole :
+        return element->lifetimeavg;
+        break;
+
+    case LifeTimeMAXRole :
+        return element->lifetimemax;
+        break;
+
     default:
         break;
     }
@@ -196,6 +228,14 @@ QHash<int, QByteArray> ESModModel::roleNames() const
     roles[MyLikeMarkRole] = "mylikemark";
     roles[LikeMarksCountRole] = "likemarkscount";
     roles[DislikeMarksCountRole] = "dislikemarkscount";
+    roles[InstallsTotalRole] = "insttotal";
+    roles[InstallsActiveRole] = "instactive";
+    roles[InstallsTotalMonthRole] = "insttotalmonth";
+    roles[InstallsActiveMonthRole] = "instactivemonth";
+    roles[InstallsTotalWeekRole] = "insttotalweek";
+    roles[InstallsActiveWeekRole] = "instactiveweek";
+    roles[LifeTimeAVGRole] = "lifetimeavg";
+    roles[LifeTimeMAXRole] = "lifetimemax";
 
     return roles;
 }
@@ -258,6 +298,9 @@ void ESModModel::ESModIndexDownloaded()
 
     sortList(m_lastSortMode);
 
+    requestAllLikes();
+    requestAllStatistics();
+
     foreach (ESModElement *el, m_elements)
         el->RequestHeaders();
 
@@ -275,6 +318,84 @@ void ESModModel::ESModIndexError(QNetworkReply::NetworkError code)
 
     QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
     QMessageBox::critical(NULL, "Index download error", rep->errorString());
+}
+
+void ESModModel::AllLikesReceived()
+{
+    QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
+    rep->deleteLater();
+
+    if (rep->error() != QNetworkReply::NoError)
+        return;
+
+    QByteArray data = rep->readAll();
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &err);
+
+    if (doc.isNull())
+    {
+        QMessageBox::critical(NULL, tr("Likes list isn't valid JSON"), err.errorString());
+        return;
+    }
+
+    if (!doc.isObject())
+    {
+        QMessageBox::critical(NULL, tr("Bad likes list"), tr("Likes list doesn't contain any JSON objects"));
+        return;
+    }
+
+    QJsonObject obj = doc.object();
+    if (obj["result"].toString() != "ok")
+    {
+        QMessageBox::critical(NULL, tr("Likes list request failed"), obj["result"].toString());
+        return;
+    }
+
+    QJsonArray arr = obj["marks"].toArray();
+    beginResetModel();
+    for (int i = 0; i < arr.size(); ++i)
+        foreach (ESModElement *el, m_elements)
+            el->DeserializeFromAllLikesList(arr[i].toObject());
+    endResetModel();
+}
+
+void ESModModel::AllStatisticsReceived()
+{
+    QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
+    rep->deleteLater();
+
+    if (rep->error() != QNetworkReply::NoError)
+        return;
+
+    QByteArray data = rep->readAll();
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &err);
+
+    if (doc.isNull())
+    {
+        QMessageBox::critical(NULL, tr("Statistics list isn't valid JSON"), err.errorString());
+        return;
+    }
+
+    if (!doc.isObject())
+    {
+        QMessageBox::critical(NULL, tr("Bad statistics list"), tr("Statistics list doesn't contain any JSON objects"));
+        return;
+    }
+
+    QJsonObject obj = doc.object();
+    if (obj["result"].toString() != "ok")
+    {
+        QMessageBox::critical(NULL, tr("Statistics list request failed"), obj["result"].toString());
+        return;
+    }
+
+    QJsonArray arr = obj["statistics"].toArray();
+    beginResetModel();
+    for (int i = 0; i < arr.size(); ++i)
+        foreach (ESModElement *el, m_elements)
+            el->DeserializeFromAllStatisticsList(arr[i].toObject());
+    endResetModel();
 }
 
 void ESModModel::Download(int ind)
@@ -343,6 +464,23 @@ void ESModModel::elementNeedRemove()
     m_elements.removeAt(el->m_modelIndex);
     ReindexElements();
     endRemoveRows();
+}
+
+void ESModModel::requestAllLikes()
+{
+    QString allLikeReq = QString("%1?operation=queryallmarks&mac=%2&udid=%3")\
+            .arg(LIKES_CGI_URL)\
+            .arg(AsyncDownloader::getMacAddress())\
+            .arg(AsyncDownloader::getDeviceUDID());
+    QNetworkReply *allLikeRep = AsyncDownloader::get(allLikeReq);
+    connect(allLikeRep, SIGNAL(finished()), this, SLOT(AllLikesReceived()));
+}
+
+void ESModModel::requestAllStatistics()
+{
+    QString allStatReq = QString("%1?operation=queryallstatistics").arg(STATS_CGI_URL);
+    QNetworkReply *allStatRep = AsyncDownloader::get(allStatReq);
+    connect(allStatRep, SIGNAL(finished()), this, SLOT(AllStatisticsReceived()));
 }
 
 bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
@@ -607,6 +745,45 @@ static bool lessThanByScore(ESModElement *a, ESModElement *b)
     return sa >= sb;
 }
 
+static bool lessThanByActiveInstalls(ESModElement *a, ESModElement *b)
+{
+    if (a->instactive != b->instactive)
+        return a->instactive > b->instactive;
+
+    if (a->instactivemonth != b->instactivemonth)
+        return a->instactivemonth > b->instactivemonth;
+
+    if (a->instactiveweek != b->instactiveweek)
+        return a->instactiveweek > b->instactiveweek;
+
+    return lessThanAsServer(a, b);
+}
+
+static bool lessThanByTotalInstalls(ESModElement *a, ESModElement *b)
+{
+    if (a->insttotal != b->insttotal)
+        return a->insttotal > b->insttotal;
+
+    if (a->insttotalmonth != b->insttotalmonth)
+        return a->insttotalmonth > b->insttotalmonth;
+
+    if (a->insttotalweek != b->insttotalweek)
+        return a->insttotalweek > b->insttotalweek;
+
+    return lessThanAsServer(a, b);
+}
+
+static bool lessThanByLifeTime(ESModElement *a, ESModElement *b)
+{
+    if (a->lifetimeavg != b->lifetimeavg)
+        return a->lifetimeavg > b->lifetimeavg;
+
+    if (a->lifetimemax != b->lifetimemax)
+        return a->lifetimemax > b->lifetimemax;
+
+    return lessThanAsServer(a, b);
+}
+
 typedef bool (*lessThanSortFunc)(ESModElement *a, ESModElement *b);
 static const lessThanSortFunc lessThanArray[] = { \
     lessThanAsServer, \
@@ -617,7 +794,10 @@ static const lessThanSortFunc lessThanArray[] = { \
     lessThanByDate0, \
     lessThanByDate1, \
     lessThanByScore, \
-    lessThanByVotesCount \
+    lessThanByVotesCount, \
+    lessThanByActiveInstalls, \
+    lessThanByTotalInstalls, \
+    lessThanByLifeTime \
 };
 
 void ESModModel::sortList(SortMode m)

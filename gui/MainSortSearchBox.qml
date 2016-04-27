@@ -85,6 +85,18 @@ Rectangle {
                         case ESModModel.ByVotesCount :
                             sortText.text = "웃"
                             break;
+
+                        case ESModModel.ByActiveInstalls :
+                            sortText.text = "I+"
+                            break;
+
+                        case ESModModel.ByTotalInstalls :
+                            sortText.text = "I•"
+                            break;
+
+                        case ESModModel.ByLifeTime :
+                            sortText.text = "Tm"
+                            break;
                         }
                     }
                 }

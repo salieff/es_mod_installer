@@ -50,4 +50,19 @@ Menu {
         text: qsTr("By votes count")
         onTriggered: esModel.sortList(ESModModel.ByVotesCount)
     }
+
+    MenuItem {
+        text: qsTr("By active installs")
+        onTriggered: esModel.sortList(ESModModel.ByActiveInstalls)
+    }
+
+    MenuItem {
+        text: qsTr("By total installs")
+        onTriggered: esModel.sortList(ESModModel.ByTotalInstalls)
+    }
+
+    MenuItem {
+        text: qsTr("By hours of life")
+        onTriggered: esModel.sortList(ESModModel.ByLifeTime)
+    }
 }

@@ -9,6 +9,9 @@
 #include "asyncunzipper.h"
 #include "asyncdeleter.h"
 
+#define LIKES_CGI_URL "http://es.191.ru/cgi-bin/ratingsystem/rating_web.py"
+#define STATS_CGI_URL LIKES_CGI_URL
+
 class ESModElement : public QObject
 {
     Q_OBJECT
@@ -58,6 +61,8 @@ public:
     QJsonObject SerializeToDB();
     void DeserializeFromDB(const QJsonObject &obj);
     bool DeserializeFromNetwork(const QJsonObject &obj);
+    void DeserializeFromAllLikesList(const QJsonObject &obj);
+    void DeserializeFromAllStatisticsList(const QJsonObject &obj);
     void SetInstallPath(QString p);
 
     void TryToPickupFrom(QList<ESModElement *> &list);
@@ -74,9 +79,20 @@ public:
     double size;
     double timestamp;
 
+    // Likes
     LikeType mylikemark;
     int likemarkscount;
     int dislikemarkscount;
+
+    // Installations statistics
+    int insttotal;
+    int instactive;
+    int insttotalmonth;
+    int instactivemonth;
+    int insttotalweek;
+    int instactiveweek;
+    int lifetimeavg;
+    int lifetimemax;
 
     GuiBlockReason guiblocked;
 
