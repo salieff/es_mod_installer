@@ -121,8 +121,8 @@ SELECT `ModId`,
 COUNT(*), SUM(IF(`DeleteTime` IS NULL, 1, 0)),
 SUM(IF(TIMESTAMPDIFF(HOUR, `InstallTime`, NOW()) <= 720, 1, 0)), SUM(IF(TIMESTAMPDIFF(HOUR, `InstallTime`, NOW()) <= 720 && `DeleteTime` IS NULL, 1, 0)),
 SUM(IF(TIMESTAMPDIFF(HOUR, `InstallTime`, NOW()) <= 168, 1, 0)), SUM(IF(TIMESTAMPDIFF(HOUR, `InstallTime`, NOW()) <= 168 && `DeleteTime` IS NULL, 1, 0)),
-AVG(IF(`DeleteTime` IS NOT NULL && `InstallTime` <> `DeleteTime`, TIMESTAMPDIFF(HOUR, `InstallTime`, `DeleteTime`), NULL)),
-MAX(IF(`DeleteTime` IS NOT NULL && `InstallTime` <> `DeleteTime`, TIMESTAMPDIFF(HOUR, `InstallTime`, `DeleteTime`), NULL))
+IFNULL(AVG(IF(`DeleteTime` IS NOT NULL && `InstallTime` <> `DeleteTime`, TIMESTAMPDIFF(HOUR, `InstallTime`, `DeleteTime`), NULL)),0),
+IFNULL(MAX(IF(`DeleteTime` IS NOT NULL && `InstallTime` <> `DeleteTime`, TIMESTAMPDIFF(HOUR, `InstallTime`, `DeleteTime`), NULL)),0)
 FROM statistics
 GROUP BY ModId
 """
