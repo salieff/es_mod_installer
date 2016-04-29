@@ -7,7 +7,7 @@ Rectangle {
     height: likeRectLayout.implicitHeight + 40
     anchors.centerIn: parent
     radius: 10
-    color: "#e0ffffff"
+    color: "#f0ffffff"
     opacity: 0
     visible: false
 
@@ -37,7 +37,7 @@ Rectangle {
 
         mainLists.enabled = false
         visible = true
-        opacity = 0.95
+        opacity = 1
         mainAppTitle.closeButton.state = "CLOSE"
         return true
     }
@@ -49,88 +49,54 @@ Rectangle {
 
         Text {
             id: likeTitle
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
             font.pointSize: 18
-            color: "#606060"
+            style: Text.Raised
+            styleColor: "white"
             text: qsTr("ES mod title")
         }
 
-        MMImage {
-            id: likeImg
-            source: "/icons/like.png"
-            mmwidth: 20
-            mmheight: 20
-            opacity: 1
-
-            MouseArea {
-                anchors.fill: parent
-
-                onPressed: {
-                    if (myLike !== ESModElement.LikeMark)
-                    {
-                        likeImg.opacity = 1
-                        dislikeImg.opacity = 0.3
-                    }
-                }
-
-                onReleased: {
-                    if (myLike !== ESModElement.LikeMark)
-                    {
-                        myLike = ESModElement.LikeMark
-                        opModel.SendLike(itemIndex, ESModElement.LikeMark)
-                        mainAppTitle.closeButton.state = "NORMAL"
-                        hide()
-                    }
-                }
-            }
-
-        }
-
-        MMImage {
-            id: dislikeImg
-            source: "/icons/dislike.png"
-            mmwidth: 20
-            mmheight: 20
-            opacity: 0.3
-
-            MouseArea {
-                anchors.fill: parent
-
-                onPressed: {
-                    if (myLike !== ESModElement.DislikeMark)
-                    {
-                        likeImg.opacity = 0.3
-                        dislikeImg.opacity = 1
-                    }
-                }
-
-                onReleased: {
-                    if (myLike !== ESModElement.DislikeMark)
-                    {
-                        myLike = ESModElement.DislikeMark
-                        opModel.SendLike(itemIndex, ESModElement.DislikeMark)
-                        mainAppTitle.closeButton.state = "NORMAL"
-                        hide()
-                    }
-                }
-            }
-        }
-
-        RowLayout {
-            id: likeMiniRow
-            Layout.fillWidth: true
+        GridLayout {
             Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+            columnSpacing: 20
+            rowSpacing: 20
+            columns: 2
 
             MMImage {
-                id: likeMiniImg
+                id: likeImg
+                Layout.alignment: Qt.AlignBottom | Qt.AlignRight
                 source: "/icons/like.png"
-                mmwidth: 6
-                mmheight: 6
+                mmwidth: 13
+                mmheight: 13
+                opacity: 1
+
+                MouseArea {
+                    anchors.fill: parent
+
+                    onPressed: {
+                        if (myLike !== ESModElement.LikeMark)
+                        {
+                            likeImg.opacity = 1
+                            dislikeImg.opacity = 0.3
+                        }
+                    }
+
+                    onReleased: {
+                        if (myLike !== ESModElement.LikeMark)
+                        {
+                            myLike = ESModElement.LikeMark
+                            opModel.SendLike(itemIndex, ESModElement.LikeMark)
+                            mainAppTitle.closeButton.state = "NORMAL"
+                            hide()
+                        }
+                    }
+                }
+
             }
 
             Text {
                 id: likeText
+                Layout.alignment: Qt.AlignBottom | Qt.AlignLeft
                 font.pointSize: 24
                 style: Text.Sunken
                 color: "lightgreen"
@@ -139,21 +105,191 @@ Rectangle {
             }
 
             MMImage {
-                id: dislikeMiniImg
+                id: dislikeImg
+                Layout.alignment: Qt.AlignTop | Qt.AlignRight
                 source: "/icons/dislike.png"
-                mmwidth: 6
-                mmheight: 6
+                mmwidth: 13
+                mmheight: 13
+                opacity: 0.3
+
+                MouseArea {
+                    anchors.fill: parent
+
+                    onPressed: {
+                        if (myLike !== ESModElement.DislikeMark)
+                        {
+                            likeImg.opacity = 0.3
+                            dislikeImg.opacity = 1
+                        }
+                    }
+
+                    onReleased: {
+                        if (myLike !== ESModElement.DislikeMark)
+                        {
+                            myLike = ESModElement.DislikeMark
+                            opModel.SendLike(itemIndex, ESModElement.DislikeMark)
+                            mainAppTitle.closeButton.state = "NORMAL"
+                            hide()
+                        }
+                    }
+                }
             }
 
             Text {
                 id: dislikeText
+                Layout.alignment: Qt.AlignTop | Qt.AlignLeft
                 font.pointSize: 24
                 style: Text.Sunken
                 color: "lightblue"
                 styleColor: "black"
                 text: "33"
             }
+        }
 
+        RowLayout {
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+            spacing: 40
+
+            // Installation statistics block
+            GridLayout {
+                Layout.alignment: Qt.AlignTop | Qt.AlignLeft
+                columns: 3
+
+                Text {
+                    font.pointSize: 18
+                    style: Text.Raised
+                    styleColor: "white"
+                    text: qsTr("Installs")
+                }
+
+                Text {
+                    font.pointSize: 14
+                    color: "#606060"
+                    text: qsTr("Active")
+                }
+
+                Text {
+                    font.pointSize: 14
+                    color: "#606060"
+                    text: qsTr("Total")
+                }
+
+                Text {
+                    font.pointSize: 14
+                    color: "#606060"
+                    text: qsTr("Last week")
+                }
+
+                Text {
+                    id: instActiveWeek
+                    font.pointSize: 18
+                    style: Text.Sunken
+                    color: "lightgreen"
+                    styleColor: "black"
+                    text: qsTr("111")
+                }
+
+                Text {
+                    id: instTotalWeek
+                    font.pointSize: 18
+                    style: Text.Sunken
+                    color: "lightblue"
+                    styleColor: "black"
+                    text: qsTr("222")
+                }
+
+                Text {
+                    font.pointSize: 14
+                    color: "#606060"
+                    text: qsTr("Last month")
+                }
+
+                Text {
+                    id: instActiveMonth
+                    font.pointSize: 18
+                    style: Text.Sunken
+                    color: "lightgreen"
+                    styleColor: "black"
+                    text: qsTr("333")
+                }
+
+                Text {
+                    id: instTotalMonth
+                    font.pointSize: 18
+                    style: Text.Sunken
+                    color: "lightblue"
+                    styleColor: "black"
+                    text: qsTr("444")
+                }
+
+                Text {
+                    font.pointSize: 14
+                    color: "#606060"
+                    text: qsTr("All period")
+                }
+
+                Text {
+                    id: instActive
+                    font.pointSize: 18
+                    style: Text.Sunken
+                    color: "lightgreen"
+                    styleColor: "black"
+                    text: qsTr("555")
+                }
+
+                Text {
+                    id: instTotal
+                    font.pointSize: 18
+                    style: Text.Sunken
+                    color: "lightblue"
+                    styleColor: "black"
+                    text: qsTr("666")
+                }
+            }
+
+            // Life time block
+            GridLayout {
+                Layout.alignment: Qt.AlignTop | Qt.AlignRight
+                columns: 2
+
+                Text {
+                    Layout.columnSpan: 2
+                    font.pointSize: 18
+                    style: Text.Raised
+                    styleColor: "white"
+                    text: qsTr("Hours of life")
+                }
+
+                Text {
+                    font.pointSize: 14
+                    color: "#606060"
+                    text: qsTr("Average")
+                }
+
+                Text {
+                    id: lifeTimeAVG
+                    font.pointSize: 18
+                    style: Text.Sunken
+                    color: "lightgreen"
+                    styleColor: "black"
+                    text: qsTr("111")
+                }
+
+                Text {
+                    font.pointSize: 14
+                    color: "#606060"
+                    text: qsTr("Maximum")
+                }
+
+                Text {
+                    id: lifeTimeMAX
+                    font.pointSize: 18
+                    style: Text.Sunken
+                    color: "lightblue"
+                    styleColor: "black"
+                    text: qsTr("444")
+                }
+            }
         }
     }
 
@@ -162,53 +298,29 @@ Rectangle {
         onLikeBoxSignal: {
             if (!visible)
             {
-                if (modeldata.mylikemark === ESModElement.LikeMark)
-                    likeImg.opacity = 1
-                else
-                    likeImg.opacity = 0.3
+                likeImg.opacity = modeldata.mylikemark === ESModElement.LikeMark ? 1 : 0.3
+                dislikeImg.opacity = modeldata.mylikemark === ESModElement.DislikeMark ? 1 : 0.3
 
-                if (modeldata.mylikemark === ESModElement.DislikeMark)
-                    dislikeImg.opacity = 1
-                else
-                    dislikeImg.opacity = 0.3
-
-                if (modeldata.likemarkscount > 0)
-                {
-                    likeText.text = modeldata.likemarkscount
-                    likeMiniImg.visible = true;
-                    likeText.visible = true;
-                }
-                else
-                {
-                    likeMiniImg.visible = false;
-                    likeText.visible = false;
-                }
-
-                if (modeldata.dislikemarkscount > 0)
-                {
-                    dislikeText.text = modeldata.dislikemarkscount
-                    dislikeMiniImg.visible = true;
-                    dislikeText.visible = true;
-                }
-                else
-                {
-                    dislikeMiniImg.visible = false;
-                    dislikeText.visible = false;
-                }
-
-                if (modeldata.likemarkscount <= 0 && modeldata.dislikemarkscount <= 0)
-                    likeMiniRow.visible = false
-                else
-                    likeMiniRow.visible = true
+                likeText.text = modeldata.likemarkscount > 0 ? modeldata.likemarkscount : ""
+                dislikeText.text = modeldata.dislikemarkscount > 0 ? modeldata.dislikemarkscount : ""
 
                 mainLists.enabled = false
 
                 var tlen = modeldata.title.length
-                var maxlen = 25
+                var maxlen = 32
                 if ( tlen <= maxlen)
                     likeTitle.text = modeldata.title
                 else
                     likeTitle.text = modeldata.title.substring(0, (maxlen - 3) / 2) + "..." + modeldata.title.substring(tlen - (maxlen - 3) / 2)
+
+                instTotal.text = modeldata.insttotal > 0 ? modeldata.insttotal : ""
+                instActive.text = modeldata.instactive > 0 ? modeldata.instactive : ""
+                instTotalMonth.text = modeldata.insttotalmonth > 0 ? modeldata.insttotalmonth : ""
+                instActiveMonth.text = modeldata.instactivemonth > 0 ? modeldata.instactivemonth : ""
+                instTotalWeek.text = modeldata.insttotalweek > 0 ? modeldata.insttotalweek : ""
+                instActiveWeek.text = modeldata.instactiveweek > 0 ? modeldata.instactiveweek : ""
+                lifeTimeAVG.text = modeldata.lifetimeavg > 0 ? modeldata.lifetimeavg : ""
+                lifeTimeMAX.text = modeldata.lifetimemax > 0 ? modeldata.lifetimemax : ""
 
                 itemIndex = modeldata.index
                 myLike = modeldata.mylikemark

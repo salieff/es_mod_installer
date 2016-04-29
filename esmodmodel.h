@@ -25,19 +25,30 @@ public:
         GuiBlockedRole,
         MyLikeMarkRole,
         LikeMarksCountRole,
-        DislikeMarksCountRole
+        DislikeMarksCountRole,
+        InstallsTotalRole,
+        InstallsActiveRole,
+        InstallsTotalMonthRole,
+        InstallsActiveMonthRole,
+        InstallsTotalWeekRole,
+        InstallsActiveWeekRole,
+        LifeTimeAVGRole,
+        LifeTimeMAXRole
     };
 
     enum SortMode {
-        AsServer     = 0,
-        ByNameUp     = 1,
-        ByNameDown   = 2,
-        BySizeUp     = 3,
-        BySizeDown   = 4,
-        ByDateUp     = 5,
-        ByDateDown   = 6,
-        ByScore      = 7,
-        ByVotesCount = 8
+        AsServer         = 0,
+        ByNameUp         = 1,
+        ByNameDown       = 2,
+        BySizeUp         = 3,
+        BySizeDown       = 4,
+        ByDateUp         = 5,
+        ByDateDown       = 6,
+        ByScore          = 7,
+        ByVotesCount     = 8,
+        ByActiveInstalls = 9,
+        ByTotalInstalls  = 10,
+        ByLifeTime       = 11
     };
     Q_ENUMS(SortMode)
 
@@ -60,6 +71,8 @@ signals:
 public slots:
     void ESModIndexDownloaded();
     void ESModIndexError(QNetworkReply::NetworkError code);
+    void AllLikesReceived();
+    void AllStatisticsReceived();
 
     void Download(int ind);
     void Abort(int ind);
@@ -86,6 +99,8 @@ protected:
     QHash<int, QByteArray> roleNames() const;
 
 private:
+    void requestAllLikes();
+    void requestAllStatistics();
     bool LoadLocalModsDB(QList<ESModElement *> &l);
     void ReindexElements();
 
