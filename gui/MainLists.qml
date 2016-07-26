@@ -1,7 +1,8 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import org.salieff.esmodinstaller 1.0
 
-Item {
+ESSwipeArea {
     anchors {
         top: mainAppTitle.bottom
         bottom: mainSortSearchBox.top
@@ -56,6 +57,7 @@ Item {
         headerText: qsTr("← Installed")
     }
 
+    /*
     MouseArea {
         anchors.fill: parent
 
@@ -101,6 +103,7 @@ Item {
             lastX = -1;
         }
     }
+    */
 
     BusyIndicator {
         id: busyIndicator

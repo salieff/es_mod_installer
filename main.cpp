@@ -12,6 +12,7 @@
 #include "esinstalledmodmodel.h"
 #include "asyncdownloader.h"
 #include "statisticsmanager.h"
+#include "esswipearea.h"
 
 int main(int argc, char *argv[])
 {
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<ESModModel>("org.salieff.esmodinstaller", 1, 0, "ESModModel");
     qmlRegisterType<ESModElement>("org.salieff.esmodinstaller", 1, 0, "ESModElement");
+    qmlRegisterType<ESSwipeArea>("org.salieff.esmodinstaller", 1, 0, "ESSwipeArea");
 
     ESModModel esmodel;
 
