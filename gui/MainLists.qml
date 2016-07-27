@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import QtQuick.Window 2.2
 import org.salieff.esmodinstaller 1.0
 
 ESSwipeArea {
@@ -9,6 +10,10 @@ ESSwipeArea {
         left: parent.left
         right: parent.right
     }
+
+    pixelage: Screen.pixelDensity * 50
+    speed: Screen.pixelDensity * 10
+
     state: "ALL"
 
     states: [
@@ -104,6 +109,24 @@ ESSwipeArea {
         }
     }
     */
+
+    onSwipeLeft: {
+        if (state === "SERVER") {
+            state = "ALL"
+        }
+        else if (state === "ALL") {
+            state = "LOCAL"
+        }
+    }
+
+    onSwipeRight: {
+        if (state === "LOCAL") {
+            state = "ALL"
+        }
+        else if (state === "ALL") {
+            state = "SERVER"
+        }
+    }
 
     BusyIndicator {
         id: busyIndicator

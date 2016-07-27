@@ -1,44 +1,55 @@
 #ifndef ESSWIPEAREA_H
 #define ESSWIPEAREA_H
 
-#include <QtQuick/QQuickItem>
+#include <QtQuick/QQuickPaintedItem>
 #include <QElapsedTimer>
 #include <QTimer>
 
 #include <vector>
+#include <map>
 
-class ESSwipeArea : public QQuickItem
+class ESSwipeArea : public QQuickPaintedItem
 {
     Q_OBJECT
+    Q_PROPERTY(qint32 pixelage READ pixelage WRITE setPixelage)
+    Q_PROPERTY(qreal speed READ speed WRITE setSpeed)
 
 public:
     enum State {
         WaitingPress,
-        Analyze,
+        Collect,
         InSwipe,
         PassThrough
     };
 
     ESSwipeArea(QQuickItem *parent = 0);
-    bool childMouseEventFilter(QQuickItem *, QEvent *event);
+
+    qint32 pixelage() const;
+    void setPixelage(qint32 p);
+
+    qreal speed() const;
+    void setSpeed(qreal s);
+
+    void paint(QPainter *painter);
+    bool childMouseEventFilter(QQuickItem *item, QEvent *event);
 
 public slots:
-    void breakAnalyze();
+    void processCollectedData();
 
 signals:
     void swipeLeft();
     void swipeRight();
 
 private:
-    void startAnalyze(QEvent *event);
-    bool analyze(QEvent *event, bool release = false);
+    void stopProcessing(bool revert);
+
+    qint32 m_pixelage;
+    qreal m_speed;
 
     State m_state;
-    QTimer m_timer;
     QElapsedTimer m_startTimer;
-    QPoint m_startPoint;
-    QPoint m_lastPoint;
-    std::vector<QMouseEvent> m_suspendedEvents;
+    QTimer m_timer;
+    std::vector<std::pair<QQuickItem *, QMouseEvent> > m_suspendedEvents;
 };
 
 #endif // ESSWIPEAREA_H
