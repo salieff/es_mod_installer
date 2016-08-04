@@ -1,6 +1,7 @@
 import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.2
 
 ApplicationWindow {
     id: mainWindow
@@ -16,16 +17,22 @@ ApplicationWindow {
         id: mainBalloon
     }
 
-    MainLists {
-        id: mainLists
-    }
+    ColumnLayout {
+        anchors.fill: parent
 
-    MainAppTitle {
-        id: mainAppTitle
-    }
+        MainAppTitle {
+            id: mainAppTitle
+            z: 1
+        }
 
-    MainSortSearchBox {
-        id: mainSortSearchBox
+        MainLists {
+            id: mainLists
+        }
+
+        MainSortSearchBox {
+            id: mainSortSearchBox
+            z: 1
+        }
     }
 
     MainInfoPanel {
@@ -116,18 +123,6 @@ ApplicationWindow {
             case Qt.Key_Back:
                 if (!hideAllPanels())
                     Qt.quit()
-                break;
-
-            case Qt.Key_1:
-                mainLists.state = "SERVER"
-                break;
-
-            case Qt.Key_2:
-                mainLists.state = "ALL"
-                break;
-
-            case Qt.Key_3:
-                mainLists.state = "LOCAL"
                 break;
             }
 

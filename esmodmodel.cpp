@@ -8,6 +8,7 @@
 #include <QApplication>
 #include <QStandardPaths>
 #include <QClipboard>
+#include <QProcessEnvironment>
 
 #include "esmodmodel.h"
 #include "statisticsmanager.h"
@@ -29,7 +30,8 @@ ESModModel::ESModModel(QObject *parent)
                                     << "/var/mobile/Applications" \
                                     << "/private/var/mobile/Containers/Bundle/Application" \
                                     << "/private/var/mobile/Applications" \
-                                    << "/Applications");
+                                    << "/Applications" \
+                                    << "/private/var/containers/Bundle/Application");
 
     if (m_ESModsFolder.isEmpty())
     {
@@ -61,7 +63,16 @@ ESModModel::ESModModel(QObject *parent)
     //QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Traces are located in [") + m_traceFolderForIos + "]\n" + iosDebugLogString);
     //QMessageBox::information(NULL, tr("Everlasting Summer"), tr("My MAC-address is [") + AsyncDownloader::getMacAddress() + "]");
 #elif defined(ANDROID)
-    m_ESModsFolder = ANDROID_ES_MODS_FOLDER;
+    m_ESModsFolder = ESFolderForAndroid(QStringList() \
+                                        << QProcessEnvironment::systemEnvironment().value("ANDROID_STORAGE", "/storage") \
+                                        << "/storage");
+
+    if (m_ESModsFolder.isEmpty())
+    {
+        copyToClipboard(androidDebugLogString, tr("Debug data was copied to clipboard"));
+        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder, default will be used\n") + androidDebugLogString);
+        m_ESModsFolder = ANDROID_ES_MODS_FOLDER;
+    }
 #else
     m_ESModsFolder = QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/";
 #endif
@@ -525,7 +536,7 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
     if (!m_helpText.isEmpty())
         emit appHelpReceived(m_helpText, false);
 
-#ifndef Q_OS_IOS
+#if !defined(Q_OS_IOS) && !defined(ANDROID)
     m_ESModsFolder = obj["modsfolder"].toString(m_ESModsFolder);
     emit currentModsFolder(m_ESModsFolder);
 #endif
@@ -561,7 +572,7 @@ void ESModModel::SaveLocalModsDB()
     obj->insert("sortmode", (int)m_lastSortMode);
     obj->insert("helptext", m_helpText);
     obj->insert("packs", arr);
-#ifndef Q_OS_IOS
+#if !defined(Q_OS_IOS) && !defined(ANDROID)
     obj->insert("modsfolder", m_ESModsFolder);
 #endif
     obj->insert("deferredStatistics", StatisticsManager::getInstance()->serializeToJSON());
@@ -1016,6 +1027,27 @@ QString ESModModel::ESTraceFolderForIOS(QStringList &dirs)
                 iosDebugLogString += "      FOUND!\n";
                 return QDir(fiuuid.filePath()).filePath("tmp/");
             }
+        }
+    }
+
+    return QString();
+}
+
+#elif defined(ANDROID)
+
+QString ESModModel::ESFolderForAndroid(QStringList &dirs)
+{
+    foreach (QString dir, dirs) // Top storage directories
+    {
+        androidDebugLogString += dir + "\n";
+        QFileInfoList storageList = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
+        storageList << QFileInfo("/sdcard");
+        foreach (QFileInfo storageDir, storageList)
+        {
+            androidDebugLogString += "  " + storageDir.filePath() + "\n";
+            QString checkDir = QDir(storageDir.filePath()).filePath("Android/data/su.sovietgames.everlasting_summer/files/");
+            if (QFileInfo(checkDir).isDir())
+                return checkDir;
         }
     }
 

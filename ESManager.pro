@@ -38,8 +38,7 @@ SOURCES += main.cpp \
     asyncjsonwriter.cpp \
     asyncfilewriter.cpp \
     statisticsmanager.cpp \
-    esinstalledmodmodel.cpp \
-    esswipearea.cpp
+    esinstalledmodmodel.cpp
 
 RESOURCES += qml.qrc
 
@@ -73,8 +72,7 @@ HEADERS += \
     asyncfilewriter.h \
     ios_helpers.h \
     statisticsmanager.h \
-    esinstalledmodmodel.h \
-    esswipearea.h
+    esinstalledmodmodel.h
 
 DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 IOAPI_NO_64
 

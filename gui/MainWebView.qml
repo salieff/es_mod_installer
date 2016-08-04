@@ -4,15 +4,6 @@ import QtWebView 1.0
 WebView {
     visible: false
 
-    /*
-    anchors {
-        bottom: mainWindow.bottom
-        left: mainWindow.left
-        right: mainWindow.right
-        margins: 5
-    }
-    */
-
     width: mainWindow.width
     height: mainWindow.height - mainAppTitle.height
 

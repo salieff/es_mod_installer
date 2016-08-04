@@ -1,16 +1,15 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.2
+import QtQuick.Layouts 1.2
 
 ListView {
     property string headerText
 
     delegate: Delegate {}
-    anchors {
-        top: parent.top
-        margins: 10
-    }
-    height: parent.height - anchors.margins*2
-    width: parent.width - anchors.margins*2
+
+    Layout.margins: 10
+    Layout.fillHeight: true
+    Layout.preferredWidth: mainWindow.width - Layout.margins * 2
     spacing: 5
     // clip: true
     maximumFlickVelocity: 5000
@@ -54,5 +53,16 @@ ListView {
 
     displaced: Transition {
         NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutBounce }
+    }
+
+    Rectangle {
+        anchors.left: parent.right
+        anchors.leftMargin: 2
+        y: parent.visibleArea.yPosition * parent.height
+        width: 6
+        radius: 2
+        height: parent.visibleArea.heightRatio * parent.height
+        color: "black"
+        opacity: 0.5
     }
 }

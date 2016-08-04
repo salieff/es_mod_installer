@@ -113,6 +113,9 @@ private:
     QString ESTraceFolderForIOS(QStringList &dirs);
     QString iosDebugLogString;
     QString m_traceFolderForIos;
+#elif defined(ANDROID)
+    QString ESFolderForAndroid(QStringList &dirs);
+    QString androidDebugLogString;
 #endif
 
     QString m_ESModsFolder;

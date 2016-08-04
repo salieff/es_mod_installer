@@ -5,13 +5,9 @@ import QtQuick.Controls 1.2
 import org.salieff.esmodinstaller 1.0
 
 Rectangle {
-    height: sortSearchLayout.implicitHeight + 20 + radius
-    anchors {
-        bottom: parent.bottom
-        bottomMargin: -radius
-        left: parent.left
-        right: parent.right
-    }
+    Layout.fillWidth: true
+    Layout.bottomMargin: -radius
+    Layout.preferredHeight: sortSearchLayout.implicitHeight + 20 + radius
     radius: 10
     gradient: Gradient {
         GradientStop { position: 0; color: "#F0F0F0" }

@@ -5,7 +5,7 @@ Menu {
     title: qsTr("Main Menu")
 
     MenuItem {
-        visible: Qt.platform.os !== "ios"
+        visible: Qt.platform.os !== "ios" && Qt.platform.os !== "android"
         text: qsTr("Change mods install path")
         onTriggered: {
             mainWindow.hideAllPanels()

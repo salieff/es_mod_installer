@@ -1,130 +1,85 @@
 import QtQuick 2.5
-import QtQuick.Controls 1.4
+import QtQuick.Layouts 1.2
+import QtQuick.Controls 2.0
 import QtQuick.Window 2.2
-import org.salieff.esmodinstaller 1.0
 
-ESSwipeArea {
-    anchors {
-        top: mainAppTitle.bottom
-        bottom: mainSortSearchBox.top
-        left: parent.left
-        right: parent.right
-    }
+Item {
+    Layout.fillHeight: true
+    Layout.fillWidth: true
 
-    pixelage: Screen.pixelDensity * 50
-    speed: Screen.pixelDensity * 10
 
-    state: "ALL"
-
-    states: [
-        State {
-            name: "SERVER"
-            AnchorChanges { target: mainListViewServer; anchors.left: parent.left; anchors.right: parent.right;}
-            AnchorChanges { target: mainListViewAll; anchors.left: parent.right; anchors.right: undefined;}
-            AnchorChanges { target: mainListViewLocal; anchors.left: mainListViewAll.right; anchors.right: undefined;}
-        },
-        State {
-            name: "ALL"
-            AnchorChanges { target: mainListViewServer; anchors.left: undefined; anchors.right: parent.left;}
-            AnchorChanges { target: mainListViewAll; anchors.left: parent.left; anchors.right: parent.right;}
-            AnchorChanges { target: mainListViewLocal; anchors.left: parent.right; anchors.right: undefined;}
-        },
-        State {
-            name: "LOCAL"
-            AnchorChanges { target: mainListViewServer; anchors.left: undefined; anchors.right: mainListViewAll.left;}
-            AnchorChanges { target: mainListViewAll; anchors.left: undefined; anchors.right: parent.left;}
-            AnchorChanges { target: mainListViewLocal; anchors.left: parent.left; anchors.right: parent.right;}
-        }
-    ]
-
-    transitions: Transition {
-        AnchorAnimation { duration: 300 }
-    }
-
-    MainListView {
-        id: mainListViewServer
-        model: esServerModel
-        anchors.right: parent.left
-        headerText: qsTr("Not Installed →")
-    }
-
-    MainListView {
-        id: mainListViewAll
-        model: esModel
-        anchors.left: parent.left
-        headerText: qsTr("← All →")
-    }
-
-    MainListView {
-        id: mainListViewLocal
-        model: esInstalledModel
-        anchors.left: parent.right
-        headerText: qsTr("← Installed")
-    }
-
-    /*
-    MouseArea {
+    Flickable {
         anchors.fill: parent
 
-        property int lastX: -1
+        flickableDirection: Flickable.HorizontalFlick
+        flickDeceleration: 999999999
 
-        onPressed: {
-            if (mouse.x > 20 && mouse.x < (width - 20)) {
-                mouse.accepted = false
-                return
+        contentWidth: listsLayout.implicitWidth
+        contentX: listsLayout.implicitWidth / 3
+
+        RowLayout {
+            id: listsLayout
+            spacing: 0
+            anchors.centerIn: parent
+            height: parent.height
+
+            MainListView {
+                model: esServerModel
+                headerText: qsTr("Not Installed")
             }
 
-            lastX = mouse.x
+            MainListView {
+                model: esModel
+                headerText: qsTr("All")
+            }
+
+            MainListView {
+                model: esInstalledModel
+                headerText: qsTr("Installed")
+            }
         }
 
-        onReleased: {
-            lastX = -1;
+        Behavior on contentX {
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.OutBack
+            }
         }
 
-        onMouseXChanged: {
-            if (lastX < 0) {
-                return
-            }
-
-            var dx = mouseX - lastX
-
-            if (Math.abs(dx) < (parent.width / 5)) {
-                return
-            }
-
-            if (parent.state === "SERVER" && dx < 0) {
-                parent.state = "ALL"
-            }
-            else if (parent.state === "ALL" && dx < 0) {
-                parent.state = "LOCAL"
-            }
-            else if (parent.state === "LOCAL" && dx > 0) {
-                parent.state = "ALL"
-            }
-            else if (parent.state === "ALL" && dx > 0) {
-                parent.state = "SERVER"
-            }
-
-            lastX = -1;
+        onMovementEnded: {
+            var ind = Math.round(contentX / mainWindow.width)
+            contentX = mainWindow.width * ind
         }
-    }
-    */
 
-    onSwipeLeft: {
-        if (state === "SERVER") {
-            state = "ALL"
-        }
-        else if (state === "ALL") {
-            state = "LOCAL"
+        onContentXChanged: {
+            var ind2 = Math.round(contentX / mainWindow.width)
+            pageIndicator.currentIndex = ind2
         }
     }
 
-    onSwipeRight: {
-        if (state === "LOCAL") {
-            state = "ALL"
+    Rectangle {
+        anchors {
+            bottom: parent.bottom
+            horizontalCenter: parent.horizontalCenter
         }
-        else if (state === "ALL") {
-            state = "SERVER"
+
+        width: pageIndicator.implicitWidth + 20
+        height: pageIndicator.implicitHeight + 20
+        z: 1
+        radius: 10
+
+        gradient: Gradient {
+            GradientStop { position: 0; color: "#FFFFFF" }
+            GradientStop { position: 1; color: "#A0A0A0" }
+        }
+        opacity: 0.9
+
+        PageIndicator {
+            id: pageIndicator
+            anchors.centerIn: parent
+
+            count: 3
+            currentIndex: 1
         }
     }
 

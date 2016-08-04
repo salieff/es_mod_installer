@@ -22,7 +22,6 @@ bool ESInstalledModModel::filterAcceptsRow(int source_row, const QModelIndex &so
     switch (st) {
     case ESModElement::Downloading :
     case ESModElement::Unpacking :
-    case ESModElement::Failed :
         return true;
 
     case ESModElement::InstalledAvailable :
@@ -32,6 +31,7 @@ bool ESInstalledModModel::filterAcceptsRow(int source_row, const QModelIndex &so
 
     case ESModElement::Unknown :
     case ESModElement::Available :
+    case ESModElement::Failed :
     default :
         break;
     }

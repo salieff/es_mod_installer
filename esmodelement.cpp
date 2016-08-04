@@ -148,9 +148,11 @@ void ESModElement::headersReceived()
     if (m_asyncDownloader.aborted() || m_asyncDownloader.failed())
     {
         if (m_localFiles.empty())
-            changeState(Available);
+            changeState(Failed);
         else
-            changeState(InstalledAvailable);
+            changeState(Installed);
+
+        return;
     }
 
     m_asyncDownloader.getHeadersData(size, timestamp);

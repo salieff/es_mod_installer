@@ -4,13 +4,9 @@ import QtQuick.Layouts 1.2
 Rectangle {
     property alias closeButton: mailCloseButton
 
-    anchors {
-        top: parent.top
-        topMargin: -radius
-        left: parent.left
-        right: parent.right
-    }
-    height: appTitleLayout.implicitHeight + 20 + radius
+    Layout.topMargin: -radius
+    Layout.fillWidth: true
+    Layout.preferredHeight: appTitleLayout.implicitHeight + 20 + radius
     radius: 10
 
     gradient: Gradient {
