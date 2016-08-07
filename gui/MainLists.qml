@@ -7,6 +7,7 @@ Item {
     Layout.fillHeight: true
     Layout.fillWidth: true
 
+    property int lastIndex: 1
 
     Flickable {
         anchors.fill: parent
@@ -47,13 +48,18 @@ Item {
         }
 
         onMovementEnded: {
-            var ind = Math.round(contentX / mainWindow.width)
-            contentX = mainWindow.width * ind
+            lastIndex = Math.round(contentX / mainWindow.width)
+            contentX = mainWindow.width * lastIndex
         }
 
         onContentXChanged: {
             var ind2 = Math.round(contentX / mainWindow.width)
             pageIndicator.currentIndex = ind2
+        }
+
+        onContentWidthChanged: {
+            contentX = mainWindow.width * lastIndex
+            pageIndicator.currentIndex = lastIndex
         }
     }
 
