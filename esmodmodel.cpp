@@ -28,10 +28,11 @@ ESModModel::ESModModel(QObject *parent)
                                     << "/User/Applications" \
                                     << "/var/mobile/Containers/Bundle/Application" \
                                     << "/var/mobile/Applications" \
+                                    << "/var/containers/Bundle/Application" \
                                     << "/private/var/mobile/Containers/Bundle/Application" \
                                     << "/private/var/mobile/Applications" \
-                                    << "/Applications" \
-                                    << "/private/var/containers/Bundle/Application");
+                                    << "/private/var/containers/Bundle/Application" \
+                                    << "/Applications");
 
     if (m_ESModsFolder.isEmpty())
     {
