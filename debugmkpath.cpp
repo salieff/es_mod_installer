@@ -41,7 +41,7 @@ bool DebugMkPath(QString dirName, QString *errStr)
         if (slash)
         {
             const QByteArray chunk = QFile::encodeName(dirName.left(slash));
-            if (QT_MKDIR(chunk.constData(), 0777) != 0)
+            if (QT_MKDIR(chunk.constData(), 0755) != 0)
             {
                 int storedErrno = errno;
 
