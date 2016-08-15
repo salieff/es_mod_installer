@@ -4,6 +4,7 @@
 #include <QDir>
 
 #include "asyncjsonwriter.h"
+#include "debugmkpath.h"
 
 QString AsyncJsonWriter::configFileName()
 {
@@ -69,7 +70,8 @@ void AsyncJsonWriter::run()
         delete doc;
         delete obj;
 
-        if (!QDir().mkpath(QFileInfo(configFileName()).dir().path()))
+        // if (!QDir().mkpath(QFileInfo(configFileName()).dir().path()))
+        if (!DebugMkPath(QFileInfo(configFileName()).dir().path()))
             continue;
 
         QFile f(configFileName());

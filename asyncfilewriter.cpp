@@ -1,5 +1,6 @@
 #include <QDir>
 #include "asyncfilewriter.h"
+#include "debugmkpath.h"
 
 AsyncFileWriter::AsyncFileWriter(QObject * parent)
     : QThread(parent),
@@ -27,9 +28,10 @@ bool AsyncFileWriter::open(QString &destdir, QString &fname)
     QString fullFname = QDir(destdir).filePath(fname);
     QString fullDir = QFileInfo(fullFname).dir().path();
 
-    if (!QDir().mkpath(fullDir))
+    //if (!QDir().mkpath(fullDir))
+    if (!DebugMkPath(fullDir, &m_errorString))
     {
-        m_errorString = tr("Can't create directory ") + fullDir;
+        // m_errorString = tr("Can't create directory ") + fullDir;
         m_wasError = true;
         return false;
     }
