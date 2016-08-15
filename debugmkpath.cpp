@@ -14,13 +14,12 @@ static void fillErrorString(int e, QString path, QString *errStr)
         return;
 
     char buff[4096] = {0};
+    QString s;
 
-#if defined(ANDROID)
-    strerror_r(e, buff, 4095);
-    QString s = QString::fromLocal8Bit(buff);
-#else
-    QString s = QString::fromLocal8Bit(strerror_r(e, buff, 4095));
-#endif
+    if (strerror_r(e, buff, 4095) != 0)
+        s = "Unknown error";
+    else
+        s = QString::fromLocal8Bit(buff);
 
     *errStr = QString("Can't create directory %1 : %2 (%3)").arg(path).arg(s).arg(e);
 }
