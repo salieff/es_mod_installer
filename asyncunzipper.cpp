@@ -149,7 +149,7 @@ bool AsyncUnzipper::unpackZip(QString zipFile, bool calcSizeOnly)
         QString fname(fnameBuff);
 
         // We don't need in directories records
-        if (fname.endsWith("/") && finfo.compressed_size == 0 && finfo.uncompressed_size == 0 && finfo.crc == 0)
+        if (fname.endsWith("/"))
             continue;
 
         fname.remove(QRegExp("^/*")); // To avoid absolute paths
