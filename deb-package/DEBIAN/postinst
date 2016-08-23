@@ -1,4 +1,15 @@
 #!/bin/sh
 
 # chown -R mobile.staff /Applications/ESManager.app
+mv -f /Applications/ESManager.app/ESManager /Applications/ESManager.app/ESManager.exe
+
+chown root:wheel /Applications/ESManager.app/ESManager.exe
+chmod 6755 /Applications/ESManager.app/ESManager.exe
+
+echo '#!/bin/sh' > /Applications/ESManager.app/ESManager
+echo 'exec /Applications/ESManager.app/ESManager.exe "$@"' >> /Applications/ESManager.app/ESManager
+
+chown root:wheel /Applications/ESManager.app/ESManager
+chmod 755 /Applications/ESManager.app/ESManager
+
 su mobile -c uicache
