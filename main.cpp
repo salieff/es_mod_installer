@@ -9,6 +9,8 @@
 #include <QtWebEngine>
 #endif
 
+#include <errno.h>
+
 #include "esmodmodel.h"
 #include "esinstalledmodmodel.h"
 #include "asyncdownloader.h"
