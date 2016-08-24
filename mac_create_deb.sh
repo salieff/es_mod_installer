@@ -24,6 +24,12 @@ else
     exit 1
 fi
 
+if [ ! -f '/tmp/deb-package/Applications/ESManager.app/ESManager.exe' ]; then
+    mv -f '/tmp/deb-package/Applications/ESManager.app/ESManager' '/tmp/deb-package/Applications/ESManager.app/ESManager.exe'
+    echo '#!/bin/sh' > '/tmp/deb-package/Applications/ESManager.app/ESManager'
+    echo 'exec /Applications/ESManager.app/ESManager.exe "$@"' >> '/tmp/deb-package/Applications/ESManager.app/ESManager'
+fi
+
 find '/tmp/deb-package/Applications' -type f -exec md5sum '{}' ';' | sed -e 's;/tmp/deb-package;;' > '/tmp/deb-package/DEBIAN/md5sums'
 
 SIZEKB=`du -skL '/tmp/deb-package/Applications/ESManager.app' | awk '{ print $1; }'`
