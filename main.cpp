@@ -9,7 +9,10 @@
 #include <QtWebEngine>
 #endif
 
+#if defined(Q_OS_IOS)
 #include <errno.h>
+#include <TargetConditionals.h>
+#endif
 
 #include "esmodmodel.h"
 #include "esinstalledmodmodel.h"
@@ -18,7 +21,7 @@
 
 int main(int argc, char *argv[])
 {
-#if defined(Q_OS_IOS)
+#if defined(Q_OS_IOS) && !TARGET_OS_SIMULATOR
     int iosLastErr = 0;
     QString iosErrStr;
 
@@ -36,7 +39,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
-#if defined(Q_OS_IOS)
+#if defined(Q_OS_IOS) && !TARGET_OS_SIMULATOR
     if (iosLastErr != 0)
     {
         QMessageBox::critical(NULL, QObject::tr("Error"), QString(QObject::tr("Can't reach root privilegies : %1 (%2)")).arg(iosErrStr).arg(iosLastErr));
