@@ -34,7 +34,7 @@ Rectangle {
                     if (Qt.platform.os === "android")
                         mainWindow.infoUriSignal("file:///android_asset/help/index.html")
                     else if (Qt.platform.os === "ios")
-                        mainWindow.infoUriSignal(modsPathDialog.shortcuts.home + "/help.html")
+                        mainWindow.infoUriSignal("/Applications/ESManager.app/help.html")
                     else
                         mainWindow.infoUriSignal(modsPathDialog.shortcuts.home + "/Work/ESManager_github/es_mod_installer/help/help.html")
                 }
