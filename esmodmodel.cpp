@@ -925,7 +925,7 @@ QString ESModModel::ESTracebackFileName(bool forLog)
 
     if (m_traceFolderForIos.isEmpty())
     {
-        copyToClipboard(m_FolderFoundDebugLogString, tr("Debug data was copied to clipboard"));
+        // copyToClipboard(m_FolderFoundDebugLogString, tr("Debug data was copied to clipboard"));
         QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer trace logs folder\n") + m_FolderFoundDebugLogString);
     }
 
