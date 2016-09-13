@@ -59,6 +59,16 @@ public:
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
 
+    static QString ESModsFolder();
+    static QString ESTracebackFileName(bool forLog = false);
+
+#ifdef Q_OS_IOS
+    static QString ESFolderForIOS(QStringList &dirs);
+    static QString ESTraceFolderForIOS(QStringList &dirs);
+#elif defined(ANDROID)
+    static QString ESFolderForAndroid(QStringList &dirs);
+#endif
+
 signals:
     void appTitleReceived(const QString &text);
     void appHelpReceived(const QString &text, bool fromServer = true);
@@ -104,21 +114,7 @@ private:
     bool LoadLocalModsDB(QList<ESModElement *> &l);
     void ReindexElements();
 
-    QString ESTracebackFileName(bool forLog = false);
-
     void copyToClipboard(QString &txt, QString msg);
-
-#ifdef Q_OS_IOS
-    QString ESFolderForIOS(QStringList &dirs);
-    QString ESTraceFolderForIOS(QStringList &dirs);
-    QString iosDebugLogString;
-    QString m_traceFolderForIos;
-#elif defined(ANDROID)
-    QString ESFolderForAndroid(QStringList &dirs);
-    QString androidDebugLogString;
-#endif
-
-    QString m_ESModsFolder;
 
     AsyncJsonWriter m_JsonWriter;
 
@@ -127,6 +123,12 @@ private:
 
     SortMode m_lastSortMode;
     QString m_helpText;
+
+    static QString m_ESModsFolder;
+    static QString m_FolderFoundDebugLogString;
+#ifdef Q_OS_IOS
+    static QString m_traceFolderForIos;
+#endif
 };
 
 #endif // ESMODMODEL_H

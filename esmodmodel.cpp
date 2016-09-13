@@ -17,70 +17,24 @@
 #define ES_MOD_INDEX_NAME "project2.json"
 #define ANDROID_ES_MODS_FOLDER "/sdcard/Android/data/su.sovietgames.everlasting_summer/files/"
 
+QString ESModModel::m_ESModsFolder;
+QString ESModModel::m_FolderFoundDebugLogString;
+#ifdef Q_OS_IOS
+QString ESModModel::m_traceFolderForIos;
+#endif
+
 ESModModel::ESModModel(QObject *parent)
     : QAbstractListModel(parent),
       m_JsonWriter(this),
       m_lastSortMode(AsServer)
 {
-#if defined(Q_OS_IOS)
-    m_ESModsFolder = ESFolderForIOS(QStringList() \
-                                    << "/User/Containers/Bundle/Application" \
-                                    << "/User/Applications" \
-                                    << "/var/mobile/Containers/Bundle/Application" \
-                                    << "/var/mobile/Applications" \
-                                    << "/var/containers/Bundle/Application" \
-                                    << "/private/var/mobile/Containers/Bundle/Application" \
-                                    << "/private/var/mobile/Applications" \
-                                    << "/private/var/containers/Bundle/Application" \
-                                    << "/Applications");
-
+    m_ESModsFolder = ESModsFolder();
     if (m_ESModsFolder.isEmpty())
     {
-        copyToClipboard(iosDebugLogString, tr("Debug data was copied to clipboard"));
-        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder\n") + iosDebugLogString);
-    }
-    else
-    {
-        emit balloonText(tr("Mod's folder found"));
-    }
-
-    //QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Mods are located in [") + m_ESModsFolder + "]\n" + iosDebugLogString);
-    iosDebugLogString.clear();
-
-    m_traceFolderForIos = ESTraceFolderForIOS(QStringList() \
-                                              << "/User/Containers/Data/Application" \
-                                              << "/var/mobile/Containers/Data/Application");
-
-    if (m_traceFolderForIos.isEmpty())
-    {
-        copyToClipboard(iosDebugLogString, tr("Debug data was copied to clipboard"));
-        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer trace logs folder\n") + iosDebugLogString);
-    }
-    else
-    {
-        emit balloonText(tr("Trace's folder found"));
-    }
-
-    //QMessageBox::information(NULL, tr("Everlasting Summer"), tr("Traces are located in [") + m_traceFolderForIos + "]\n" + iosDebugLogString);
-    //QMessageBox::information(NULL, tr("Everlasting Summer"), tr("My MAC-address is [") + AsyncDownloader::getMacAddress() + "]");
-#elif defined(ANDROID)
-    m_ESModsFolder = ESFolderForAndroid(QStringList() \
-                                        << QProcessEnvironment::systemEnvironment().value("ANDROID_STORAGE", "/storage") \
-                                        << "/storage");
-
-    if (m_ESModsFolder.isEmpty())
-    {
-        copyToClipboard(androidDebugLogString, tr("Debug data was copied to clipboard"));
-        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder, default will be used\n") + androidDebugLogString);
+        copyToClipboard(m_FolderFoundDebugLogString, tr("Debug data was copied to clipboard"));
+        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder, default will be used\n") + m_FolderFoundDebugLogString);
         m_ESModsFolder = ANDROID_ES_MODS_FOLDER;
     }
-#else
-    m_ESModsFolder = QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/";
-#endif
-    /*
-    QMessageBox::information(NULL, tr("Everlasting Summer"), tr("My MAC-address is [") + AsyncDownloader::getMacAddress() + "]\n" + \
-                                                             tr("My UDID is [") + AsyncDownloader::getDeviceUDID() + "]");
-    */
 
     emit currentModsFolder(m_ESModsFolder);
 
@@ -939,9 +893,42 @@ void ESModModel::ReindexElements()
         m_elements[i]->m_modelIndex = i;
 }
 
+QString ESModModel::ESModsFolder()
+{
+#if defined(Q_OS_IOS)
+    return ESFolderForIOS(QStringList() \
+                          << "/User/Containers/Bundle/Application" \
+                          << "/User/Applications" \
+                          << "/var/mobile/Containers/Bundle/Application" \
+                          << "/var/mobile/Applications" \
+                          << "/var/containers/Bundle/Application" \
+                          << "/private/var/mobile/Containers/Bundle/Application" \
+                          << "/private/var/mobile/Applications" \
+                          << "/private/var/containers/Bundle/Application" \
+                          << "/Applications");
+#elif defined(ANDROID)
+    return ESFolderForAndroid(QStringList() \
+                              << QProcessEnvironment::systemEnvironment().value("ANDROID_STORAGE", "/storage") \
+                              << "/storage");
+#else
+    return QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/";
+#endif
+}
+
 QString ESModModel::ESTracebackFileName(bool forLog)
 {
 #if defined(Q_OS_IOS)
+    if (m_traceFolderForIos.isEmpty())
+        m_traceFolderForIos = ESTraceFolderForIOS(QStringList() \
+                                                  << "/User/Containers/Data/Application" \
+                                                  << "/var/mobile/Containers/Data/Application");
+
+    if (m_traceFolderForIos.isEmpty())
+    {
+        copyToClipboard(m_FolderFoundDebugLogString, tr("Debug data was copied to clipboard"));
+        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer trace logs folder\n") + m_FolderFoundDebugLogString);
+    }
+
     if (forLog)
         return QDir(m_traceFolderForIos).filePath("renpy-errors.txt");
     else
@@ -965,27 +952,27 @@ QString ESModModel::ESFolderForIOS(QStringList &dirs)
 {
     foreach (QString dir, dirs) // Top application directories
     {
-        iosDebugLogString += dir + "\n";
+        m_FolderFoundDebugLogString += dir + "\n";
         QFileInfoList uuidlist = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
         foreach (QFileInfo fiuuid, uuidlist) // Application UUIDs directories
         {
-            iosDebugLogString += "  " + fiuuid.filePath() + "\n";
+            m_FolderFoundDebugLogString += "  " + fiuuid.filePath() + "\n";
             QFileInfoList applist = QDir(fiuuid.filePath()).entryInfoList(QStringList("*.app"), QDir::Dirs | QDir::NoDotAndDotDot);
             foreach (QFileInfo fiapp, applist) // *.app directories
             {
-                iosDebugLogString += "    " + fiapp.filePath() + "\n";
+                m_FolderFoundDebugLogString += "    " + fiapp.filePath() + "\n";
 
                 QFileInfoList plistFiles = QDir(fiapp.filePath()).entryInfoList(QStringList("*.plist"), QDir::Files | QDir::Hidden);
                 foreach (QFileInfo iplist, plistFiles)
                 {
-                    iosDebugLogString += "      " + iplist.filePath() + "\n";
+                    m_FolderFoundDebugLogString += "      " + iplist.filePath() + "\n";
 
                     QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("CFBundleIdentifier").toString();
-                    iosDebugLogString += "      " + bunid + "\n";
+                    m_FolderFoundDebugLogString += "      " + bunid + "\n";
                     if (bunid != "com.mifki.everlastingsummer")
                         continue;
 
-                    iosDebugLogString += "      FOUND!\n";
+                    m_FolderFoundDebugLogString += "      FOUND!\n";
                     return QDir(fiapp.filePath()).filePath("scripts/game/");
                 }
             }
@@ -1009,23 +996,23 @@ QString ESModModel::ESTraceFolderForIOS(QStringList &dirs)
     // iOS >= 8
     foreach (QString dir, dirs) // Top data directories
     {
-        iosDebugLogString += dir + "\n";
+        m_FolderFoundDebugLogString += dir + "\n";
         QFileInfoList uuidlist = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
         foreach (QFileInfo fiuuid, uuidlist) // Application UUIDs directories
         {
-            iosDebugLogString += "  " + fiuuid.filePath() + "\n";
+            m_FolderFoundDebugLogString += "  " + fiuuid.filePath() + "\n";
 
             QFileInfoList plistFiles = QDir(fiuuid.filePath()).entryInfoList(QStringList("*.plist"), QDir::Files | QDir::Hidden);
             foreach (QFileInfo iplist, plistFiles)
             {
-                iosDebugLogString += "      " + iplist.filePath() + "\n";
+                m_FolderFoundDebugLogString += "      " + iplist.filePath() + "\n";
 
                 QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("MCMMetadataIdentifier").toString();
-                iosDebugLogString += "      " + bunid + "\n";
+                m_FolderFoundDebugLogString += "      " + bunid + "\n";
                 if (bunid != "com.mifki.everlastingsummer")
                     continue;
 
-                iosDebugLogString += "      FOUND!\n";
+                m_FolderFoundDebugLogString += "      FOUND!\n";
                 return QDir(fiuuid.filePath()).filePath("tmp/");
             }
         }
@@ -1040,12 +1027,12 @@ QString ESModModel::ESFolderForAndroid(QStringList &dirs)
 {
     foreach (QString dir, dirs) // Top storage directories
     {
-        androidDebugLogString += dir + "\n";
+        m_FolderFoundDebugLogString += dir + "\n";
         QFileInfoList storageList = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
         storageList << QFileInfo("/sdcard");
         foreach (QFileInfo storageDir, storageList)
         {
-            androidDebugLogString += "  " + storageDir.filePath() + "\n";
+            m_FolderFoundDebugLogString += "  " + storageDir.filePath() + "\n";
             QString checkDir = QDir(storageDir.filePath()).filePath("Android/data/su.sovietgames.everlasting_summer/files/");
             if (QFileInfo(checkDir).isDir())
                 return checkDir;

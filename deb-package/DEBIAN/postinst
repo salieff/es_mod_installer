@@ -1,11 +1,12 @@
 #!/bin/sh
 
+set -e
 # chown -R mobile.staff /Applications/ESManager.app
 
-chown root:wheel /Applications/ESManager.app/ESManager.exe
-chmod 6755 /Applications/ESManager.app/ESManager.exe
+echo -ne 'Everlasting Summer installation folder: '
+/Applications/ESManager.app/ESManager --find-es-path 2>/dev/null
 
-chown root:wheel /Applications/ESManager.app/ESManager
-chmod 755 /Applications/ESManager.app/ESManager
+ES_MODS_PATH="$( /Applications/ESManager.app/ESManager --find-es-path 2>/dev/null )"
+chown -R mobile "$ES_MODS_PATH"
 
 su mobile -c uicache
