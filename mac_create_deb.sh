@@ -24,6 +24,8 @@ else
     exit 1
 fi
 
+cp 'bundleid/bundleid' '/tmp/deb-package/Applications/ESManager.app/'
+
 find '/tmp/deb-package/Applications' -type f -exec md5sum '{}' ';' | sed -e 's;/tmp/deb-package;;' > '/tmp/deb-package/DEBIAN/md5sums'
 
 SIZEKB=`du -skL '/tmp/deb-package/Applications/ESManager.app' | awk '{ print $1; }'`

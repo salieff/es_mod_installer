@@ -3,10 +3,22 @@
 set -e
 # chown -R mobile.staff /Applications/ESManager.app
 
-echo -ne 'Everlasting Summer installation folder: '
-/Applications/ESManager.app/ESManager --find-es-path 2>/dev/null
+IFS=$'\n'
+for ES_PLIST_PATH in $( find / -path '*.app/Info.plist' )
+do
+    BUNDLE_ID="$( /Applications/ESManager.app/bundleid "${ES_PLIST_PATH}" )"
+    if [ "${BUNDLE_ID}" = 'com.mifki.everlastingsummer' ]
+    then
+        ES_PATH="$( dirname "${ES_PLIST_PATH}" )"
+        echo "OK: Everlasting Summer found in ${ES_PATH}"
 
-ES_MODS_PATH="$( /Applications/ESManager.app/ESManager --find-es-path 2>/dev/null )"
-chown -R mobile "$ES_MODS_PATH"
+        chown -R mobile "${ES_PATH}/scripts/game"
+        echo "OK: Owner of ${ES_PATH}/scripts/game changed to mobile"
 
-su mobile -c uicache
+        su mobile -c uicache
+        exit 0
+    fi
+done
+
+echo 'ERROR: Everlasting Summer not found' 1>&2
+exit 1

@@ -14,29 +14,8 @@
 #include "asyncdownloader.h"
 #include "statisticsmanager.h"
 
-#include <iostream>
-
-static void ESFindPathHelper(int argc, char *argv[])
-{
-    for (int i = 1; i < argc; ++i)
-        if (!qstrcmp(argv[i], "--find-es-path"))
-        {
-            QString ESModsFolder = ESModModel::ESModsFolder();
-            if (ESModsFolder.isEmpty())
-            {
-                std::cerr << "Can't find Everlasting Summer installation folder" << std::endl;
-                exit(1);
-            }
-
-            std::cout << ESModsFolder.toLocal8Bit().constData() << std::endl;
-            exit(0);
-        }
-}
-
 int main(int argc, char *argv[])
 {
-    ESFindPathHelper(argc, argv);
-
     QApplication app(argc, argv);
 
     AsyncDownloader::createNetworkManager(&app);
