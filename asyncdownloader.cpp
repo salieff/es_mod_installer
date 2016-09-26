@@ -32,7 +32,7 @@ AsyncDownloader::AsyncDownloader(QObject *parent)
       m_file(this),
       m_alwaysOverwrite(false)
 {
-    connect(&m_file, SIGNAL(finished()), this, SLOT(fileWritten()));
+    connect(&m_file, SIGNAL(finished()), this, SLOT(fileWritten()), Qt::QueuedConnection);
 }
 
 AsyncDownloader::~AsyncDownloader()

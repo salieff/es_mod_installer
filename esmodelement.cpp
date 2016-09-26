@@ -47,11 +47,11 @@ ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, in
     connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
     connect(&m_asyncDownloader, SIGNAL(headersReady()), this, SLOT(headersReceived()));
 
-    connect(&m_asyncUnzipper, SIGNAL(finished()), this, SLOT(zipListUnpacked()));
-    connect(&m_asyncUnzipper, SIGNAL(progress(int)), this, SLOT(unpackProgress(int)));
-    connect(&m_asyncUnzipper, SIGNAL(overwriteRequest(QString)), this, SLOT(unzipperOverwriteRequest(QString)));
+    connect(&m_asyncUnzipper, SIGNAL(finished()), this, SLOT(zipListUnpacked()), Qt::QueuedConnection);
+    connect(&m_asyncUnzipper, SIGNAL(progress(int)), this, SLOT(unpackProgress(int)), Qt::QueuedConnection);
+    connect(&m_asyncUnzipper, SIGNAL(overwriteRequest(QString)), this, SLOT(unzipperOverwriteRequest(QString)), Qt::QueuedConnection);
 
-    connect(&m_asyncDeleter, SIGNAL(finished()), this, SLOT(filesDeleted()));
+    connect(&m_asyncDeleter, SIGNAL(finished()), this, SLOT(filesDeleted()), Qt::QueuedConnection);
 }
 
 void ESModElement::Download()
@@ -230,7 +230,7 @@ void ESModElement::filesDownloaded()
         if (zipFile.endsWith(".zip", Qt::CaseInsensitive))
             zipList << QDir(m_path).filePath(zipFile);
 
-    connect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()));
+    connect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()), Qt::QueuedConnection);
 
     if (m_asyncUnzipper.unzipList(zipList, m_path))
         changeState(Unpacking);
