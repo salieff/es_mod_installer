@@ -28,16 +28,23 @@ Rectangle {
             mmwidth: 6
             mmheight: 6
 
+            function showHelp(chapter) {
+                if (Qt.platform.os === "android")
+                    mainWindow.infoUriSignal("file:///android_asset/help/index.html" + chapter)
+                else if (Qt.platform.os === "ios")
+                    mainWindow.infoUriSignal("file:///Applications/ESManager.app/help.html" + chapter)
+                else
+                    mainWindow.infoUriSignal(modsPathDialog.shortcuts.home + "/Work/ESManager_github/es_mod_installer/help/help.html" + chapter)
+            }
+
             MouseArea {
                 anchors.fill: parent
-                onClicked: {
-                    if (Qt.platform.os === "android")
-                        mainWindow.infoUriSignal("file:///android_asset/help/index.html")
-                    else if (Qt.platform.os === "ios")
-                        mainWindow.infoUriSignal("file:///Applications/ESManager.app/help.html")
-                    else
-                        mainWindow.infoUriSignal(modsPathDialog.shortcuts.home + "/Work/ESManager_github/es_mod_installer/help/help.html")
-                }
+                onClicked: helpButton.showHelp("")
+            }
+
+            Connections {
+                target: esModel
+                onShowMeHelp: helpButton.showHelp(chapter)
             }
         }
 

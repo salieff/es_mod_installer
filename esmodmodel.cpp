@@ -10,6 +10,7 @@
 #include <QClipboard>
 #include <QProcessEnvironment>
 
+#include "version.h"
 #include "esmodmodel.h"
 #include "statisticsmanager.h"
 
@@ -504,14 +505,18 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
         l << el;
     }
 
+    StatisticsManager::getInstance()->deserializeFromJSON(obj["deferredStatistics"].toArray());
+
+    QString ver = obj["version"].toString();
+    if (ver != QString("%1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD))
+        emit showMeHelp("#__RefHeading___Toc155_2078878239");
+
     if (migrateFlag)
     {
         // Remove old config and directory if empty
         f.remove();
         QDir().rmpath(QFileInfo(f).dir().path());
     }
-
-    StatisticsManager::getInstance()->deserializeFromJSON(obj["deferredStatistics"].toArray());
 
     return true;
 }
@@ -531,6 +536,7 @@ void ESModModel::SaveLocalModsDB()
     obj->insert("modsfolder", m_ESModsFolder);
 #endif
     obj->insert("deferredStatistics", StatisticsManager::getInstance()->serializeToJSON());
+    obj->insert("version", QString("%1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD));
     m_JsonWriter.write(obj);
 }
 

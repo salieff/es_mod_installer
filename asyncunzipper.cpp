@@ -2,7 +2,6 @@
 #include <QDir>
 
 #include "asyncunzipper.h"
-#include "debugmkpath.h"
 
 #define UNPACK_BUFFER_SIZE (16*1024)
 
@@ -198,10 +197,9 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
         return true;
     }
 
-    // if (!QDir().mkpath(QFileInfo(fname).dir().path()))
-    if (!DebugMkPath(QFileInfo(fname).dir().path(), &m_errorString))
+    if (!QDir().mkpath(QFileInfo(fname).dir().path()))
     {
-        // m_errorString = tr("Can't create directory ") + QFileInfo(fname).dir().path();
+        m_errorString = tr("Can't create directory ") + QFileInfo(fname).dir().path();
         return false;
     }
 

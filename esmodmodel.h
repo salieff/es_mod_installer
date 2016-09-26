@@ -77,6 +77,7 @@ signals:
     void currentModsFolder(QString newFolder);
     void tracebackText(QString text);
     void balloonText(QString text);
+    void showMeHelp(QString chapter);
 
 public slots:
     void ESModIndexDownloaded();
