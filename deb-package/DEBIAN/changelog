@@ -12,7 +12,7 @@ esmanager (1.1-11) stable; urgency=medium
   * For server-side corrupted mods (404, etc) status "Failed" displayed instantaneously
   * Timestamps added to clipboard begin for log and traceback copying
   * Fixed processing of archives which contain files with absolute paths
-  * Fixed processiong of archives which contain directories with non-zero sizes
+  * Fixed processing of archives which contain directories with non-zero sizes
   * Fixed inability to display help for iOS users
   * Minimal Android version increased to 4.1 according to QT 5.7
   * Initial support for user identificaton by UDID instead of MAC address
