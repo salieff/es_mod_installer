@@ -509,7 +509,7 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
 
     QString ver = obj["version"].toString();
     if (ver != QString("%1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD))
-        emit showMeHelp("#__RefHeading___Toc155_2078878239");
+        emit showMeHelp("");
 
     if (migrateFlag)
     {

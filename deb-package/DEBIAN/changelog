@@ -1,3 +1,24 @@
+esmanager (1.1-11) stable; urgency=medium
+
+  * Implemented filter for Installed / All / Not installed mod-lists as 3-page swipe panel
+  * Implemented scrollbar marker for mod-lists
+  * Implemented displaying of installations statistics and mod's lifetime in rating window
+  * Added sort by active / total installations and life-time
+  * Improved sort by score
+  * Implemented correct work on new iOS versions
+  * User-Agent from Nexus 5 used for network requests to avoid inaccessibility of download
+  * Implemented autosearch mods path for Android as for iOS, removed manual mods path selection possibility
+  * Accelerated scores and statistics loading during the launch
+  * For server-side corrupted mods (404, etc) status "Failed" displayed instantaneously
+  * Timestamps added to clipboard begin for log and traceback copying
+  * Fixed processing of archives which contain files with absolute paths
+  * Fixed processiong of archives which contain directories with non-zero sizes
+  * Fixed inability to display help for iOS users
+  * Minimal Android version increased to 4.1 according to QT 5.7
+  * Initial support for user identificaton by UDID instead of MAC address
+
+ --  Alexander S. Salieff <salieff@mail.ru>  Mon, 03 Oct 2016 03:10:26 +0300
+
 esmanager (1.0-1) stable; urgency=medium
 
   * Implemented support of new index which iOS mod's contains too
