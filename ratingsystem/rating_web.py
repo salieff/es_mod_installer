@@ -113,8 +113,8 @@ def _validate_fields(form):
 
     #if operation == _VALUE_OPERATION_QUERYALLSTAT:
 
-    if operation == _VALUE_OPERATION_QUERYALLMARKS:
-        _ensure_field_present(form, _FIELD_MAC)
+    #if operation == _VALUE_OPERATION_QUERYALLMARKS:
+    #    _ensure_field_present(form, _FIELD_MAC)
 
 def _validate_id(string_id):
     """ Check whether project JSON contains
@@ -201,8 +201,18 @@ def _query_all_marks(form, result):
     """ Validate all needed fields and
     query all titles mark information via database module
     """
-    mac = _fetch_field(form, _FIELD_MAC)
-    _validate_mac(mac)
+
+    mac = ""
+    try:
+        mac = _fetch_field(form, _FIELD_MAC)
+        _validate_mac(mac)
+    except ValueError:
+        mac = ""
+    except AttributeError:
+        mac = ""
+    except TypeError:
+        mac = ""
+
 
     result[_FIELD_MARKS] = []
 

@@ -379,11 +379,14 @@ class Database:
         for record in stat_result:
             titleid = record[0]
             res = list(record)
-            mark_result = self._find_mark_raw(titleid, mac)
-            if len(mark_result) == 0:
-                res.append(-1)
+            if mac:
+                mark_result = self._find_mark_raw(titleid, mac)
+                if len(mark_result) == 0:
+                    res.append(-1)
+                else:
+                    res.append(mark_result[0][1])
             else:
-                res.append(mark_result[0][1])
+                res.append(-1)
             results.append(res)
 
         return results
