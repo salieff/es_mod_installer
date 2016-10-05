@@ -913,9 +913,8 @@ QString ESModModel::ESModsFolder()
                           << "/private/var/containers/Bundle/Application" \
                           << "/Applications");
 #elif defined(ANDROID)
-    return ESFolderForAndroid(QStringList() \
-                              << QProcessEnvironment::systemEnvironment().value("ANDROID_STORAGE", "/storage") \
-                              << "/storage");
+    QString externalStorage = QProcessEnvironment::systemEnvironment().value("EXTERNAL_STORAGE", "/sdcard");
+    return QDir(externalStorage).filePath("Android/data/su.sovietgames.everlasting_summer/files/");
 #else
     return QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/";
 #endif
