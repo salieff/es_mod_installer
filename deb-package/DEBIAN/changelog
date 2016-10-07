@@ -1,3 +1,9 @@
+esmanager (1.2-0) stable; urgency=medium
+
+  * Improved mod's path finding algorithms for Android
+
+ --  Alexander S. Salieff <salieff@mail.ru>  Mon, 03 Oct 2016 03:10:26 +0300
+
 esmanager (1.1-11) stable; urgency=medium
 
   * Implemented filter for Installed / All / Not installed mod-lists as 3-page swipe panel
