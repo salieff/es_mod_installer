@@ -10,6 +10,8 @@
 #include <QMutex>
 #include <QWaitCondition>
 
+#include <map>
+
 #include "asyncfilewriter.h"
 
 class AsyncDownloader : public QObject
@@ -26,6 +28,7 @@ public:
     QString errorString();
     QStringList downloadedFiles();
     void getHeadersData(double &sz, double &tm);
+    int resumedProgress(QStringList &files, QString destdir);
 
     static void createNetworkManager(QObject *parent = NULL);
     static QString getMacAddress();
@@ -56,6 +59,7 @@ private slots:
 
 private:
     bool checkOverwrite(QString fname);
+    qint64 resumeDownloadSize(QString fname, QString destdir, qint64 *refSize = NULL);
 
     bool m_headersOnly;
     QString m_url;
@@ -70,6 +74,9 @@ private:
     QStringList m_localFiles;
     double m_size;
     double m_timestamp;
+    std::map<QString, double> m_sizesByName;
+    std::map<QString, double> m_timestampsByName;
+    qint64 m_resumeDownloadSize;
 
     AsyncFileWriter m_file;
 

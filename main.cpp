@@ -36,10 +36,14 @@ int main(int argc, char *argv[])
     ESInstalledModModel esServerModel(true);
     esServerModel.setSourceModel(&esmodel);
 
+    ESIncompletedModModel esIncompletedModel;
+    esIncompletedModel.setSourceModel(&esmodel);
+
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("esModel", &esmodel);
     engine.rootContext()->setContextProperty("esInstalledModel", &esInstalledModel);
     engine.rootContext()->setContextProperty("esServerModel", &esServerModel);
+    engine.rootContext()->setContextProperty("esIncompletedModel", &esIncompletedModel);
     engine.load(QUrl(QStringLiteral("qrc:/gui/main.qml")));
 
     return app.exec();

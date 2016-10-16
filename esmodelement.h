@@ -125,7 +125,7 @@ signals:
 
 private:
     void blockGui(GuiBlockReason b);
-    void changeState(State s);
+    void changeState(State s, int resumedProgress = -1);
 
     void sendLikesRequests();
     void sendStatistics(bool inst = true);

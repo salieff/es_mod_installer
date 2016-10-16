@@ -15,7 +15,7 @@ AsyncFileWriter::~AsyncFileWriter()
 
 }
 
-bool AsyncFileWriter::open(QString &destdir, QString &fname)
+bool AsyncFileWriter::open(QString &destdir, QString &fname, QIODevice::OpenMode mode)
 {
     m_closeFlag = false;
     m_wasError = false;
@@ -35,7 +35,7 @@ bool AsyncFileWriter::open(QString &destdir, QString &fname)
     }
 
     m_file.setFileName(fullFname);
-    if (!m_file.open(QIODevice::WriteOnly))
+    if (!m_file.open(mode))
     {
         m_wasError = true;
         m_errorString = m_file.fileName() + " : " + m_file.errorString();

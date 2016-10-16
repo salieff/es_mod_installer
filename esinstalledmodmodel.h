@@ -26,4 +26,15 @@ private:
     bool inverseFilter;
 };
 
+class ESIncompletedModModel : public ESInstalledModModel
+{
+    Q_OBJECT
+public:
+    ESIncompletedModModel(QObject *parent = 0);
+    virtual ~ESIncompletedModModel();
+
+protected:
+    virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
+};
+
 #endif // ESINSTALLEDMODMODEL_H

@@ -73,7 +73,7 @@ void ESModElement::Download()
     if (!m_asyncDownloader.downloadFileList(m_uri, files, m_path))
         changeState(Failed);
     else
-        changeState(Downloading);
+        changeState(Downloading, progress == 100 ? -1 : progress);
 }
 
 void ESModElement::Abort()
@@ -92,8 +92,13 @@ void ESModElement::Update()
 void ESModElement::Delete()
 {
     blockGui(ByDelete);
+
+    QStringList allFiles = m_localFiles;
+    foreach (const QString &srvFile, files)
+        allFiles << QDir(m_path).filePath(srvFile);
+
     m_asyncDeleter.wait();
-    m_asyncDeleter.deleteFiles(m_localFiles);
+    m_asyncDeleter.deleteFiles(allFiles);
 }
 
 void ESModElement::SendLike(LikeType l)
@@ -156,9 +161,13 @@ void ESModElement::headersReceived()
     }
 
     m_asyncDownloader.getHeadersData(size, timestamp);
+    int resumedProgress = m_asyncDownloader.resumedProgress(files, m_path);
+    if (resumedProgress == 0)
+        resumedProgress = -1;
+
     if (m_localFiles.empty())
     {
-        changeState(Available);
+        changeState(Available, resumedProgress);
     }
     else
     {
@@ -218,10 +227,23 @@ void ESModElement::filesDownloaded()
     if (state != Downloading || m_asyncDownloader.aborted() || m_asyncDownloader.failed())
     {
         if (m_asyncDownloader.failed())
-            blockGui(ByUnknown); // Without press any button
+        {
+            // blockGui(ByUnknown); // Without press any button
 
-        m_asyncDeleter.wait();
-        m_asyncDeleter.deleteFiles(m_localFiles);
+            m_localFiles.clear();
+            m_localSize = 0;
+            m_localTimestamp = 0;
+            emit saveMe();
+
+            changeState(Failed, progress);
+        }
+
+        if (m_asyncDownloader.aborted())
+        {
+            m_asyncDeleter.wait();
+            m_asyncDeleter.deleteFiles(m_localFiles);
+        }
+
         return;
     }
 
@@ -299,7 +321,7 @@ void ESModElement::filesDeleted()
     case Unknown:
     case Available:
     case Failed:
-        // These states don't call Delete()
+        changeState(Available);
         break;
     }
 }
@@ -512,12 +534,19 @@ void ESModElement::blockGui(GuiBlockReason b)
     emit stateChanged();
 }
 
-void ESModElement::changeState(State s)
+void ESModElement::changeState(State s, int resumedProgress)
 {
-    if (s == Downloading || s == Unpacking)
-        progress = 0;
+    if (resumedProgress >= 0)
+    {
+        progress = resumedProgress;
+    }
     else
-        progress = 100;
+    {
+        if (s == Downloading || s == Unpacking)
+            progress = 0;
+        else
+            progress = 100;
+    }
 
     guiblocked = NoBlock;
     state = s;

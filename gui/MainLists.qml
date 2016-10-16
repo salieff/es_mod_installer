@@ -16,7 +16,7 @@ Item {
         flickDeceleration: 999999999
 
         contentWidth: listsLayout.implicitWidth
-        contentX: listsLayout.implicitWidth / 3
+        contentX: listsLayout.implicitWidth / 4
 
         RowLayout {
             id: listsLayout
@@ -37,6 +37,11 @@ Item {
             MainListView {
                 model: esInstalledModel
                 headerText: qsTr("Installed")
+            }
+
+            MainListView {
+                model: esIncompletedModel
+                headerText: qsTr("Incomplete")
             }
         }
 
@@ -84,7 +89,7 @@ Item {
             id: pageIndicator
             anchors.centerIn: parent
 
-            count: 3
+            count: 4
             currentIndex: 1
         }
     }

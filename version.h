@@ -3,6 +3,6 @@
 
 #define ESM_VERSION_MAJOR 1
 #define ESM_VERSION_MINOR 2
-#define ESM_VERSION_BUILD 0
+#define ESM_VERSION_BUILD 1
 
 #endif // _ES_MANAGER_VERSION_H_

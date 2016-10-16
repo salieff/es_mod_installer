@@ -65,3 +65,35 @@ REMAP_SOURCE_SLOT(ShowError)
 
 #undef REMAP_SOURCE_SLOT
 #undef REMAP_SOURCE_SLOT2
+
+ESIncompletedModModel::ESIncompletedModModel(QObject *parent) : ESInstalledModModel(false, parent)
+{
+
+}
+
+ESIncompletedModModel::~ESIncompletedModModel()
+{
+
+}
+
+bool ESIncompletedModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+{
+    QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
+    int st = sourceModel()->data(ind, ESModModel::StateRole).toInt();
+    int pr = sourceModel()->data(ind, ESModModel::ProgressRole).toInt();
+
+    switch (st) {
+    case ESModElement::Downloading :
+    case ESModElement::Unpacking :
+        return true;
+
+    case ESModElement::Available :
+    case ESModElement::Failed :
+        return (pr != 100);
+
+    default :
+        break;
+    }
+
+    return false;
+}

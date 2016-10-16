@@ -237,7 +237,7 @@ void ESModModel::ESModIndexDownloaded()
 
             QString appTitle = obj["appTitle"].toString();
             if (!appTitle.isEmpty())
-                emit appTitleReceived(appTitle);
+                emit appTitleReceived(appTitle + QString(" %1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD));
 
             QString appHelp = obj["appReadMe"].toString();
             if (!appHelp.isEmpty())

@@ -5,10 +5,11 @@ import org.salieff.esmodinstaller 1.0
 MMImage {
     property var modeldata
 
-    source: guiblocked == 2 ? "/icons/trash_press.png" : "/icons/trash.png"
+    source: modeldata.guiblocked === ESModElement.ByDelete ? "/icons/trash_press.png" : "/icons/trash.png"
     mmwidth: 7
     mmheight: 7
-    visible: (modeldata.modstate === ESModElement.InstalledHasUpdate)
+    visible: ((modeldata.modstate === ESModElement.InstalledHasUpdate) ||
+              ((modeldata.modstate === ESModElement.Available || modeldata.modstate === ESModElement.Failed) && modeldata.progress !== 100))
 
     MouseArea {
         anchors.fill: parent

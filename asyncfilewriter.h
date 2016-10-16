@@ -14,7 +14,7 @@ public:
     AsyncFileWriter(QObject * parent = 0);
     virtual ~AsyncFileWriter();
 
-    bool open(QString &destdir, QString &fname);
+    bool open(QString &destdir, QString &fname, QIODevice::OpenMode mode = QIODevice::WriteOnly);
     void write(QIODevice *dev);
     void close(bool abort = false);
 
