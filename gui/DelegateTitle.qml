@@ -29,7 +29,7 @@ ColumnLayout {
         style: Text.Sunken
         color: "white"
         styleColor: "black"
-        text: "[" + modeldata.status + "] {" + getReadableFileSizeString(modeldata.modsize) + ", " + modeldata.timestamp + "}"
+        text: "[" + modeldata.status + "] {" + getReadableFileSizeString(modeldata.modsize) + ", " + modeldata.timestamp + "}" + percentIndicator()
 
         function getReadableFileSizeString(fileSizeInBytes) {
             var i = -1;
@@ -40,6 +40,14 @@ ColumnLayout {
             } while (fileSizeInBytes > 1024 && i < (byteUnits.length - 1));
 
             return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
+        }
+
+        function percentIndicator() {
+            if (modeldata.modstate === ESModElement.Downloading ||
+                    ((modeldata.modstate === ESModElement.Available || modeldata.modstate === ESModElement.Failed) && modeldata.progress !== 100))
+                return " " + modeldata.progress +"%";
+
+            return "";
         }
 
     }

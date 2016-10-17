@@ -114,6 +114,7 @@ private slots:
     void allLikesReceived();
     void myLikeReceived();
     void myLikePosted();
+    void subDownload();
 
 signals:
     void stateChanged();
@@ -138,6 +139,8 @@ private:
 
     QString m_uri;
     QString m_path;
+
+    int m_failedDownloadsCount;
 };
 
 #endif // ESMODELEMENT_H

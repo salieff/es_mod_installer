@@ -85,10 +85,10 @@ bool ESIncompletedModModel::filterAcceptsRow(int source_row, const QModelIndex &
     switch (st) {
     case ESModElement::Downloading :
     case ESModElement::Unpacking :
+    case ESModElement::Failed :
         return true;
 
     case ESModElement::Available :
-    case ESModElement::Failed :
         return (pr != 100);
 
     default :

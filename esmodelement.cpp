@@ -2,6 +2,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QMessageBox>
+#include <QTimer>
 
 #include "esmodelement.h"
 #include "statisticsmanager.h"
@@ -41,7 +42,8 @@ ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, in
       m_localTimestamp(0),
       m_modelIndex(-1),
       m_uri(au),
-      m_path(ap)
+      m_path(ap),
+      m_failedDownloadsCount(0)
 {
     connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
     connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
@@ -56,6 +58,8 @@ ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, in
 
 void ESModElement::Download()
 {
+    m_failedDownloadsCount = 0;
+
     if (state != Available && state != InstalledHasUpdate && state != Failed)
         return;
 
@@ -64,6 +68,11 @@ void ESModElement::Download()
 
     blockGui(ByDownload);
 
+    subDownload();
+}
+
+void ESModElement::subDownload()
+{
     // Make shure previous async operations already done
     m_asyncDownloader.wait();
     m_asyncUnzipper.wait();
@@ -235,7 +244,15 @@ void ESModElement::filesDownloaded()
             m_localTimestamp = 0;
             emit saveMe();
 
-            changeState(Failed, progress);
+            if (m_failedDownloadsCount < 3)
+            {
+                ++m_failedDownloadsCount;
+                QTimer::singleShot(3000, this, SLOT(subDownload()));
+            }
+            else
+            {
+                changeState(Failed, progress);
+            }
         }
 
         if (m_asyncDownloader.aborted())
@@ -267,6 +284,8 @@ void ESModElement::downloadProgress(int p)
 
     progress = p;
     emit stateChanged();
+
+    m_failedDownloadsCount = 0;
 }
 
 void ESModElement::filesDeleted()
