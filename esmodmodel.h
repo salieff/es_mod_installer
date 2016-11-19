@@ -103,6 +103,7 @@ public slots:
 
     void helpRead(QString str);
     void changeModsFolder(QString f);
+    void resetModsFolder();
 
     void copyTraceback(bool forLog = false);
 
@@ -126,6 +127,7 @@ private:
     QString m_helpText;
 
     static QString m_ESModsFolder;
+    static QString m_CustomUserModsFolder;
     static QString m_FolderFoundDebugLogString;
 #ifdef Q_OS_IOS
     static QString m_traceFolderForIos;

@@ -282,7 +282,7 @@ void AsyncDownloader::createNetworkManager(QObject *parent)
     {
         m_networkManager = new QNetworkAccessManager(parent);
 #if !defined(ANDROID) && !defined(Q_OS_IOS)
-        m_networkManager->setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+//        m_networkManager->setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
     }
 }

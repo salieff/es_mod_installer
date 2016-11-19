@@ -19,6 +19,7 @@
 #define ANDROID_ES_MODS_FOLDER "/sdcard/Android/data/su.sovietgames.everlasting_summer/files/"
 
 QString ESModModel::m_ESModsFolder;
+QString ESModModel::m_CustomUserModsFolder;
 QString ESModModel::m_FolderFoundDebugLogString;
 #ifdef Q_OS_IOS
 QString ESModModel::m_traceFolderForIos;
@@ -492,10 +493,13 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
     if (!m_helpText.isEmpty())
         emit appHelpReceived(m_helpText, false);
 
-#if !defined(Q_OS_IOS) && !defined(ANDROID)
-    m_ESModsFolder = obj["modsfolder"].toString(m_ESModsFolder);
+// #if !defined(Q_OS_IOS) && !defined(ANDROID)
+    m_CustomUserModsFolder = obj["modsfolder"].toString();
+    if (!m_CustomUserModsFolder.isEmpty())
+        m_ESModsFolder = m_CustomUserModsFolder;
+
     emit currentModsFolder(m_ESModsFolder);
-#endif
+// #endif
 
     QJsonArray arr = obj["packs"].toArray();
     for (int i = 0; i < arr.size(); ++i)
@@ -532,9 +536,10 @@ void ESModModel::SaveLocalModsDB()
     obj->insert("sortmode", (int)m_lastSortMode);
     obj->insert("helptext", m_helpText);
     obj->insert("packs", arr);
-#if !defined(Q_OS_IOS) && !defined(ANDROID)
-    obj->insert("modsfolder", m_ESModsFolder);
-#endif
+//#if !defined(Q_OS_IOS) && !defined(ANDROID)
+    if (!m_CustomUserModsFolder.isEmpty())
+        obj->insert("modsfolder", m_CustomUserModsFolder);
+//#endif
     obj->insert("deferredStatistics", StatisticsManager::getInstance()->serializeToJSON());
     obj->insert("version", QString("%1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD));
     m_JsonWriter.write(obj);
@@ -864,6 +869,7 @@ void ESModModel::changeModsFolder(QString f)
     f.remove(QRegExp("^file://"));
     if (!f.isEmpty())
     {
+        m_CustomUserModsFolder = f;
         m_ESModsFolder = f;
 
         foreach (ESModElement *el, m_initialElements)
@@ -873,6 +879,19 @@ void ESModModel::changeModsFolder(QString f)
         emit currentModsFolder(m_ESModsFolder);
         emit balloonText(tr("Mod's folder changed to ") + m_ESModsFolder);
     }
+}
+
+void ESModModel::resetModsFolder()
+{
+    m_CustomUserModsFolder.clear();
+    m_ESModsFolder = ESModsFolder();
+
+    foreach (ESModElement *el, m_initialElements)
+        el->SetInstallPath(m_ESModsFolder);
+
+    SaveLocalModsDB();
+    emit currentModsFolder(m_ESModsFolder);
+    emit balloonText(tr("Mod's folder changed to ") + m_ESModsFolder);
 }
 
 void ESModModel::copyTraceback(bool forLog)
