@@ -9,6 +9,7 @@
 #include <QStandardPaths>
 #include <QClipboard>
 #include <QProcessEnvironment>
+#include <QTimer>
 
 #include "version.h"
 #include "esmodmodel.h"
@@ -28,7 +29,8 @@ QString ESModModel::m_traceFolderForIos;
 ESModModel::ESModModel(QObject *parent)
     : QAbstractListModel(parent),
       m_JsonWriter(this),
-      m_lastSortMode(AsServer)
+      m_lastSortMode(AsServer),
+      m_needShowHelp(false)
 {
     m_ESModsFolder = ESModsFolder();
     if (m_ESModsFolder.isEmpty())
@@ -275,6 +277,9 @@ void ESModModel::ESModIndexDownloaded()
     emit esIndexReceived();
 
     SaveLocalModsDB();
+
+    if (m_needShowHelp)
+        QTimer::singleShot(1000, this, SLOT(showDefferedHelp()));
 }
 
 void ESModModel::ESModIndexError(QNetworkReply::NetworkError code)
@@ -321,9 +326,19 @@ void ESModModel::AllLikesReceived()
 
     QJsonArray arr = obj["marks"].toArray();
     beginResetModel();
-    for (int i = 0; i < arr.size(); ++i)
-        foreach (ESModElement *el, m_elements)
-            el->DeserializeFromAllLikesList(arr[i].toObject());
+    foreach (ESModElement *el, m_elements)
+    {
+        for (int i = 0; i < arr.size(); ++i)
+            if (el->DeserializeFromAllLikesList(arr[i].toObject()))
+                break;
+
+        if (el->likemarkscount < 0)
+            el->likemarkscount = 0;
+
+        if (el->dislikemarkscount < 0)
+            el->dislikemarkscount = 0;
+    }
+
     endResetModel();
 }
 
@@ -513,7 +528,7 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
 
     QString ver = obj["version"].toString();
     if (ver != QString("%1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD))
-        emit showMeHelp("");
+        m_needShowHelp = true;
 
     if (migrateFlag)
     {
@@ -907,6 +922,11 @@ void ESModModel::copyTraceback(bool forLog)
     copyToClipboard(s, QString(forLog ? tr("Log") : tr("Traceback")) + tr(" was copied into clipboard"));
 
     emit tracebackText(s);
+}
+
+void ESModModel::showDefferedHelp()
+{
+    emit showMeHelp("");
 }
 
 void ESModModel::ReindexElements()

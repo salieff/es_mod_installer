@@ -107,6 +107,9 @@ public slots:
 
     void copyTraceback(bool forLog = false);
 
+private slots:
+    void showDefferedHelp();
+
 protected:
     QHash<int, QByteArray> roleNames() const;
 
@@ -132,6 +135,8 @@ private:
 #ifdef Q_OS_IOS
     static QString m_traceFolderForIos;
 #endif
+
+    bool m_needShowHelp;
 };
 
 #endif // ESMODMODEL_H

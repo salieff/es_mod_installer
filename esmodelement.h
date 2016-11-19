@@ -61,7 +61,7 @@ public:
     QJsonObject SerializeToDB();
     void DeserializeFromDB(const QJsonObject &obj);
     bool DeserializeFromNetwork(const QJsonObject &obj);
-    void DeserializeFromAllLikesList(const QJsonObject &obj);
+    bool DeserializeFromAllLikesList(const QJsonObject &obj);
     void DeserializeFromAllStatisticsList(const QJsonObject &obj);
     void SetInstallPath(QString p);
 

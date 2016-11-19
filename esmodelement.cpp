@@ -487,10 +487,10 @@ bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
     return true;
 }
 
-void ESModElement::DeserializeFromAllLikesList(const QJsonObject &obj)
+bool ESModElement::DeserializeFromAllLikesList(const QJsonObject &obj)
 {
     if (obj["id"].toInt() != id)
-        return;
+        return false;
 
     int imrk = obj["mark"].toInt();
     if (imrk < 0)
@@ -502,6 +502,8 @@ void ESModElement::DeserializeFromAllLikesList(const QJsonObject &obj)
 
     likemarkscount = obj["up"].toInt();
     dislikemarkscount = obj["down"].toInt();
+
+    return true;
 }
 
 void ESModElement::DeserializeFromAllStatisticsList(const QJsonObject &obj)
