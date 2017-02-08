@@ -6,19 +6,24 @@
 #include <QNetworkProxy>
 
 #if defined(Q_OS_IOS)
-    #include "ios_helpers.h"
+#include "ios_helpers.h"
 #elif defined(ANDROID)
-    #include <QAndroidJniObject>
+#include <QAndroidJniObject>
 #else
-    // Desktop
+// Desktop
 #endif
 
 #include "asyncdownloader.h"
 
-// #define NET_BUFFER_SIZE 1024
 #define ES_USER_AGENT "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 5 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.99 Mobile Safari/537.36"
 #define RESUME_NOT_FOUND 0
 #define RESUME_ALREADY_DONE -1
+
+// 100 kb
+#define RESUME_BACK_STEP 102400
+
+// 10 Mb
+#define NET_BUFFER_SIZE 10485760
 
 QNetworkAccessManager * AsyncDownloader::m_networkManager = NULL;
 QString AsyncDownloader::m_myMacAddress;
@@ -124,6 +129,10 @@ int AsyncDownloader::resumedProgress(QStringList &files, QString destdir)
             continue;
         }
 
+        rds -= RESUME_BACK_STEP;
+        if (rds < 0)
+            rds = 0;
+
         if (refSize != 0)
             ret += rds * 100 / (refSize * files.count());
         else
@@ -180,12 +189,27 @@ void AsyncDownloader::fileWritten()
             return;
         }
 
-        if (!m_file.open(m_destDir, m_files[m_currFileIndex], m_resumeDownloadSize == RESUME_NOT_FOUND ? QIODevice::WriteOnly : QIODevice::Append))
+        if (!m_file.open(m_destDir, m_files[m_currFileIndex], m_resumeDownloadSize == RESUME_NOT_FOUND ? QIODevice::WriteOnly : QIODevice::ReadWrite))
         {
             m_wasError = true;
             m_errorString = m_file.errorString();
             emit finished();
             return;
+        }
+
+        if (m_resumeDownloadSize != RESUME_NOT_FOUND)
+        {
+            m_resumeDownloadSize -= RESUME_BACK_STEP;
+            if (m_resumeDownloadSize < 0)
+                m_resumeDownloadSize = 0;
+
+            if (!m_file.seek(m_resumeDownloadSize))
+            {
+                m_wasError = true;
+                m_errorString = m_file.errorString();
+                emit finished();
+                return;
+            }
         }
 
         m_localFiles << QDir(m_destDir).filePath(m_files[m_currFileIndex]);
@@ -198,9 +222,10 @@ void AsyncDownloader::fileWritten()
         connect(this, SIGNAL(abortDownload()), new_rep, SLOT(abort()));
         connect(new_rep, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(downloadProgress(qint64, qint64)));
         connect(new_rep, SIGNAL(readyRead()), this, SLOT(readData()));
+        connect(new_rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(downloadError(QNetworkReply::NetworkError)));
     }
 
-    //    new_rep->setReadBufferSize(NET_BUFFER_SIZE);
+    new_rep->setReadBufferSize(NET_BUFFER_SIZE);
     connect(new_rep, SIGNAL(finished()), this, SLOT(fileDownloaded()));
 }
 
@@ -262,6 +287,11 @@ void AsyncDownloader::readData()
     m_file.write(rep);
 }
 
+void AsyncDownloader::downloadError(QNetworkReply::NetworkError code)
+{
+    qCritical() << "AsyncDownloader::downloadError " << code;
+}
+
 bool AsyncDownloader::checkOverwrite(QString fname)
 {
     if (m_alwaysOverwrite || !QFile::exists(fname))
@@ -282,7 +312,7 @@ void AsyncDownloader::createNetworkManager(QObject *parent)
     {
         m_networkManager = new QNetworkAccessManager(parent);
 #if !defined(ANDROID) && !defined(Q_OS_IOS)
-//        m_networkManager->setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+        m_networkManager->setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
     }
 }
@@ -380,8 +410,8 @@ QNetworkReply * AsyncDownloader::head(QUrl url)
 qint64 AsyncDownloader::resumeDownloadSize(QString fname, QString destdir, qint64 *refSize)
 {
     qint64 sz = QFileInfo(QDir(destdir).filePath(fname)).size(); // If the file does not exist or cannot be fetched, 0 (RESUME_NOT_FOUND) is returned
-    if (sz == RESUME_NOT_FOUND)
-        return sz;
+    if (sz <= 0)
+        return RESUME_NOT_FOUND;
 
     std::map<QString, double>::iterator it = m_sizesByName.find(fname);
     if (it != m_sizesByName.end())

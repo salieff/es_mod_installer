@@ -56,6 +56,7 @@ private slots:
     void fileWritten();
     void downloadProgress(qint64, qint64);
     void readData();
+    void downloadError(QNetworkReply::NetworkError code);
 
 private:
     bool checkOverwrite(QString fname);

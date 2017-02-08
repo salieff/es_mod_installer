@@ -72,6 +72,11 @@ void AsyncFileWriter::close(bool abort)
     m_bufferCondition.wakeAll();
 }
 
+bool AsyncFileWriter::seek(qint64 pos)
+{
+    return m_file.seek(pos);
+}
+
 bool AsyncFileWriter::failed()
 {
     return m_wasError;

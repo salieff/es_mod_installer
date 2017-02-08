@@ -15,9 +15,10 @@ public:
     virtual ~AsyncFileWriter();
 
     bool open(QString &destdir, QString &fname, QIODevice::OpenMode mode = QIODevice::WriteOnly);
+
     void write(QIODevice *dev);
     void close(bool abort = false);
-
+    bool seek(qint64 pos);
     bool failed();
     bool aborted();
     QString errorString();
