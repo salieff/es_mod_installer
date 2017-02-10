@@ -1,4 +1,4 @@
-esmanager (1.3-4) stable; urgency=medium
+esmanager (1.3-5) stable; urgency=medium
 
   * Implemented interrupted downloads resumption
   * Custom mod's path selector was returned
