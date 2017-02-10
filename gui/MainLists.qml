@@ -8,6 +8,7 @@ Item {
     Layout.fillWidth: true
 
     property int lastIndex: 1
+    property BusyIndicator busyIndicator: busyIndicator
 
     Flickable {
         anchors.fill: parent
@@ -103,7 +104,10 @@ Item {
 
         Connections {
             target: esModel
-            onEsIndexReceived: busyIndicator.running = false;
+            onEsIndexReceived: {
+                busyIndicator.running = false;
+                busyIndicator.visible = false;
+            }
         }
     }
 }

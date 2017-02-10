@@ -476,7 +476,10 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
         f.unsetError();
         f.setFileName(QDir(m_ESModsFolder).filePath(".esmanager_installed.db"));
         if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            m_needShowHelp = true;
             return false;
+        }
 
         migrateFlag = true;
     }

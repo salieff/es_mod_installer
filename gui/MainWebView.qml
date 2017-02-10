@@ -1,5 +1,5 @@
 import QtQuick 2.5
-import QtWebView 1.0
+import QtWebView 1.1
 
 WebView {
     visible: false
@@ -36,7 +36,7 @@ WebView {
             if (uriStr)
             {
                 show()
-                if (url !== uriStr)
+                if (url != uriStr)
                 {
                     url = "about:blank"
                     url = uriStr

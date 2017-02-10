@@ -1,3 +1,15 @@
+esmanager (1.3-4) stable; urgency=medium
+
+  * Implemented interrupted downloads resumption
+  * Custom mod's path selector was returned
+  * "Incomplete" page added
+  * Added download percents displaying in mod-bars for corresponding states
+  * Fixed bug with vote unavailability for new mods
+  * Fixed distortions while help showing
+  * Fixed crash by memory exhaustion during mod highspeed downloading
+
+ --  Alexander S. Salieff <salieff@mail.ru>  Thu, 09 Feb 2017 18:42:22 +0300
+
 esmanager (1.2-0) stable; urgency=medium
 
   * Improved mod's path finding algorithms for Android

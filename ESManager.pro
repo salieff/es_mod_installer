@@ -1,16 +1,10 @@
 TEMPLATE = app
 
-QT += qml quick widgets network
+QT += qml quick widgets network webview
 
 android {
     QT += androidextras
 }
-
-linux-g++: {
-    QT += webengine
-    CONFIG += console
-}
-
 
 SOURCES += main.cpp \
     esmodelement.cpp \

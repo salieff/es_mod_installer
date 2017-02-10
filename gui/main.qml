@@ -46,6 +46,7 @@ ApplicationWindow {
     /*
     MainWebView {
         id: mainWebView
+        anchors.bottom: parent.bottom
     }
     */
     Loader {
@@ -78,7 +79,7 @@ ApplicationWindow {
                     }
 
                     mainWebView.show()
-                    if (mainWebView.item.url !== uriStr)
+                    if (mainWebView.item.url != uriStr)
                     {
                         mainWebView.item.url = "about:blank"
                         mainWebView.item.url = uriStr
