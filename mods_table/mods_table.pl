@@ -70,6 +70,8 @@ sub filesDateSizeString {
 	my ($dates, $sizes) = filesDateSize($ua, $pack);
 
 	my $retDtStr = undef;
+	my $newestDate = undef;
+
 	for my $date (@{$dates}) {
 		my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime($date);
 		my $dtStr  = sprintf("%02d", $mday) . '.';
@@ -84,9 +86,15 @@ sub filesDateSizeString {
 		}
 
 		$retDtStr .= $dtStr;
+
+		if (!defined($newestDate) || $newestDate < $date) {
+			$newestDate = $date;
+		}
 	}
 
 	my $retSzStr = undef;
+	my $biggestSize = undef;
+
 	for my $size (@{$sizes}) {
 		if (!defined($retSzStr)) {
 			$retSzStr = "";
@@ -96,9 +104,13 @@ sub filesDateSizeString {
 		}
 
 		$retSzStr .= prettyBytes($size);
+
+		if (!defined($biggestSize) || $biggestSize < $size) {
+			$biggestSize = $size;
+		}
 	}
 
-	return ($retDtStr, $retSzStr);
+	return ($retDtStr, $retSzStr, $newestDate, $biggestSize);
 }
 
 sub prettyPlatform {
@@ -168,34 +180,27 @@ sub main {
 	my $q = CGI->new;
 #	print $q->header(-charset => 'utf-8');
 	$q->header(-charset => 'utf-8');
-	print $q->start_html(-style => {'src'=>'mods_table.css'}, -title => 'Список портированных модов');
+	print $q->start_html(-style => {'src'=>'mods_table.css'}, -script=>{-type=>'JAVASCRIPT', -src=>'sorttable.js'}, -title => 'Список портированных модов');
 
 	my @headings = ('Название', 'Язык', 'Статус', 'Платформа', 'Дата', 'Размер', 'Ссылки');
 
-	print $q->start_table({-class => "column-options"}) . "\n";
+	print $q->start_table({-class => "sortable"}) . "\n";
 	print $q->Tr($q->th(\@headings)) . "\n";
 
-	my $odd = undef;
 	for my $pack (@{$decJson->{packs}}) {
-		my ($dates, $sizes) = filesDateSizeString($ua, $pack);
-		my @row = ();
+		my ($dates, $sizes, $sortDate, $sortSize) = filesDateSizeString($ua, $pack);
+		my $prettyLang = $pack->{lang};
+		$prettyLang =~ s/\s*,\s*/, /g;
 
-		push(@row, $pack->{title});
-		push(@row, $pack->{lang});
-		push(@row, $pack->{status});
-		push(@row, platformString($pack));
-		push(@row, $dates);
-		push(@row, $sizes);
-		push(@row, urlsString($q, $pack));
-
-		if (!defined($odd)) {
-			print $q->Tr($q->td(\@row)) . "\n";
-			$odd = 1;
-		}
-		else {
-			print $q->Tr({-class => "odd"}, $q->td(\@row)) . "\n";
-			$odd = undef;
-		}
+		print "<tr>\n";
+		print "<td>" . $pack->{title} . "</td>\n";
+		print "<td>" . $prettyLang . "</td>\n";
+		print "<td>" . $pack->{status} . "</td>\n";
+		print "<td>" . platformString($pack) . "</td>\n";
+		print "<td sorttable_customkey=\"" . $sortDate . "\">" . $dates . "</td>\n";
+		print "<td sorttable_customkey=\"" . $sortSize . "\">" . $sizes . "</td>\n";
+		print "<td>" . urlsString($q, $pack) . "</td>\n";
+		print "</tr>\n";
 	}
 
 	print $q->end_table() . "\n";
