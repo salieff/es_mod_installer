@@ -1,5 +1,17 @@
 /* column options example */
 
+img {
+	max-width: 95%;
+	max-height: 95%;
+	vertical-align: middle;
+}
+
+.redscore {
+	color: #FF3333;
+	font-style: italic;
+	font-weight: bold;
+}
+
 table.sortable {
 	border-collapse: collapse;
 	border-bottom: 1px solid #d6d6d6;}

@@ -465,7 +465,7 @@ bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
     bool myPlatforFound = false;
     QJsonArray platf_arr = obj["platforms"].toArray();
     for (int i = 0; i < platf_arr.size(); ++i)
-        if (platf_arr[i].toString().trimmed() == MY_PLATFORM)
+        if (QString::compare(platf_arr[i].toString().trimmed(), MY_PLATFORM, Qt::CaseInsensitive) == 0)
         {
             myPlatforFound = true;
             break;
