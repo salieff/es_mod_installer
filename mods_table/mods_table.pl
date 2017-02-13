@@ -6,6 +6,7 @@ use utf8;
 use LWP::UserAgent;
 use JSON;
 use CGI;
+use POSIX;
 
 binmode(STDOUT,':utf8');
 
@@ -367,6 +368,7 @@ sub main {
 	}
 
 	print $q->end_table() . "\n";
+	print "<br/><br/>Обновлено " . strftime("%F %T", localtime($^T)) . "\n";
 	print $q->end_html() . "\n";
 }
 
