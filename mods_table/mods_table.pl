@@ -59,7 +59,7 @@ sub filesDateSize {
 sub prettyBytes {
 	my $size = shift;
 	foreach ('b', 'kb', 'Mb', 'Gb', 'Tb', 'Pb', 'Eb', 'Zb', 'Yb') {
-		return sprintf("%.2f ",$size) . "$_" if $size < 1024;
+		return sprintf("%.1f ",$size) . "$_" if $size < 1024;
 		$size /= 1024;
 	}
 }
