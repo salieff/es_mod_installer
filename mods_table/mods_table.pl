@@ -147,6 +147,13 @@ sub platformString {
 	return $retString;
 }
 
+sub simplifyVkUrl {
+	my $url = shift;
+
+	$url =~ s/^\s*(\w+:\/\/.*vk\.com\/)esmanager\?w=(wall-[\d_]+)\D*.*/$1$2/;
+	return $url;
+}
+
 sub urlsString {
 	my $cgi = shift;
 	my $pack = shift;
@@ -160,7 +167,8 @@ sub urlsString {
 			$retString = '';
 		}
 
-		$retString .= $cgi->a({href=>$pack->{'infouri_' . lc $platform}, target=>"_blank"}, prettyPlatform($platform));
+		my $smplUrl = simplifyVkUrl($pack->{'infouri_' . lc $platform});
+		$retString .= $cgi->a({href=>$smplUrl, target=>"_blank"}, prettyPlatform($platform));
 	}
 
 	return $retString;
@@ -222,7 +230,14 @@ sub loadAllLikes {
 	die "Can't decode JSON " . $json if !defined($decJson);
 	die "Can't load likes list: " . $decJson->{result} if ($decJson->{result} ne "ok");
 
-	return $decJson;
+	my $maxVotesCount = undef;
+	for my $mark (@{$decJson->{marks}}) {
+			if (!defined($maxVotesCount) || $maxVotesCount < ($mark->{up} + $mark->{down})) {
+				$maxVotesCount = $mark->{up} + $mark->{down};
+			}
+	}
+
+	return ($decJson, $maxVotesCount);
 }
 
 sub scoreAsString {
@@ -291,6 +306,70 @@ sub scoreAsString {
 	return 'WTF?';
 }
 
+# 0 - 14 for sorting
+sub calcFiveScoreRounded {
+	my $score = shift;
+
+	if ($score < 1) {
+		return 0;
+	}
+
+	if ($score >= 1 && $score < 1.17) {
+		return 1;
+	}
+
+	if ($score >= 1.17 && $score < 1.5) {
+		return 2;
+	}
+
+	if ($score >= 1.5 && $score < 1.83) {
+		return 3;
+	}
+
+	if ($score >= 1.83 && $score < 2.17) {
+		return 4;
+	}
+
+	if ($score >= 2.17 && $score < 2.5) {
+		return 5;
+	}
+
+	if ($score >= 2.5 && $score < 2.83) {
+		return 6;
+	}
+
+	if ($score >= 2.83 && $score < 3.17) {
+		return 7;
+	}
+
+	if ($score >= 3.17 && $score < 3.5) {
+		return 8;
+	}
+
+	if ($score >= 3.5 && $score < 3.83) {
+		return 9;
+	}
+
+	if ($score >= 3.83 && $score < 4.17) {
+		return 10;
+	}
+
+	if ($score >= 4.17 && $score < 4.5) {
+		return 11;
+	}
+
+	if ($score >= 4.5 && $score < 4.83) {
+		return 12;
+	}
+
+	if ($score >= 4.83 && $score < 5.17) {
+		return 13;
+	}
+
+
+	return 14;
+}
+
 sub imageForScore {
 	my $score = shift;
 
@@ -307,28 +386,38 @@ sub imageForScore {
 
 sub scoreForMod {
 	my $likes = shift;
+	my $maxVotesCount = shift;
 	my $pack = shift;
 	my $score = 0;
+	my $sortScore = 0;
 
 	for my $mark (@{$likes->{marks}}) {
 		if ($mark->{id} == $pack->{idmod}) {
-
 			if ($mark->{up} <= 0 && $mark->{down} <= 0) {
 				$score = 0;
-				last;
 			}
-
-			if ($mark->{up} <= 0) {
+			elsif ($mark->{up} <= 0) {
 				$score = 1;
-				last;
+			}
+			else {
+				$score = 1.0 + $mark->{up} * 4.5 / ($mark->{up} + $mark->{down});
 			}
 
-			$score = 1.0 + $mark->{up} * 4.5 / ($mark->{up} + $mark->{down});
+			$sortScore = calcFiveScoreRounded($score) * 10000;
+			if ($maxVotesCount > 0) {
+				if ($mark->{up} > 0) {
+					$sortScore += $mark->{up} * 9999 / $maxVotesCount;
+				}
+				if ($mark->{down} > 0) {
+					$sortScore += $mark->{down} * 9999 / $maxVotesCount;
+				}
+			}
+
 			last;
 		}
 	}
 
-	return (scoreAsString($score), $score, imageForScore($score));
+	return (scoreAsString($score), $sortScore, imageForScore($score));
 }
 
 sub main {
@@ -337,7 +426,7 @@ sub main {
 	$ua->agent($mozillaAgent);
 
 	my $modsList = loadModsList($ua);
-	my $likesList = loadAllLikes($ua);
+	my ($likesList, $maxVotesCount) = loadAllLikes($ua);
 
 	my $q = CGI->new;
 #	print $q->header(-charset => 'utf-8');
@@ -351,7 +440,7 @@ sub main {
 
 	for my $pack (@{$modsList->{packs}}) {
 		my ($dates, $sizes, $sortDate, $sortSize) = filesDateSizeString($ua, $pack);
-		my ($score, $sortScore, $scoreImage) = scoreForMod($likesList, $pack);
+		my ($score, $sortScore, $scoreImage) = scoreForMod($likesList, $maxVotesCount, $pack);
 		my $statusSK = statusSortKey($pack);
 		my $prettyLang = $pack->{lang};
 		$prettyLang =~ s/\s*,\s*/, /g;
