@@ -368,7 +368,7 @@ sub main {
 	}
 
 	print $q->end_table() . "\n";
-	print "<br/><br/>Обновлено " . strftime("%F %T", localtime($^T)) . "\n";
+	print "<br/><br/>Обновлено " . strftime("%F %T %z %Z", localtime($^T)) . "\n";
 	print $q->end_html() . "\n";
 }
 
