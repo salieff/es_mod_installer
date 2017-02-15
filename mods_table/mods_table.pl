@@ -280,7 +280,8 @@ sub scoreForMod {
 					$div2 += $mark->{down};
 				}
 
-				$scoreIndex = int(scalar(@scoreStringArr) * $div1 / ($div2 + 1)); # [0, arrSize)
+				#$scoreIndex = int(scalar(@scoreStringArr) * $div1 / ($div2 + 1)); # [0, arrSize)
+				$scoreIndex = int(scalar(@scoreStringArr) * $div1 * $div1 / ($div2 * $div2 + 1)); # [0, arrSize)
 			}
 
 			if ($scoreIndex >= 0) {
