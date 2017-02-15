@@ -14,6 +14,7 @@ my $mozillaAgent = 'Mozilla/5.0 (Linux; Android 4.4.2; Nexus 5 Build/KOT49H) App
 my $baseUrl = 'http://191.ru/es';
 my $projectUrl = 'project2.json';
 my $allLikesUrl = 'http://es.191.ru/cgi-bin/ratingsystem/rating_web.py?operation=queryallmarks&mac=00:00:00:00:00:00&udid=HTMLModsTableGenerator';
+my @scoreStringArr = ("1", "1+", "2-", "2", "2+", "3-", "3", "3+", "4-", "4", "4+", "5-", "5", "5+");
 
 sub fileDateSize {
 	my $ua = shift;
@@ -240,144 +241,14 @@ sub loadAllLikes {
 	return ($decJson, $maxVotesCount);
 }
 
-sub scoreAsString {
-	my $score = shift;
-
-	if ($score < 1) {
-		return '';
-	}
-
-	if ($score >= 1 && $score < 1.17) {
-		return '1';
-	}
-
-	if ($score >= 1.17 && $score < 1.5) {
-		return '1+';
-	}
-
-	if ($score >= 1.5 && $score < 1.83) {
-		return '2-';
-	}
-
-	if ($score >= 1.83 && $score < 2.17) {
-		return '2';
-	}
-
-	if ($score >= 2.17 && $score < 2.5) {
-		return '2+';
-	}
-
-	if ($score >= 2.5 && $score < 2.83) {
-		return '3-';
-	}
-
-	if ($score >= 2.83 && $score < 3.17) {
-		return '3';
-	}
-
-	if ($score >= 3.17 && $score < 3.5) {
-		return '3+';
-	}
-
-	if ($score >= 3.5 && $score < 3.83) {
-		return '4-';
-	}
-
-	if ($score >= 3.83 && $score < 4.17) {
-		return '4';
-	}
-
-	if ($score >= 4.17 && $score < 4.5) {
-		return '4+';
-	}
-
-	if ($score >= 4.5 && $score < 4.83) {
-		return '5-';
-	}
-
-	if ($score >= 4.83 && $score < 5.17) {
-		return '5';
-	}
-
-	if ($score >= 5.17) {
-		return '5+';
-	}
-
-	return 'WTF?';
-}
-
-# 0 - 14 for sorting
-sub calcFiveScoreRounded {
-	my $score = shift;
-
-	if ($score < 1) {
-		return 0;
-	}
-
-	if ($score >= 1 && $score < 1.17) {
-		return 1;
-	}
-
-	if ($score >= 1.17 && $score < 1.5) {
-		return 2;
-	}
-
-	if ($score >= 1.5 && $score < 1.83) {
-		return 3;
-	}
-
-	if ($score >= 1.83 && $score < 2.17) {
-		return 4;
-	}
-
-	if ($score >= 2.17 && $score < 2.5) {
-		return 5;
-	}
-
-	if ($score >= 2.5 && $score < 2.83) {
-		return 6;
-	}
-
-	if ($score >= 2.83 && $score < 3.17) {
-		return 7;
-	}
-
-	if ($score >= 3.17 && $score < 3.5) {
-		return 8;
-	}
-
-	if ($score >= 3.5 && $score < 3.83) {
-		return 9;
-	}
-
-	if ($score >= 3.83 && $score < 4.17) {
-		return 10;
-	}
-
-	if ($score >= 4.17 && $score < 4.5) {
-		return 11;
-	}
-
-	if ($score >= 4.5 && $score < 4.83) {
-		return 12;
-	}
-
-	if ($score >= 4.83 && $score < 5.17) {
-		return 13;
-	}
-
-
-	return 14;
-}
-
 sub imageForScore {
 	my $score = shift;
 
-	if ($score < 1) {
+	if ($score < 0) {
 		return "nolikes.png";
 	}
 
-	if ($score >= 3) {
+	if ($score >= 6) {
 		return "like.png";
 	}
 
@@ -388,22 +259,34 @@ sub scoreForMod {
 	my $likes = shift;
 	my $maxVotesCount = shift;
 	my $pack = shift;
-	my $score = 0;
+	my $scoreIndex = 0;
 	my $sortScore = 0;
 
 	for my $mark (@{$likes->{marks}}) {
 		if ($mark->{id} == $pack->{idmod}) {
 			if ($mark->{up} <= 0 && $mark->{down} <= 0) {
-				$score = 0;
-			}
-			elsif ($mark->{up} <= 0) {
-				$score = 1;
+				$scoreIndex = -1;
 			}
 			else {
-				$score = 1.0 + $mark->{up} * 4.5 / ($mark->{up} + $mark->{down});
+				my $div1 = 0;
+				my $div2 = 0;
+
+				if ($mark->{up} > 0) {
+					$div1 = $mark->{up};
+					$div2 = $mark->{up};
+				}
+
+				if ($mark->{down} > 0) {
+					$div2 += $mark->{down};
+				}
+
+				$scoreIndex = int(scalar(@scoreStringArr) * $div1 / ($div2 + 1)); # [0, arrSize)
 			}
 
-			$sortScore = calcFiveScoreRounded($score) * 10000;
+			if ($scoreIndex >= 0) {
+				$sortScore = $scoreIndex * 10000;
+			}
+
 			if ($maxVotesCount > 0) {
 				if ($mark->{up} > 0) {
 					$sortScore += $mark->{up} * 9999 / $maxVotesCount;
@@ -417,7 +300,11 @@ sub scoreForMod {
 		}
 	}
 
-	return (scoreAsString($score), $sortScore, imageForScore($score));
+	if ($scoreIndex >= 0) {
+		return ($scoreStringArr[$scoreIndex], $sortScore, imageForScore($scoreIndex));
+	}
+
+	return ("", $sortScore, imageForScore($scoreIndex));
 }
 
 sub main {

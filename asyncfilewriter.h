@@ -22,6 +22,7 @@ public:
     bool failed();
     bool aborted();
     QString errorString();
+    void reset();
 
 protected:
     virtual void run();

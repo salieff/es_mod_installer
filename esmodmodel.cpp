@@ -671,51 +671,32 @@ static bool lessThanByDate1(ESModElement *a, ESModElement *b)
     return tm1 >= tm2;
 }
 
-static float calcFiveScore(ESModElement *el)
+static const char *scoreStringsArr[] = { \
+          "1", "1+", \
+    "2-", "2", "2+", \
+    "3-", "3", "3+", \
+    "4-", "4", "4+", \
+    "5-", "5", "5+" };
+
+static int calcFiveScore(ESModElement *el)
 {
     if (el->likemarkscount <= 0 && el->dislikemarkscount <= 0)
         return 0;
 
-    if (el->likemarkscount <= 0)
-        return 1.0;
+    int div1 = 0;
+    int div2 = 0;
 
-    return 1.0 + el->likemarkscount * 4.5 / (el->likemarkscount + el->dislikemarkscount);
-}
+    if (el->likemarkscount > 0)
+    {
+        div1 = el->likemarkscount;
+        div2 = el->likemarkscount;
+    }
 
-static int calcFiveScoreRounded(ESModElement *el) // 0 - 14 for sorting
-{
-    float fiveScore = calcFiveScore(el);
+    if (el->dislikemarkscount > 0)
+        div2 += el->dislikemarkscount;
 
-    if (fiveScore < 1)
-        return 0;
-    else if (fiveScore >= 1 && fiveScore < 1.17)
-        return 1;
-    else if (fiveScore >= 1.17 && fiveScore < 1.5)
-        return 2;
-    else if (fiveScore >= 1.5 && fiveScore < 1.83)
-        return 3;
-    else if (fiveScore >= 1.83 && fiveScore < 2.17)
-        return 4;
-    else if (fiveScore >= 2.17 && fiveScore < 2.5)
-        return 5;
-    else if (fiveScore >= 2.5 && fiveScore < 2.83)
-        return 6;
-    else if (fiveScore >= 2.83 && fiveScore < 3.17)
-        return 7;
-    else if (fiveScore >= 3.17 && fiveScore < 3.5)
-        return 8;
-    else if (fiveScore >= 3.5 && fiveScore < 3.83)
-        return 9;
-    else if (fiveScore >= 3.83 && fiveScore < 4.17)
-        return 10;
-    else if (fiveScore >= 4.17 && fiveScore < 4.5)
-        return 11;
-    else if (fiveScore >= 4.5 && fiveScore < 4.83)
-        return 12;
-    else if (fiveScore >= 4.83 && fiveScore < 5.17)
-        return 13;
-
-    return 14;
+    size_t arrSize = sizeof(scoreStringsArr) / sizeof(scoreStringsArr[0]);
+    return arrSize * div1 / (div2 + 1); // [0, arrSize)
 }
 
 static bool lessThanByVotesCount(ESModElement *a, ESModElement *b)
@@ -731,8 +712,8 @@ static bool lessThanByVotesCount(ESModElement *a, ESModElement *b)
 
 static bool lessThanByScore(ESModElement *a, ESModElement *b)
 {
-    int sa = calcFiveScoreRounded(a);
-    int sb = calcFiveScoreRounded(b);
+    int sa = calcFiveScore(a);
+    int sb = calcFiveScore(b);
 
     if (sa == sb)
         return lessThanByVotesCount(a, b);

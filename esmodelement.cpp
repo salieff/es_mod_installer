@@ -79,9 +79,7 @@ void ESModElement::subDownload()
 
     connect(this, SIGNAL(abortProcessing()), &m_asyncDownloader, SLOT(abort()));
 
-    if (!m_asyncDownloader.downloadFileList(m_uri, files, m_path))
-        changeState(Failed);
-    else
+    if (m_asyncDownloader.downloadFileList(m_uri, files, m_path))
         changeState(Downloading, progress == 100 ? -1 : progress);
 }
 
@@ -244,7 +242,7 @@ void ESModElement::filesDownloaded()
             m_localTimestamp = 0;
             emit saveMe();
 
-            if (m_failedDownloadsCount < 3)
+            if (m_failedDownloadsCount < 3 && !m_asyncDownloader.failedByDisk())
             {
                 ++m_failedDownloadsCount;
                 QTimer::singleShot(3000, this, SLOT(subDownload()));

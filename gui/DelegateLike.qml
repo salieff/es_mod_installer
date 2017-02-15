@@ -3,14 +3,22 @@ import QtQuick.Layouts 1.2
 import org.salieff.esmodinstaller 1.0
 
 RowLayout {
-    function calculateFiveScore(lk, dslk) {
+    function calculateScoreIndex(lk, dslk) {
         if (lk <= 0 && dslk <= 0)
-            return 0
+            return -1
 
-        if (lk <= 0)
-            return 1.0
+        var div1 = 0;
+        var div2 = 0;
 
-        return 1.0 + lk * 4.5 / (lk + dslk)
+        if (lk > 0) {
+            div1 = lk;
+            div2 = lk;
+        }
+
+        if (dslk > 0)
+            div2 += dslk;
+
+        return Math.floor(scoreStrings.length * div1 / (div2 + 1)); // [0, arrSize)
     }
 
     function calculateImgSize(lk, dslk, myl) {
@@ -25,14 +33,15 @@ RowLayout {
 
     property var modeldata
     property Rectangle outrect: parent.parent
-    property real fiveScore: calculateFiveScore(modeldata.likemarkscount, modeldata.dislikemarkscount)
+    property var scoreStrings: ["1", "1+", "2-", "2", "2+", "3-", "3", "3+", "4-", "4", "4+", "5-", "5", "5+"]
+    property real scoreIndex: calculateScoreIndex(modeldata.likemarkscount, modeldata.dislikemarkscount)
 
     MMImage {
         id: likeImg
         source: {
-            if (fiveScore < 1)
+            if (scoreIndex < 0)
                 "/icons/nolikes.png"
-            else if (fiveScore >= 3)
+            else if (scoreIndex >= 6)
                 "/icons/like.png"
             else
                 "/icons/dislike.png"
@@ -47,40 +56,14 @@ RowLayout {
         font.bold: modeldata.mylikemark !== ESModElement.LikeMarkNotFound
         font.italic: true
         style: Text.Raised
-        // color: fiveScore >= 3 ? "lightgreen" : "lightblue"
+        // color: scoreIndex >= 3 ? "lightgreen" : "lightblue"
         color: "#ff6060"
         styleColor: "red"
         text: {
-            if (fiveScore < 1)
+            if (scoreIndex < 0)
                 ''
-            else if (fiveScore >= 1 && fiveScore < 1.17)
-                '1'
-            else if (fiveScore >= 1.17 && fiveScore < 1.5)
-                '1+'
-            else if (fiveScore >= 1.5 && fiveScore < 1.83)
-                '2-'
-            else if (fiveScore >= 1.83 && fiveScore < 2.17)
-                '2'
-            else if (fiveScore >= 2.17 && fiveScore < 2.5)
-                '2+'
-            else if (fiveScore >= 2.5 && fiveScore < 2.83)
-                '3-'
-            else if (fiveScore >= 2.83 && fiveScore < 3.17)
-                '3'
-            else if (fiveScore >= 3.17 && fiveScore < 3.5)
-                '3+'
-            else if (fiveScore >= 3.5 && fiveScore < 3.83)
-                '4-'
-            else if (fiveScore >= 3.83 && fiveScore < 4.17)
-                '4'
-            else if (fiveScore >= 4.17 && fiveScore < 4.5)
-                '4+'
-            else if (fiveScore >= 4.5 && fiveScore < 4.83)
-                '5-'
-            else if (fiveScore >= 4.83 && fiveScore < 5.17)
-                '5'
-            else if (fiveScore >= 5.17)
-                '5+'
+            else
+                scoreStrings[scoreIndex]
         }
     }
 

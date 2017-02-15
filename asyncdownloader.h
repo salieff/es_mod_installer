@@ -25,6 +25,7 @@ public:
     bool wait(unsigned long t = ULONG_MAX);
     bool aborted();
     bool failed();
+    bool failedByDisk();
     QString errorString();
     QStringList downloadedFiles();
     void getHeadersData(double &sz, double &tm);

@@ -17,12 +17,7 @@ AsyncFileWriter::~AsyncFileWriter()
 
 bool AsyncFileWriter::open(QString &destdir, QString &fname, QIODevice::OpenMode mode)
 {
-    m_closeFlag = false;
-    m_wasError = false;
-    m_wasAbort = false;
-    m_errorString.clear();
-    m_buffer.clear();
-    m_file.unsetError();
+    reset();
 
     QString fullFname = QDir(destdir).filePath(fname);
     QString fullDir = QFileInfo(fullFname).dir().path();
@@ -90,6 +85,16 @@ bool AsyncFileWriter::aborted()
 QString AsyncFileWriter::errorString()
 {
     return m_errorString;
+}
+
+void AsyncFileWriter::reset()
+{
+    m_closeFlag = false;
+    m_wasError = false;
+    m_wasAbort = false;
+    m_errorString.clear();
+    m_buffer.clear();
+    m_file.unsetError();
 }
 
 void AsyncFileWriter::run()

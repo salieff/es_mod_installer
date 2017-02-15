@@ -50,6 +50,7 @@ AsyncDownloader::~AsyncDownloader()
 bool AsyncDownloader::downloadFileList(QString url, QStringList &files, QString destdir, bool headers_only)
 {
     m_file.wait();
+    m_file.reset();
 
     m_headersOnly = headers_only;
     m_url = url;
@@ -73,7 +74,7 @@ bool AsyncDownloader::downloadFileList(QString url, QStringList &files, QString 
     }
 
     fileWritten();
-    return true;
+    return !(m_wasAbort || m_wasError);
 }
 
 bool AsyncDownloader::wait(unsigned long t)
@@ -89,6 +90,11 @@ bool AsyncDownloader::aborted()
 bool AsyncDownloader::failed()
 {
     return m_wasError;
+}
+
+bool AsyncDownloader::failedByDisk()
+{
+    return m_file.failed();
 }
 
 QString AsyncDownloader::errorString()
@@ -312,7 +318,7 @@ void AsyncDownloader::createNetworkManager(QObject *parent)
     {
         m_networkManager = new QNetworkAccessManager(parent);
 #if !defined(ANDROID) && !defined(Q_OS_IOS)
-        m_networkManager->setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
+        // m_networkManager->setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, "127.0.0.1", 3128));
 #endif
     }
 }
