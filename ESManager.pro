@@ -69,7 +69,7 @@ HEADERS += \
     esinstalledmodmodel.h \
     version.h
 
-DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 IOAPI_NO_64
+DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 USE_FILE32API
 
 DISTFILES += \
     android/AndroidManifest.xml \
@@ -79,7 +79,8 @@ DISTFILES += \
     android/build.gradle \
     android/gradle/wrapper/gradle-wrapper.properties \
     android/gradlew.bat \
-    android/assets/help/index.html
+    android/assets/help/index.html \
+    android/gradle.properties
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
