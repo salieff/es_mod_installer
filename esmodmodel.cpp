@@ -14,10 +14,10 @@
 #include "version.h"
 #include "esmodmodel.h"
 #include "statisticsmanager.h"
+#include "modpaths.h"
 
 #define ES_MOD_INDEX_SERVER "http://191.ru/es/"
 #define ES_MOD_INDEX_NAME "project2.json"
-#define ANDROID_ES_MODS_FOLDER "/sdcard/Android/data/su.sovietgames.everlasting_summer/files/"
 
 QString ESModModel::m_ESModsFolder;
 QString ESModModel::m_CustomUserModsFolder;
@@ -37,7 +37,7 @@ ESModModel::ESModModel(QObject *parent)
     {
         copyToClipboard(m_FolderFoundDebugLogString, tr("Debug data was copied to clipboard"));
         QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder, default will be used\n") + m_FolderFoundDebugLogString);
-        m_ESModsFolder = ANDROID_ES_MODS_FOLDER;
+        m_ESModsFolder = QString("%1/%2/%3").arg(ANDROID_ES_MODS_EXTERNAL_STORAGE, ANDROID_ES_MODS_FOLDER, ANDROID_ES_MODS_SUBFOLDER);
     }
 
     emit currentModsFolder(m_ESModsFolder);
@@ -936,8 +936,8 @@ QString ESModModel::ESModsFolder()
                           << "/private/var/containers/Bundle/Application" \
                           << "/Applications");
 #elif defined(ANDROID)
-    QString externalStorage = QProcessEnvironment::systemEnvironment().value("EXTERNAL_STORAGE", "/sdcard");
-    return QDir(externalStorage).filePath("Android/data/su.sovietgames.everlasting_summer/files/");
+    QString externalStorage = QProcessEnvironment::systemEnvironment().value("EXTERNAL_STORAGE", ANDROID_ES_MODS_EXTERNAL_STORAGE);
+    return QDir(externalStorage).filePath(QString("%1/%2").arg(ANDROID_ES_MODS_FOLDER, ANDROID_ES_MODS_SUBFOLDER));
 #else
     return QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/";
 #endif
@@ -1057,11 +1057,11 @@ QString ESModModel::ESFolderForAndroid(QStringList &dirs)
     {
         m_FolderFoundDebugLogString += dir + "\n";
         QFileInfoList storageList = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
-        storageList << QFileInfo("/sdcard");
+        storageList << QFileInfo(ANDROID_ES_MODS_EXTERNAL_STORAGE);
         foreach (QFileInfo storageDir, storageList)
         {
             m_FolderFoundDebugLogString += "  " + storageDir.filePath() + "\n";
-            QString checkDir = QDir(storageDir.filePath()).filePath("Android/data/su.sovietgames.everlasting_summer/files/");
+            QString checkDir = QDir(storageDir.filePath()).filePath(QString("%1/%2").arg(ANDROID_ES_MODS_FOLDER, ANDROID_ES_MODS_SUBFOLDER));
             if (QFileInfo(checkDir).isDir())
                 return checkDir;
         }

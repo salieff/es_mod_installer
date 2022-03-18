@@ -67,7 +67,8 @@ HEADERS += \
     ios_helpers.h \
     statisticsmanager.h \
     esinstalledmodmodel.h \
-    version.h
+    version.h \
+    modpaths.h
 
 DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 USE_FILE32API
 

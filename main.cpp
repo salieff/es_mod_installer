@@ -6,6 +6,7 @@
 #include <QMessageBox>
 
 #include <QtWebView>
+#include <QtAndroid>
 
 #include "esmodmodel.h"
 #include "esinstalledmodmodel.h"
@@ -41,6 +42,17 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("esServerModel", &esServerModel);
     engine.rootContext()->setContextProperty("esIncompletedModel", &esIncompletedModel);
     engine.load(QUrl(QStringLiteral("qrc:/gui/main.qml")));
+
+#ifdef ANDROID
+    if(QtAndroid::checkPermission("android.permission.READ_EXTERNAL_STORAGE") == QtAndroid::PermissionResult::Denied ||
+       QtAndroid::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE") == QtAndroid::PermissionResult::Denied)
+    {
+        QtAndroid::requestPermissionsSync(QStringList({
+            "android.permission.READ_EXTERNAL_STORAGE",
+            "android.permission.WRITE_EXTERNAL_STORAGE"
+        }));
+    }
+#endif
 
     return app.exec();
 }
