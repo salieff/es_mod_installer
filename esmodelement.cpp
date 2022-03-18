@@ -54,6 +54,10 @@ ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, in
     connect(&m_asyncUnzipper, SIGNAL(overwriteRequest(QString)), this, SLOT(unzipperOverwriteRequest(QString)), Qt::QueuedConnection);
 
     connect(&m_asyncDeleter, SIGNAL(finished()), this, SLOT(filesDeleted()), Qt::QueuedConnection);
+
+    auto defaultPath = QString("%1/%2/%3").arg(ANDROID_ES_MODS_EXTERNAL_STORAGE, ANDROID_ES_MODS_FOLDER, ANDROID_ES_MODS_SUBFOLDER);
+    if (QDir(m_path).absolutePath() != QDir(defaultPath).absolutePath())
+        m_asyncDeleter.setStopFolder(m_path);
 }
 
 void ESModElement::Download()
@@ -522,6 +526,7 @@ void ESModElement::DeserializeFromAllStatisticsList(const QJsonObject &obj)
 void ESModElement::SetInstallPath(QString p)
 {
     m_path = p;
+    m_asyncDeleter.setStopFolder(p);
 }
 
 void ESModElement::TryToPickupFrom(QList<ESModElement *> &list)
