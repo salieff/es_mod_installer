@@ -323,33 +323,6 @@ void AsyncDownloader::createNetworkManager(QObject *parent)
     }
 }
 
-QString AsyncDownloader::getMacAddress()
-{
-    if (m_myMacAddress.isEmpty())
-    {
-        QList<QNetworkInterface> allIfaces = QNetworkInterface::allInterfaces();
-        foreach (QNetworkInterface i, allIfaces)
-        {
-            if (!i.isValid())
-                continue;
-
-            if (i.flags() & QNetworkInterface::IsLoopBack)
-                continue;
-
-            if (!(i.flags() & QNetworkInterface::IsUp))
-                continue;
-
-            if (!(i.flags() & QNetworkInterface::IsRunning))
-                continue;
-
-            m_myMacAddress = i.hardwareAddress();
-            break;
-        }
-    }
-
-    return m_myMacAddress;
-}
-
 QString AsyncDownloader::getDeviceUDID()
 {
     if (m_myUDID.isEmpty())

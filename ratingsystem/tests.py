@@ -97,8 +97,8 @@ class TestDatabase(unittest.TestCase):
         with database.Database() as db:
             db._create_title_table("testtable")
             db._add_mark("testtable", "00:16:ea:58:09:26", 1)
-            mac, mark = db._find_mark("testtable", "00:16:ea:58:09:26")
-            self.assertEqual(mac, "00:16:ea:58:09:26")
+            udid, mark = db._find_mark("testtable", "00:16:ea:58:09:26")
+            self.assertEqual(udid, "00:16:ea:58:09:26")
             self.assertEqual(mark, 1)
             db._delete_table("testtable")
 
@@ -107,7 +107,7 @@ class TestDatabase(unittest.TestCase):
             db._create_title_table("testtable")
             db._add_mark("testtable", "00:16:ea:58:09:26", 1)
             db._set_mark("testtable", "00:16:ea:58:09:26", 0)
-            mac, mark = db._find_mark("testtable", "00:16:ea:58:09:26")
+            udid, mark = db._find_mark("testtable", "00:16:ea:58:09:26")
             self.assertEqual(mark, 0)
             db._delete_table("testtable")
 
@@ -185,12 +185,12 @@ class TestDatabase(unittest.TestCase):
             self.assertTrue(db._if_table_exists("testtitle2"))
             self.assertTrue(db._if_table_exists("summary"))
 
-            mac, mark = db._find_mark("testtitle", "00:16:ea:58:09:26")
-            self.assertEqual(mac, "00:16:ea:58:09:26")
+            udid, mark = db._find_mark("testtitle", "00:16:ea:58:09:26")
+            self.assertEqual(udid, "00:16:ea:58:09:26")
             self.assertEqual(mark, 1)
 
-            mac, mark = db._find_mark("testtitle2", "00:16:ea:58:09:26")
-            self.assertEqual(mac, "00:16:ea:58:09:26")
+            udid, mark = db._find_mark("testtitle2", "00:16:ea:58:09:26")
+            self.assertEqual(udid, "00:16:ea:58:09:26")
             self.assertEqual(mark, 0)
 
             title, up, down = db._find_summary('testtitle')
@@ -215,12 +215,12 @@ class TestDatabase(unittest.TestCase):
             self.assertTrue(db._if_table_exists("testtitle"))
             self.assertTrue(db._if_table_exists("summary"))
 
-            mac, mark = db._find_mark("testtitle", "00:16:ea:58:09:26")
-            self.assertEqual(mac, "00:16:ea:58:09:26")
+            udid, mark = db._find_mark("testtitle", "00:16:ea:58:09:26")
+            self.assertEqual(udid, "00:16:ea:58:09:26")
             self.assertEqual(mark, 1)
 
-            mac, mark = db._find_mark("testtitle", "00:16:ea:58:09:27")
-            self.assertEqual(mac, "00:16:ea:58:09:27")
+            udid, mark = db._find_mark("testtitle", "00:16:ea:58:09:27")
+            self.assertEqual(udid, "00:16:ea:58:09:27")
             self.assertEqual(mark, 0)
 
             title, up, down = db._find_summary('testtitle')
@@ -236,8 +236,8 @@ class TestDatabase(unittest.TestCase):
             db.add_mark("testtitle", "00:16:ea:58:09:26", 1)
             db.add_mark("testtitle", "00:16:ea:58:09:26", 0)
 
-            mac, mark = db._find_mark("testtitle", "00:16:ea:58:09:26")
-            self.assertEqual(mac, "00:16:ea:58:09:26")
+            udid, mark = db._find_mark("testtitle", "00:16:ea:58:09:26")
+            self.assertEqual(udid, "00:16:ea:58:09:26")
             self.assertEqual(mark, 0)
 
             title, up, down = db._find_summary('testtitle')
@@ -253,8 +253,8 @@ class TestDatabase(unittest.TestCase):
             db.add_mark("testtitle", "00:16:ea:58:09:26", 0)
             db.add_mark("testtitle", "00:16:ea:58:09:26", 1)
 
-            mac, mark = db._find_mark("testtitle", "00:16:ea:58:09:26")
-            self.assertEqual(mac, "00:16:ea:58:09:26")
+            udid, mark = db._find_mark("testtitle", "00:16:ea:58:09:26")
+            self.assertEqual(udid, "00:16:ea:58:09:26")
             self.assertEqual(mark, 1)
 
             title, up, down = db._find_summary('testtitle')
@@ -270,8 +270,8 @@ class TestDatabase(unittest.TestCase):
             db.add_mark("testtitle", "00:16:ea:58:09:26", 1)
             db.add_mark("testtitle", "00:16:ea:58:09:26", 1)
 
-            mac, mark = db._find_mark("testtitle", "00:16:ea:58:09:26")
-            self.assertEqual(mac, "00:16:ea:58:09:26")
+            udid, mark = db._find_mark("testtitle", "00:16:ea:58:09:26")
+            self.assertEqual(udid, "00:16:ea:58:09:26")
             self.assertEqual(mark, 1)
 
             title, up, down = db._find_summary('testtitle')

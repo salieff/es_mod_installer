@@ -9,7 +9,8 @@
 #include "asyncunzipper.h"
 #include "asyncdeleter.h"
 
-#define LIKES_CGI_URL "http://es.191.ru/cgi-bin/ratingsystem/rating_web.py"
+// #define LIKES_CGI_URL "http://es.191.ru/cgi-bin/ratingsystem/rating_web.py"
+#define LIKES_CGI_URL "http://salieff-n56vz/cgi-bin/ratingsystem/rating_web.py"
 #define STATS_CGI_URL LIKES_CGI_URL
 
 class ESModElement : public QObject

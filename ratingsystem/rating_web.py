@@ -1,4 +1,4 @@
-#!/var/www/cgi-bin/ratingsystem/bin/python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 """ CGI gate for rating system.
@@ -17,7 +17,7 @@ import hashlib
 
 _FIELD_OPERATION = r"operation"
 _FIELD_ID = r"id"
-_FIELD_MAC = r"mac"
+_FIELD_UDID = r"udid"
 _FIELD_MARK = r"mark"
 _FIELD_RESULT = r"result"
 _FIELD_UP = r"up"
@@ -74,7 +74,7 @@ def _validate_fields(form):
     Fields:
     operation: always needed
     title: always needed
-    mac: required for mark/mymark operations
+    udid: required for mark/mymark operations
     mark: required only for mark operation
     """
     _ensure_field_present(form, _FIELD_OPERATION)
@@ -93,7 +93,7 @@ def _validate_fields(form):
 
     if operation == _VALUE_OPERATION_MARK:
         _ensure_field_present(form, _FIELD_ID)
-        _ensure_field_present(form, _FIELD_MAC)
+        _ensure_field_present(form, _FIELD_UDID)
         _ensure_field_present(form, _FIELD_MARK)
 
     if operation == _VALUE_OPERATION_QUERY:
@@ -101,11 +101,11 @@ def _validate_fields(form):
 
     if operation == _VALUE_OPERATION_MYMARK:
         _ensure_field_present(form, _FIELD_ID)
-        _ensure_field_present(form, _FIELD_MAC)
+        _ensure_field_present(form, _FIELD_UDID)
 
     if operation == _VALUE_OPERATION_STAT:
         _ensure_field_present(form, _FIELD_ID)
-        _ensure_field_present(form, _FIELD_MAC)
+        _ensure_field_present(form, _FIELD_UDID)
         _ensure_field_present(form, _FIELD_STATE)
 
     if operation == _VALUE_OPERATION_QUERYSTAT:
@@ -114,7 +114,7 @@ def _validate_fields(form):
     #if operation == _VALUE_OPERATION_QUERYALLSTAT:
 
     #if operation == _VALUE_OPERATION_QUERYALLMARKS:
-    #    _ensure_field_present(form, _FIELD_MAC)
+    #    _ensure_field_present(form, _FIELD_UDID)
 
 def _validate_id(string_id):
     """ Check whether project JSON contains
@@ -125,10 +125,10 @@ def _validate_id(string_id):
         raise ValueError("Given title not found in project JSON")
 
 
-def _validate_mac(mac):
-    """ Check MAC length. TODO: check format """
-    if len(mac) != 17:
-        raise ValueError("Invalid MAC address. Expected: XX:XX:XX:XX:XX:XX")
+def _validate_udid(udid):
+    """ Check udid length. TODO: check format """
+    if len(udid) <= 0:
+        raise ValueError("Expected not empty UDID")
 
 
 def _validate_mark(mark):
@@ -152,14 +152,14 @@ def _add_mark(form):
     text_id = _fetch_field(form, _FIELD_ID)
     _validate_id(text_id)
 
-    mac = _fetch_field(form, _FIELD_MAC)
-    _validate_mac(mac)
+    udid = _fetch_field(form, _FIELD_UDID)
+    _validate_udid(udid)
 
     mark = int(_fetch_field(form, _FIELD_MARK))
     _validate_mark(mark)
 
     with database.Database() as db:
-        db.add_mark(text_id, mac, mark)
+        db.add_mark(text_id, udid, mark)
 
 
 def _add_statistics(form):
@@ -169,14 +169,14 @@ def _add_statistics(form):
     text_id = _fetch_field(form, _FIELD_ID)
     _validate_id(text_id)
 
-    mac = _fetch_field(form, _FIELD_MAC)
-    _validate_mac(mac)
+    udid = _fetch_field(form, _FIELD_UDID)
+    _validate_udid(udid)
 
     state = _fetch_field(form, _FIELD_STATE)
     _validate_state(state)
 
     with database.Database() as db:
-        db.add_statistics(text_id, mac, state)
+        db.add_statistics(text_id, udid, state)
 
 
 def _query(form, result):
@@ -202,23 +202,23 @@ def _query_all_marks(form, result):
     query all titles mark information via database module
     """
 
-    mac = ""
+    udid = ""
     try:
-        mac = _fetch_field(form, _FIELD_MAC)
-        _validate_mac(mac)
+        udid = _fetch_field(form, _FIELD_UDID)
+        _validate_udid(udid)
     except ValueError:
-        mac = ""
+        udid = ""
     except AttributeError:
-        mac = ""
+        udid = ""
     except TypeError:
-        mac = ""
+        udid = ""
 
 
     result[_FIELD_MARKS] = []
 
     with database.Database() as db:
         try:
-            summary = db.get_global_summary(mac)
+            summary = db.get_global_summary(udid)
             for record in summary:
                 idresult = {
                     _FIELD_ID: int(record[0]),
@@ -300,20 +300,20 @@ def _query_global_statistics(form, result):
 
 def _my_mark(form, result):
     """ Validate all needed fields and
-    query mark for given title and mac
+    query mark for given title and udid
     via database module
     """
     text_id = _fetch_field(form, _FIELD_ID)
 
-    mac = _fetch_field(form, _FIELD_MAC)
-    _validate_mac(mac)
+    udid = _fetch_field(form, _FIELD_UDID)
+    _validate_udid(udid)
 
     result[_FIELD_MARK] = -1
 
     with database.Database() as db:
         try:
             result[_FIELD_MARK] = db.find_mark(
-                text_id, mac)
+                text_id, udid)
         except ValueError:
             pass
     return result

@@ -119,10 +119,9 @@ void ESModElement::SendLike(LikeType l)
     dislikemarkscount = -1;
     emit stateChanged();
 
-    QString setLikeReq = QString("%1?operation=mark&id=%2&mac=%3&udid=%4&platform=%5&mark=%6")\
+    QString setLikeReq = QString("%1?operation=mark&id=%2&udid=%3&platform=%4&mark=%5")\
             .arg(LIKES_CGI_URL)\
             .arg(id)\
-            .arg(AsyncDownloader::getMacAddress())\
             .arg(AsyncDownloader::getDeviceUDID())\
             .arg(MY_PLATFORM)\
             .arg(l == DislikeMark ? 0 : 1);
@@ -579,10 +578,9 @@ void ESModElement::changeState(State s, int resumedProgress)
 
 void ESModElement::sendLikesRequests()
 {
-    QString myLikeReq = QString("%1?operation=mymark&id=%2&mac=%3&udid=%4")\
+    QString myLikeReq = QString("%1?operation=mymark&id=%2&udid=%3")\
             .arg(LIKES_CGI_URL)\
             .arg(id)\
-            .arg(AsyncDownloader::getMacAddress())\
             .arg(AsyncDownloader::getDeviceUDID());
     QNetworkReply *myLikeRep = AsyncDownloader::get(myLikeReq);
     connect(myLikeRep, SIGNAL(finished()), this, SLOT(myLikeReceived()));
@@ -594,10 +592,9 @@ void ESModElement::sendLikesRequests()
 
 void ESModElement::sendStatistics(bool inst)
 {
-    QString statReq = QString("%1?operation=statistics&id=%2&mac=%3&udid=%4&platform=%5&state=%6")\
+    QString statReq = QString("%1?operation=statistics&id=%2&udid=%3&platform=%4&state=%5")\
             .arg(STATS_CGI_URL)\
             .arg(id)\
-            .arg(AsyncDownloader::getMacAddress())\
             .arg(AsyncDownloader::getDeviceUDID())\
             .arg(MY_PLATFORM)\
             .arg(inst ? "installed" : "deleted");

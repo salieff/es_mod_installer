@@ -12,19 +12,19 @@ WHERE table_name = '{0}' AND table_schema = '{1}';
 """
 
 _sql_query_create_title_table = """
-CREATE TABLE `{0}`.`{1}` ( `Mac` CHAR(17) NOT NULL ,
+CREATE TABLE `{0}`.`{1}` ( `Udid` VARCHAR(255) NOT NULL ,
 `Mark` BOOLEAN NOT NULL ) ENGINE = InnoDB;
 """.format(config.database_name, "{0}")
 
 
 _sql_query_create_summary_table = """
-CREATE TABLE `{0}`.`summary` ( `Title` CHAR(34) NOT NULL ,
+CREATE TABLE `{0}`.`summary` ( `Title` VARCHAR(512) NOT NULL ,
 `Up` INT NOT NULL , `Down` INT NOT NULL ) ENGINE = InnoDB;
 """.format(config.database_name)
 
 _sql_query_create_statistics_table = """
 CREATE TABLE `{0}`.`statistics` ( `ModId` INT NOT NULL ,
-`Mac` CHAR(17) NOT NULL , InstallTime DATETIME, DeleteTime DATETIME ) ENGINE = InnoDB;
+`Udid` VARCHAR(255) NOT NULL , InstallTime DATETIME, DeleteTime DATETIME ) ENGINE = InnoDB;
 """.format(config.database_name)
 
 
@@ -34,18 +34,18 @@ DROP TABLE `{0}`.`{1}`;
 
 
 _sql_query_add_mark = """
-INSERT INTO `{0}` (`Mac`, `Mark`)
+INSERT INTO `{0}` (`Udid`, `Mark`)
 VALUES ('{1}', '{2}')
 """
 
 _sql_query_set_mark = """
 UPDATE `{0}` SET `Mark` = '{2}'
-WHERE `Mac` = '{1}'
+WHERE `Udid` = '{1}'
 """
 
-_sql_query_find_mark_by_mac = """
+_sql_query_find_mark_by_udid = """
 SELECT * FROM `{0}`
-WHERE `Mac` = '{1}'
+WHERE `Udid` = '{1}'
 """
 
 _sql_query_add_summary = """
@@ -83,17 +83,17 @@ WHERE `Title` = '{0}'
 """
 
 _sql_query_add_statistics = """
-INSERT INTO `statistics` (`ModId`, `Mac`, `InstallTime`)
+INSERT INTO `statistics` (`ModId`, `Udid`, `InstallTime`)
 VALUES ('{0}', '{1}', NOW())
 """
 
-_sql_query_find_statistics_by_id_and_mac = """
+_sql_query_find_statistics_by_id_and_udid = """
 SELECT * FROM `statistics`
-WHERE `ModId` = '{0}' AND `Mac` = '{1}' AND `DeleteTime` IS NULL
+WHERE `ModId` = '{0}' AND `Udid` = '{1}' AND `DeleteTime` IS NULL
 """
 _sql_query_update_statistics = """
 UPDATE `statistics` SET `DeleteTime` = NOW()
-WHERE `ModId` = '{0}' AND `Mac` = '{1}' AND `DeleteTime` IS NULL
+WHERE `ModId` = '{0}' AND `Udid` = '{1}' AND `DeleteTime` IS NULL
 ORDER BY `InstallTime` DESC
 LIMIT 1
 """
@@ -166,7 +166,7 @@ class Database:
 
     def _create_title_table(self, name):
         """ Create  table for storing marks with given name
-        Fields: mac, mark
+        Fields: udid, mark
         """
         query = _sql_query_create_title_table.format(name)
         self._execute(query)
@@ -182,7 +182,7 @@ class Database:
     def _create_statistics_table(self):
         """ Create  table for storing
         installation statistics
-        Fields: modid, mac, installtime, deletetime
+        Fields: modid, udid, installtime, deletetime
         """
         query = _sql_query_create_statistics_table
         self._execute(query)
@@ -192,34 +192,34 @@ class Database:
         query = _sql_query_delete_table.format(name)
         self._execute(query)
 
-    def _add_mark(self, name, mac, mark):
+    def _add_mark(self, name, udid, mark):
         """ Add mark to existing table (title) """
-        query = _sql_query_add_mark.format(name, mac, mark)
+        query = _sql_query_add_mark.format(name, udid, mark)
         self._execute(query)
 
-    def _set_mark(self, name, mac, mark):
+    def _set_mark(self, name, udid, mark):
         """ Change existing mark """
-        query = _sql_query_set_mark.format(name, mac, mark)
+        query = _sql_query_set_mark.format(name, udid, mark)
         self._execute(query)
 
-    def _if_mark_exists(self, title, mac):
+    def _if_mark_exists(self, title, udid):
         """ Check if mark for this title
-        and mac exists
+        and udid exists
         """
-        query = _sql_query_find_mark_by_mac.format(title, mac)
+        query = _sql_query_find_mark_by_udid.format(title, udid)
         return len(self._execute(query)) > 0
 
-    def _find_mark(self, title, mac):
+    def _find_mark(self, title, udid):
         """ Query mark from existing table """
-        query = _sql_query_find_mark_by_mac.format(title, mac)
+        query = _sql_query_find_mark_by_udid.format(title, udid)
         return self._execute(query)[0]
 
-    def _find_mark_raw(self, title, mac):
+    def _find_mark_raw(self, title, udid):
         """ Query mark from existing table.
         Returns query result as is. Used for better
         speed not to call _if_mark_exists before
         """
-        query = _sql_query_find_mark_by_mac.format(title, mac)
+        query = _sql_query_find_mark_by_udid.format(title, udid)
         return self._execute(query)
 
     def _add_summary(self, title, up, down):
@@ -279,21 +279,21 @@ class Database:
             return self._change_summary_to_upvote
         return self._change_summary_to_downvote
 
-    def _add_statistics(self, text_id, mac):
+    def _add_statistics(self, text_id, udid):
         """ Add statistics table row """
-        query = _sql_query_add_statistics.format(text_id, mac)
+        query = _sql_query_add_statistics.format(text_id, udid)
         self._execute(query)
 
-    def _if_statistics_exists(self, text_id, mac):
-        """ Check if uncompleted statistics row exists for given id and mac """
-        query = _sql_query_find_statistics_by_id_and_mac.format(text_id, mac)
+    def _if_statistics_exists(self, text_id, udid):
+        """ Check if uncompleted statistics row exists for given id and udid """
+        query = _sql_query_find_statistics_by_id_and_udid.format(text_id, udid)
         return len(self._execute(query)) > 0
 
-    def _update_statistics(self, text_id, mac):
+    def _update_statistics(self, text_id, udid):
         """ Set deletion time to now for uncompleted statistics row
-        with greatest installation time, given id and mac
+        with greatest installation time, given id and udid
         """
-        query = _sql_query_update_statistics.format(text_id, mac)
+        query = _sql_query_update_statistics.format(text_id, udid)
         self._execute(query)
 
     def _find_statictics(self, title, period):
@@ -312,7 +312,7 @@ class Database:
         query = _sql_query_find_statistics_lifetime.format(title)
         return self._execute(query)
 
-    def add_mark(self, title, mac, mark):
+    def add_mark(self, title, udid, mark):
         """ Full cycle public add mark method.
         Creates all tables if don't exist,
         add mark, add/change summary information,
@@ -327,27 +327,27 @@ class Database:
         if not self._if_table_exists(title):
             self._create_title_table(title)
 
-        if not self._if_mark_exists(title, mac):
-            self._add_mark(title, mac, mark)
+        if not self._if_mark_exists(title, udid):
+            self._add_mark(title, udid, mark)
             self._get_summary_increment_method(mark)(title)
             return
 
-        _, old_mark = self._find_mark(title, mac)
+        _, old_mark = self._find_mark(title, udid)
         if mark == old_mark:
             return
 
-        self._set_mark(title, mac, mark)
+        self._set_mark(title, udid, mark)
         self._get_summary_update_method(mark)(title)
 
-    def find_mark(self, title, mac):
-        """ Find mark by title and mac
+    def find_mark(self, title, udid):
+        """ Find mark by title and udid
         address. Raises if not found.
         Return 0/1
         """
         if not self._if_table_exists(title):
             raise ValueError("Not found")
 
-        query_result = self._find_mark_raw(title, mac)
+        query_result = self._find_mark_raw(title, udid)
         if len(query_result) == 0:
             raise ValueError("Not found")
 
@@ -366,7 +366,7 @@ class Database:
 
         return (query_result[0][1], query_result[0][2])
 
-    def get_global_summary(self, mac):
+    def get_global_summary(self, udid):
         """ Find summary information for all titles """
         if not self._if_table_exists("summary"):
             raise ValueError("Not found")
@@ -379,8 +379,8 @@ class Database:
         for record in stat_result:
             titleid = record[0]
             res = list(record)
-            if mac:
-                mark_result = self._find_mark_raw(titleid, mac)
+            if udid:
+                mark_result = self._find_mark_raw(titleid, udid)
                 if len(mark_result) == 0:
                     res.append(-1)
                 else:
@@ -391,7 +391,7 @@ class Database:
 
         return results
 
-    def add_statistics(self, text_id, mac, state):
+    def add_statistics(self, text_id, udid, state):
         """ Public add statistics method.
         Creates table if doesn't exist,
         and add statistics
@@ -400,13 +400,13 @@ class Database:
             self._create_statistics_table()
 
         if state == _STAT_INSTALLED:
-            self._add_statistics(text_id, mac)
+            self._add_statistics(text_id, udid)
             return
 
-        if not self._if_statistics_exists(text_id, mac):
-            self._add_statistics(text_id, mac)
+        if not self._if_statistics_exists(text_id, udid):
+            self._add_statistics(text_id, udid)
 
-        self._update_statistics(text_id, mac)
+        self._update_statistics(text_id, udid)
 
     def get_statistics(self, title, period = None):
         """ Returns installations count, all and active,

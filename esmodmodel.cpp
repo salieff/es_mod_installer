@@ -451,9 +451,8 @@ void ESModModel::elementNeedRemove()
 
 void ESModModel::requestAllLikes()
 {
-    QString allLikeReq = QString("%1?operation=queryallmarks&mac=%2&udid=%3")\
+    QString allLikeReq = QString("%1?operation=queryallmarks&udid=%2")\
             .arg(LIKES_CGI_URL)\
-            .arg(AsyncDownloader::getMacAddress())\
             .arg(AsyncDownloader::getDeviceUDID());
     QNetworkReply *allLikeRep = AsyncDownloader::get(allLikeReq);
     connect(allLikeRep, SIGNAL(finished()), this, SLOT(AllLikesReceived()));

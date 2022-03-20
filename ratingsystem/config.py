@@ -3,7 +3,7 @@
 """ Raiting system config file """
 
 
-project_json_url = r'http://191.ru/es/project1.json'
+project_json_url = r'http://191.ru/es/project2.json'
 """ Url containing json with
 all the plugins titles
 """

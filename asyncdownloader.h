@@ -32,7 +32,6 @@ public:
     int resumedProgress(QStringList &files, QString destdir);
 
     static void createNetworkManager(QObject *parent = NULL);
-    static QString getMacAddress();
     static QString getDeviceUDID();
     static QNetworkReply * get(QString url);
     static QNetworkReply * get(QString baseUrl, QString fileUrl);
