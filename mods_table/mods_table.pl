@@ -13,16 +13,21 @@ binmode(STDOUT,':utf8');
 my $mozillaAgent = 'Mozilla/5.0 (Linux; Android 4.4.2; Nexus 5 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.99 Mobile Safari/537.36';
 my $baseUrl = 'http://191.ru/es';
 my $projectUrl = 'project2.json';
-my $allLikesUrl = 'http://es.191.ru/cgi-bin/ratingsystem/rating_web.py?operation=queryallmarks&mac=00:00:00:00:00:00&udid=HTMLModsTableGenerator';
+my $allLikesUrl = 'http://salieff-n56vz/cgi-bin/ratingsystem/rating_web.py?operation=queryallmarks&udid=HTMLModsTableGenerator';
 my @scoreStringArr = ("1", "1+", "2-", "2", "2+", "3-", "3", "3+", "4-", "4", "4+", "5-", "5", "5+");
 
 sub fileDateSize {
+#	return (1, 1);
+
 	my $ua = shift;
 	my $file = shift;
 
 	my $req = new HTTP::Request(HEAD => $baseUrl . '/' . $file);
 	my $res = $ua->request($req);
-	die "Can't request data from " . $req->uri() . " : " . $res->error_as_HTML() if $res->is_error();
+	if ($res->is_error()) {
+		say STDERR "Can't request data from " . $req->uri() . " : " . $res->error_as_HTML();
+		return (undef, undef);
+	}
 
 	return ($res->last_modified(), $res->content_length());
 }
@@ -33,11 +38,19 @@ sub filesDateSizeByPlatform {
 	my $platform = shift;
 
 	my $newestDate = undef;
-	my $fullSize = 0;
+	my $fullSize = undef;
 	for my $file (@{$pack->{'files_' . lc $platform}}) {
 		my ($tmStamp, $size) = fileDateSize($ua, $file);
 		$newestDate = $tmStamp if (!defined($newestDate) || $newestDate < $tmStamp);
-		$fullSize += $size;
+
+		if (defined($size)) {
+			if (!defined($fullSize)) {
+				$fullSize = $size;
+			}
+			else {
+				$fullSize += $size;
+			}
+		}
 	}
 
 	return ($newestDate, $fullSize);
@@ -51,8 +64,14 @@ sub filesDateSize {
 	my @sizes = ();
 	for my $platform (@{$pack->{platforms}}) {
 		my ($date, $size) = filesDateSizeByPlatform($ua, $pack, $platform);
-		push(@dates, $date);
-		push(@sizes, $size);
+
+		if (defined($date)) {
+			push(@dates, $date);
+		}
+
+		if (defined($size)) {
+			push(@sizes, $size);
+		}
 	}
 
 	return (\@dates, \@sizes);
@@ -161,6 +180,10 @@ sub urlsString {
 
 	my $retString = undef;
 	for my $platform (@{$pack->{platforms}}) {
+		if (!defined($pack->{'infouri_' . lc $platform})) {
+			next;
+		}
+
 		if (defined($retString)) {
 			$retString .= ' / ';
 		}
@@ -259,8 +282,8 @@ sub scoreForMod {
 	my $likes = shift;
 	my $maxVotesCount = shift;
 	my $pack = shift;
-	my $scoreIndex = 0;
-	my $sortScore = 0;
+	my $scoreIndex = -1;
+	my $sortScore = -1;
 
 	for my $mark (@{$likes->{marks}}) {
 		if ($mark->{id} == $pack->{idmod}) {
@@ -328,6 +351,21 @@ sub main {
 
 	for my $pack (@{$modsList->{packs}}) {
 		my ($dates, $sizes, $sortDate, $sortSize) = filesDateSizeString($ua, $pack);
+
+		if (!defined($dates)) {
+			$dates = "";
+		}
+		if (!defined($sortDate)) {
+			$sortDate = "";
+		}
+
+		if (!defined($sizes)) {
+			$sizes = "";
+		}
+		if (!defined($sortSize)) {
+			$sortSize = "";
+		}
+
 		my ($score, $sortScore, $scoreImage) = scoreForMod($likesList, $maxVotesCount, $pack);
 		my $statusSK = statusSortKey($pack);
 		my $prettyLang = $pack->{lang};

@@ -3,6 +3,6 @@
 
 #define ANDROID_ES_MODS_EXTERNAL_STORAGE "/sdcard"
 #define ANDROID_ES_MODS_FOLDER "Android/media"
-#define ANDROID_ES_MODS_SUBFOLDER "su.sovietgames.everlasting_summer/files/"
+#define ANDROID_ES_MODS_SUBFOLDER "su.sovietgames.everlasting_summer/"
 
 #endif // MODPATHS_H
