@@ -10,6 +10,8 @@
 #include <QClipboard>
 #include <QProcessEnvironment>
 #include <QTimer>
+#include <QAndroidJniObject>
+#include <QtAndroid>
 
 #include "version.h"
 #include "esmodmodel.h"
@@ -864,11 +866,35 @@ void ESModModel::helpRead(QString str)
 
 void ESModModel::changeModsFolder(QString f)
 {
-    f.remove(QRegExp("^file://"));
     if (!f.isEmpty())
     {
-        m_CustomUserModsFolder = f;
-        m_ESModsFolder = f;
+        QString folderPath(f);
+
+#ifdef ANDROID_NOT_READY_YET
+        QAndroidJniObject dataFieldString = QAndroidJniObject::fromString("_data");
+        QAndroidJniObject folderUriString = QAndroidJniObject::fromString(f);
+        QAndroidJniObject folderUri = QAndroidJniObject::callStaticObjectMethod("android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;", folderUriString.object<jstring>());
+        QAndroidJniObject contentResolver = QtAndroid::androidContext().callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
+        QAndroidJniObject cursor = contentResolver.callObjectMethod(
+                    "query",
+                    "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;",
+                    folderUri.object(), nullptr, nullptr, nullptr, nullptr);
+
+        if (cursor.isValid())
+        {
+            if (cursor.callMethod<jboolean>("moveToFirst") != JNI_FALSE)
+            {
+                jint columnIndex = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", dataFieldString.object<jstring>());
+                if (columnIndex >= 0)
+                    folderPath = cursor.callObjectMethod("getString", "(I)Ljava/lang/String;", columnIndex).toString();
+            }
+
+            cursor.callMethod<void>("close");
+        }
+#endif
+
+        m_CustomUserModsFolder = folderPath;
+        m_ESModsFolder = folderPath;
 
         foreach (ESModElement *el, m_initialElements)
             el->SetInstallPath(m_ESModsFolder);
