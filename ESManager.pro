@@ -32,7 +32,8 @@ SOURCES += main.cpp \
     asyncjsonwriter.cpp \
     asyncfilewriter.cpp \
     statisticsmanager.cpp \
-    esinstalledmodmodel.cpp
+    esinstalledmodmodel.cpp \
+    safadapter.cpp
 
 RESOURCES += qml.qrc
 
@@ -68,7 +69,8 @@ HEADERS += \
     statisticsmanager.h \
     esinstalledmodmodel.h \
     version.h \
-    modpaths.h
+    modpaths.h \
+    safadapter.h
 
 DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 USE_FILE32API
 
