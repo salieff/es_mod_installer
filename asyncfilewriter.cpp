@@ -1,5 +1,10 @@
 #include <QDir>
 #include "asyncfilewriter.h"
+#include "safadapter.h"
+
+
+static const int MAX_BUFFER_SIZE = 256 * 1024 * 1024;
+
 
 AsyncFileWriter::AsyncFileWriter(QObject * parent)
     : QThread(parent),
@@ -19,18 +24,19 @@ bool AsyncFileWriter::open(QString &destdir, QString &fname, QIODevice::OpenMode
 {
     reset();
 
-    QString fullFname = QDir(destdir).filePath(fname);
-    QString fullDir = QFileInfo(fullFname).dir().path();
+    QString fullPath = QDir(destdir).filePath(fname);
+    QString fullDir = QFileInfo(fullPath).dir().path();
+    QString fullFname = QFileInfo(fullPath).fileName();
 
-    if (!QDir().mkpath(fullDir))
+    if (!SafAdapter::CreateFoldersRecursively(fullDir))
     {
-        m_errorString = tr("Can't create directory ") + fullDir;
+        m_errorString = tr("Can't create directory ") + destdir;
         m_wasError = true;
         return false;
     }
 
-    m_file.setFileName(fullFname);
-    if (!m_file.open(mode))
+    int fd = SafAdapter::CreateFile(fullDir, fullFname);
+    if (fd < 0 || !m_file.open(fd, mode, QFileDevice::AutoCloseHandle))
     {
         m_wasError = true;
         m_errorString = m_file.fileName() + " : " + m_file.errorString();
@@ -45,14 +51,16 @@ bool AsyncFileWriter::open(QString &destdir, QString &fname, QIODevice::OpenMode
 void AsyncFileWriter::write(QIODevice *dev)
 {
     QByteArray data = dev->readAll();
+    if (data.isEmpty())
+        return;
 
-    if (data.size() > 0)
-    {
-        QMutexLocker ml(&m_bufferMutex);
+    QMutexLocker ml(&m_bufferMutex);
 
-        m_buffer.push_back(data);
-        m_bufferCondition.wakeAll();
-    }
+    while (m_buffer.size() > MAX_BUFFER_SIZE)
+        m_bufferCondition.wait(&m_bufferMutex);
+
+    m_buffer.push_back(data);
+    m_bufferCondition.wakeAll();
 }
 
 void AsyncFileWriter::close(bool abort)
@@ -103,24 +111,19 @@ void AsyncFileWriter::run()
     {
         QByteArray data;
 
-        m_bufferMutex.lock();
-        data.swap(m_buffer);
-
-        if (data.isEmpty())
         {
+            QMutexLocker ml(&m_bufferMutex);
+
+            while (m_buffer.isEmpty() && !m_closeFlag)
+                m_bufferCondition.wait(&m_bufferMutex);
+
             if (m_closeFlag)
-            {
-                m_bufferMutex.unlock();
                 break;
-            }
 
-            m_bufferCondition.wait(&m_bufferMutex);
             data.swap(m_buffer);
-        }
-        m_bufferMutex.unlock();
 
-        if (data.isEmpty())
-            continue;
+            m_bufferCondition.wakeAll();
+        }
 
         if (m_file.write(data) != data.size())
         {

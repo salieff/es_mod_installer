@@ -5,20 +5,6 @@ Menu {
     title: qsTr("Main Menu")
 
     MenuItem {
-        // visible: Qt.platform.os !== "ios" && Qt.platform.os !== "android"
-        text: qsTr("Change mods install path")
-        onTriggered: {
-            mainWindow.hideAllPanels()
-            modsPathDialog.open()
-        }
-    }
-
-    MenuItem {
-        text: qsTr("Autosearch mods install path")
-        onTriggered: esModel.resetModsFolder()
-    }
-
-    MenuItem {
         text: qsTr("Traceback")
         onTriggered: esModel.copyTraceback()
     }

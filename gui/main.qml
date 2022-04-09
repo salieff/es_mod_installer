@@ -43,12 +43,6 @@ ApplicationWindow {
         id: mainTracebackPanel
     }
 
-    /*
-    MainWebView {
-        id: mainWebView
-        anchors.bottom: parent.bottom
-    }
-    */
     Loader {
         id: mainWebView
         asynchronous: false
@@ -99,10 +93,6 @@ ApplicationWindow {
 
     MainMenu {
         id: mainMenu
-    }
-
-    ModsPathDialog {
-        id: modsPathDialog
     }
 
     Connections {

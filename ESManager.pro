@@ -33,7 +33,8 @@ SOURCES += main.cpp \
     asyncfilewriter.cpp \
     statisticsmanager.cpp \
     esinstalledmodmodel.cpp \
-    safadapter.cpp
+    safadapter.cpp \
+    safioapi.cpp
 
 RESOURCES += qml.qrc
 

@@ -2,6 +2,9 @@
 #include <QDir>
 
 #include "asyncunzipper.h"
+#include "safadapter.h"
+#include "modpaths.h"
+
 
 #define UNPACK_BUFFER_SIZE (16*1024)
 
@@ -94,15 +97,14 @@ void AsyncUnzipper::run()
             break;
         }
 
-        QFile zipf(zipFile);
-        if (!zipf.remove())
+        if (!SafAdapter::DeleteFile(zipFile))
         {
             m_failedFlag = true;
-            m_errorString = zipf.errorString();
+            m_errorString = tr("Can't delete zipfile ") + zipFile;
             break;
         }
 
-        QDir().rmpath(QFileInfo(zipFile).dir().path());
+        SafAdapter::DeleteEmptyFoldersRecursively(QFileInfo(zipFile).dir().path(), ANDROID_ES_MODS_FOLDER);
 
         if (aborted())
             break;
@@ -121,7 +123,7 @@ bool AsyncUnzipper::calculateTotalSize()
 
 bool AsyncUnzipper::unpackZip(QString zipFile, bool calcSizeOnly)
 {
-    unzFile ufd = unzOpen(zipFile.toLocal8Bit());
+    unzFile ufd = unzOpen2(zipFile.toLocal8Bit(), &SafAdapter::MiniZipFileAPI);
     if (ufd == NULL)
     {
         m_errorString = tr("Can't open zip file ") + zipFile;
@@ -197,14 +199,18 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
         return true;
     }
 
-    if (!QDir().mkpath(QFileInfo(fname).dir().path()))
+    QString fullDir = QFileInfo(fname).dir().path();
+    QString fullFname = QFileInfo(fname).fileName();
+
+    if (!SafAdapter::CreateFoldersRecursively(fullDir))
     {
-        m_errorString = tr("Can't create directory ") + QFileInfo(fname).dir().path();
+        m_errorString = tr("Can't create directory ") + fullDir;
         return false;
     }
 
-    QFile file(fname);
-    if (!file.open(QIODevice::WriteOnly))
+    QFile file;
+    int fd = SafAdapter::CreateFile(fullDir, fullFname);
+    if (fd < 0 || !file.open(fd, QIODevice::WriteOnly, QFileDevice::AutoCloseHandle))
     {
         m_errorString = file.errorString();
         return false;
@@ -248,7 +254,7 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
 
 bool AsyncUnzipper::checkOverwrite(QString fname)
 {
-    if (m_alwaysOverwrite || !QFile::exists(fname))
+    if (m_alwaysOverwrite || !SafAdapter::FileExists(fname))
         return true;
 
     m_overwriteMutex.lock();

@@ -15,6 +15,7 @@
 #endif
 
 #include "asyncdownloader.h"
+#include "safadapter.h"
 
 #define ES_USER_AGENT "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 5 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.99 Mobile Safari/537.36"
 #define RESUME_NOT_FOUND 0
@@ -301,7 +302,7 @@ void AsyncDownloader::downloadError(QNetworkReply::NetworkError code)
 
 bool AsyncDownloader::checkOverwrite(QString fname)
 {
-    if (m_alwaysOverwrite || !QFile::exists(fname))
+    if (m_alwaysOverwrite || !SafAdapter::FileExists(fname))
         return true;
 
     QMessageBox::StandardButton b = QMessageBox::warning(NULL, tr("Risk of overwriting"), \
@@ -387,7 +388,7 @@ QNetworkReply * AsyncDownloader::head(QUrl url)
 
 qint64 AsyncDownloader::resumeDownloadSize(QString fname, QString destdir, qint64 *refSize)
 {
-    qint64 sz = QFileInfo(QDir(destdir).filePath(fname)).size(); // If the file does not exist or cannot be fetched, 0 (RESUME_NOT_FOUND) is returned
+    qint64 sz = SafAdapter::FileSize(QDir(destdir).filePath(fname)); // If the file does not exist or cannot be fetched, 0 (RESUME_NOT_FOUND) is returned
     if (sz <= 0)
         return RESUME_NOT_FOUND;
 

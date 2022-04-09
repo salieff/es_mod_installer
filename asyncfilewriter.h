@@ -7,6 +7,8 @@
 #include <QByteArray>
 #include <QFile>
 
+#include <atomic>
+
 class AsyncFileWriter : public QThread
 {
     Q_OBJECT
@@ -33,9 +35,9 @@ private:
     QMutex m_bufferMutex;
     QWaitCondition m_bufferCondition;
 
-    bool m_closeFlag;
-    bool m_wasError;
-    bool m_wasAbort;
+    std::atomic_bool m_closeFlag;
+    std::atomic_bool m_wasError;
+    std::atomic_bool m_wasAbort;
     QString m_errorString;
 };
 

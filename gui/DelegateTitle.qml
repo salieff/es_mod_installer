@@ -2,80 +2,92 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.2
 import org.salieff.esmodinstaller 1.0
 
-ColumnLayout {
+RowLayout {
     property var modeldata
     property Rectangle outrect: parent.parent
 
-    Layout.fillWidth: true
-
-    Text {
-        id: delegateText1
+    Item {
         Layout.fillWidth: true
-        horizontalAlignment: Text.AlignHCenter
-        font.pointSize: 13.5
-        wrapMode: Text.Wrap
-        style: Text.Sunken
-        color: "white"
-        styleColor: "black"
-        text: modeldata.title
+        Layout.fillHeight: true
     }
 
-    Text {
-        id: delegateText2
-        Layout.fillWidth: true
-        horizontalAlignment: Text.AlignHCenter
-        font.pointSize: 9
-        wrapMode: Text.Wrap
-        style: Text.Sunken
-        color: "white"
-        styleColor: "black"
-        text: "[" + modeldata.status + "] {" + getReadableFileSizeString(modeldata.modsize) + ", " + modeldata.timestamp + "}" + percentIndicator()
+    ColumnLayout {
+        Layout.fillWidth: false
 
-        function getReadableFileSizeString(fileSizeInBytes) {
-            var i = -1;
-            var byteUnits = [' kb', ' Mb', ' Gb', ' Tb', 'Pb', 'Eb', 'Zb', 'Yb'];
-            do {
-                fileSizeInBytes = fileSizeInBytes / 1024;
-                i++;
-            } while (fileSizeInBytes > 1024 && i < (byteUnits.length - 1));
-
-            return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
+        Text {
+            id: delegateText1
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            font.pointSize: 13.5
+            wrapMode: Text.Wrap
+            style: Text.Sunken
+            color: "white"
+            styleColor: "black"
+            text: modeldata.title
         }
 
-        function percentIndicator() {
-            if (modeldata.modstate === ESModElement.Downloading ||
-                    ((modeldata.modstate === ESModElement.Available || modeldata.modstate === ESModElement.Failed) && modeldata.progress !== 100))
-                return " " + modeldata.progress +"%";
+        Text {
+            id: delegateText2
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            font.pointSize: 9
+            wrapMode: Text.Wrap
+            style: Text.Sunken
+            color: "white"
+            styleColor: "black"
+            text: "[" + modeldata.status + "] {" + getReadableFileSizeString(modeldata.modsize) + ", " + modeldata.timestamp + "}" + percentIndicator()
 
-            return "";
+            function getReadableFileSizeString(fileSizeInBytes) {
+                var i = -1;
+                var byteUnits = [' kb', ' Mb', ' Gb', ' Tb', 'Pb', 'Eb', 'Zb', 'Yb'];
+                do {
+                    fileSizeInBytes = fileSizeInBytes / 1024;
+                    i++;
+                } while (fileSizeInBytes > 1024 && i < (byteUnits.length - 1));
+
+                return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
+            }
+
+            function percentIndicator() {
+                if (modeldata.modstate === ESModElement.Downloading ||
+                        ((modeldata.modstate === ESModElement.Available || modeldata.modstate === ESModElement.Failed) && modeldata.progress !== 100))
+                    return " " + modeldata.progress +"%";
+
+                return "";
+            }
+
         }
 
+        MouseArea {
+            anchors.fill: parent
+
+            onContainsPressChanged: {
+                if (containsPress) {
+                    delegateText1.color = "red"
+                    delegateText2.color = "red"
+                }
+                else {
+                    delegateText1.color = "white"
+                    delegateText2.color = "white"
+                }
+            }
+
+            onClicked: {
+                if (modeldata.modstate === ESModElement.Failed)
+                {
+                    var operationModel = mainDelegateContainer.ListView.view.model
+                    operationModel.ShowError(modeldata.index)
+                }
+                else
+                {
+                    mainWindow.infoUriSignal(infouri)
+                }
+            }
+        }
     }
 
-    MouseArea {
-        anchors.fill: parent
-
-        onContainsPressChanged: {
-            if (containsPress) {
-                delegateText1.color = "red"
-                delegateText2.color = "red"
-            }
-            else {
-                delegateText1.color = "white"
-                delegateText2.color = "white"
-            }
-        }
-
-        onClicked: {
-            if (modeldata.modstate === ESModElement.Failed)
-            {
-                var operationModel = mainDelegateContainer.ListView.view.model
-                operationModel.ShowError(modeldata.index)
-            }
-            else
-            {
-                mainWindow.infoUriSignal(infouri)
-            }
-        }
+    Item {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
     }
 }

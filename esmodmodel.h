@@ -59,16 +59,6 @@ public:
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
 
-    static QString ESModsFolder();
-    static QString ESTracebackFileName(bool forLog = false);
-
-#ifdef Q_OS_IOS
-    static QString ESFolderForIOS(QStringList &dirs);
-    static QString ESTraceFolderForIOS(QStringList &dirs);
-#elif defined(ANDROID)
-    static QString ESFolderForAndroid(QStringList &dirs);
-#endif
-
 signals:
     void appTitleReceived(const QString &text);
     void appHelpReceived(const QString &text, bool fromServer = true);
@@ -102,9 +92,6 @@ public slots:
     void filterByKeywords(QString str);
 
     void helpRead(QString str);
-    void changeModsFolder(QString f);
-    void resetModsFolder();
-
     void copyTraceback(bool forLog = false);
 
 private slots:
@@ -132,9 +119,6 @@ private:
     static QString m_ESModsFolder;
     static QString m_CustomUserModsFolder;
     static QString m_FolderFoundDebugLogString;
-#ifdef Q_OS_IOS
-    static QString m_traceFolderForIos;
-#endif
 
     bool m_needShowHelp;
 };

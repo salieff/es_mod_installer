@@ -58,12 +58,28 @@ bool SafAdapter::CreateFolder(const QString &parentFolder, const QString &subFol
                 ) != JNI_FALSE;
 }
 
-QAndroidJniObject SafAdapter::CreateFile(const QString &parentFolder, const QString &fileName)
+bool SafAdapter::CreateFoldersRecursively(const QString &foldersPath)
 {
-    return QAndroidJniObject::callStaticObjectMethod(
+    QString createdFoldersPath;
+    auto foldersList = foldersPath.split('/', Qt::SkipEmptyParts);
+    for (const auto &folderName : foldersList)
+    {
+        if (!FileExists(createdFoldersPath + "/" + folderName))
+            if (!CreateFolder(createdFoldersPath, folderName))
+                return false;
+
+        createdFoldersPath += "/" + folderName;
+    }
+
+    return true;
+}
+
+int SafAdapter::CreateFile(const QString &parentFolder, const QString &fileName)
+{
+    return QAndroidJniObject::callStaticMethod<jint>(
                 "org/salieff/SafAdapter",
                 "createFile",
-                "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Landroid/os/ParcelFileDescriptor;",
+                "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)I",
                 QtAndroid::androidContext().object(),
                 QAndroidJniObject::fromString(parentFolder).object<jstring>(),
                 QAndroidJniObject::fromString(fileName).object<jstring>()
@@ -90,4 +106,47 @@ bool SafAdapter::DeleteFile(const QString &fileName)
                 QtAndroid::androidContext().object(),
                 QAndroidJniObject::fromString(fileName).object<jstring>()
                 ) != JNI_FALSE;
+}
+
+bool SafAdapter::DeleteEmptyFoldersRecursively(const QString &foldersPath, const QString &stopRootPath)
+{
+    auto foldersList = foldersPath.split('/', Qt::SkipEmptyParts);
+    auto stopRootList = stopRootPath.split('/', Qt::SkipEmptyParts);
+
+    while (!foldersList.empty() && foldersList != stopRootList)
+    {
+        auto currentPath = foldersList.join("/");
+
+        if (!FolderEmpty(currentPath))
+            return false;
+
+        if (!DeleteFile(currentPath))
+            return false;
+
+        foldersList.pop_back();
+    }
+
+    return true;
+}
+
+bool SafAdapter::FolderEmpty(const QString &folderName)
+{
+    return QAndroidJniObject::callStaticMethod<jboolean>(
+                "org/salieff/SafAdapter",
+                "folderEmpty",
+                "(Landroid/content/Context;Ljava/lang/String;)Z",
+                QtAndroid::androidContext().object(),
+                QAndroidJniObject::fromString(folderName).object<jstring>()
+                ) != JNI_FALSE;
+}
+
+int64_t SafAdapter::FileSize(const QString &fileName)
+{
+    return QAndroidJniObject::callStaticMethod<jlong>(
+                "org/salieff/SafAdapter",
+                "fileSize",
+                "(Landroid/content/Context;Ljava/lang/String;)J",
+                QtAndroid::androidContext().object(),
+                QAndroidJniObject::fromString(fileName).object<jstring>()
+                );
 }

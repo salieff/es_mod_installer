@@ -17,6 +17,7 @@
 #include "esmodmodel.h"
 #include "statisticsmanager.h"
 #include "modpaths.h"
+#include "safadapter.h"
 
 #define ES_MOD_INDEX_SERVER "http://191.ru/es/"
 #define ES_MOD_INDEX_NAME "project2.json"
@@ -24,9 +25,7 @@
 QString ESModModel::m_ESModsFolder;
 QString ESModModel::m_CustomUserModsFolder;
 QString ESModModel::m_FolderFoundDebugLogString;
-#ifdef Q_OS_IOS
-QString ESModModel::m_traceFolderForIos;
-#endif
+
 
 ESModModel::ESModModel(QObject *parent)
     : QAbstractListModel(parent),
@@ -34,14 +33,7 @@ ESModModel::ESModModel(QObject *parent)
       m_lastSortMode(AsServer),
       m_needShowHelp(false)
 {
-    m_ESModsFolder = ESModsFolder();
-    if (m_ESModsFolder.isEmpty())
-    {
-        copyToClipboard(m_FolderFoundDebugLogString, tr("Debug data was copied to clipboard"));
-        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer installation folder, default will be used\n") + m_FolderFoundDebugLogString);
-        m_ESModsFolder = QString("%1/%2/%3").arg(ANDROID_ES_MODS_EXTERNAL_STORAGE, ANDROID_ES_MODS_FOLDER, ANDROID_ES_MODS_SUBFOLDER);
-    }
-
+    m_ESModsFolder = ANDROID_ES_MODS_FOLDER;
     emit currentModsFolder(m_ESModsFolder);
 
     QNetworkReply *rep = AsyncDownloader::get(ES_MOD_INDEX_SERVER, ES_MOD_INDEX_NAME);
@@ -864,65 +856,11 @@ void ESModModel::helpRead(QString str)
     SaveLocalModsDB();
 }
 
-void ESModModel::changeModsFolder(QString f)
-{
-    if (!f.isEmpty())
-    {
-        QString folderPath(f);
-
-#ifdef ANDROID_NOT_READY_YET
-        QAndroidJniObject dataFieldString = QAndroidJniObject::fromString("_data");
-        QAndroidJniObject folderUriString = QAndroidJniObject::fromString(f);
-        QAndroidJniObject folderUri = QAndroidJniObject::callStaticObjectMethod("android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;", folderUriString.object<jstring>());
-        QAndroidJniObject contentResolver = QtAndroid::androidContext().callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
-        QAndroidJniObject cursor = contentResolver.callObjectMethod(
-                    "query",
-                    "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;",
-                    folderUri.object(), nullptr, nullptr, nullptr, nullptr);
-
-        if (cursor.isValid())
-        {
-            if (cursor.callMethod<jboolean>("moveToFirst") != JNI_FALSE)
-            {
-                jint columnIndex = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", dataFieldString.object<jstring>());
-                if (columnIndex >= 0)
-                    folderPath = cursor.callObjectMethod("getString", "(I)Ljava/lang/String;", columnIndex).toString();
-            }
-
-            cursor.callMethod<void>("close");
-        }
-#endif
-
-        m_CustomUserModsFolder = folderPath;
-        m_ESModsFolder = folderPath;
-
-        foreach (ESModElement *el, m_initialElements)
-            el->SetInstallPath(m_ESModsFolder);
-
-        SaveLocalModsDB();
-        emit currentModsFolder(m_ESModsFolder);
-        emit balloonText(tr("Mod's folder changed to ") + m_ESModsFolder);
-    }
-}
-
-void ESModModel::resetModsFolder()
-{
-    m_CustomUserModsFolder.clear();
-    m_ESModsFolder = ESModsFolder();
-
-    foreach (ESModElement *el, m_initialElements)
-        el->SetInstallPath(m_ESModsFolder);
-
-    SaveLocalModsDB();
-    emit currentModsFolder(m_ESModsFolder);
-    emit balloonText(tr("Mod's folder changed to ") + m_ESModsFolder);
-}
-
 void ESModModel::copyTraceback(bool forLog)
 {
-    QString fname = ESTracebackFileName(forLog);
-    QFile f(fname);
-    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+    QFile f;
+    int fd = SafAdapter::CreateFile(m_ESModsFolder, forLog ? "log.txt" : "traceback.txt");
+    if (fd < 0 || !f.open(fd, QIODevice::ReadOnly | QIODevice::Text, QFileDevice::AutoCloseHandle))
         return;
 
     QDateTime modTime = QFileInfo(f).lastModified();
@@ -947,151 +885,8 @@ void ESModModel::ReindexElements()
         m_elements[i]->m_modelIndex = i;
 }
 
-QString ESModModel::ESModsFolder()
-{
-#if defined(Q_OS_IOS)
-    return ESFolderForIOS(QStringList() \
-                          << "/User/Containers/Bundle/Application" \
-                          << "/User/Applications" \
-                          << "/var/mobile/Containers/Bundle/Application" \
-                          << "/var/mobile/Applications" \
-                          << "/var/containers/Bundle/Application" \
-                          << "/private/var/mobile/Containers/Bundle/Application" \
-                          << "/private/var/mobile/Applications" \
-                          << "/private/var/containers/Bundle/Application" \
-                          << "/Applications");
-#elif defined(ANDROID)
-    QString externalStorage = QProcessEnvironment::systemEnvironment().value("EXTERNAL_STORAGE", ANDROID_ES_MODS_EXTERNAL_STORAGE);
-    return QDir(externalStorage).filePath(QString("%1/%2").arg(ANDROID_ES_MODS_FOLDER, ANDROID_ES_MODS_SUBFOLDER));
-#else
-    return QDir::homePath() + "/tmp/su.sovietgames.everlasting_summer/files/";
-#endif
-}
-
-QString ESModModel::ESTracebackFileName(bool forLog)
-{
-#if defined(Q_OS_IOS)
-    if (m_traceFolderForIos.isEmpty())
-        m_traceFolderForIos = ESTraceFolderForIOS(QStringList() \
-                                                  << "/User/Containers/Data/Application" \
-                                                  << "/var/mobile/Containers/Data/Application");
-
-    if (m_traceFolderForIos.isEmpty())
-    {
-        // copyToClipboard(m_FolderFoundDebugLogString, tr("Debug data was copied to clipboard"));
-        QMessageBox::critical(NULL, tr("Error"), tr("Can't find Everlasting Summer trace logs folder\n") + m_FolderFoundDebugLogString);
-    }
-
-    if (forLog)
-        return QDir(m_traceFolderForIos).filePath("renpy-errors.txt");
-    else
-        return QDir(m_traceFolderForIos).filePath("renpy-traceback.txt");
-#else
-    if (forLog)
-        return QDir(m_ESModsFolder).filePath("log.txt");
-    else
-        return QDir(m_ESModsFolder).filePath("traceback.txt");
-#endif
-}
-
 void ESModModel::copyToClipboard(QString &txt, QString msg)
 {
     QApplication::clipboard()->setText(txt);
     emit balloonText(msg);
 }
-
-#ifdef Q_OS_IOS
-QString ESModModel::ESFolderForIOS(QStringList &dirs)
-{
-    foreach (QString dir, dirs) // Top application directories
-    {
-        m_FolderFoundDebugLogString += dir + "\n";
-        QFileInfoList uuidlist = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
-        foreach (QFileInfo fiuuid, uuidlist) // Application UUIDs directories
-        {
-            m_FolderFoundDebugLogString += "  " + fiuuid.filePath() + "\n";
-            QFileInfoList applist = QDir(fiuuid.filePath()).entryInfoList(QStringList("*.app"), QDir::Dirs | QDir::NoDotAndDotDot);
-            foreach (QFileInfo fiapp, applist) // *.app directories
-            {
-                m_FolderFoundDebugLogString += "    " + fiapp.filePath() + "\n";
-
-                QFileInfoList plistFiles = QDir(fiapp.filePath()).entryInfoList(QStringList("*.plist"), QDir::Files | QDir::Hidden);
-                foreach (QFileInfo iplist, plistFiles)
-                {
-                    m_FolderFoundDebugLogString += "      " + iplist.filePath() + "\n";
-
-                    QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("CFBundleIdentifier").toString();
-                    m_FolderFoundDebugLogString += "      " + bunid + "\n";
-                    if (bunid != "com.mifki.everlastingsummer")
-                        continue;
-
-                    m_FolderFoundDebugLogString += "      FOUND!\n";
-                    return QDir(fiapp.filePath()).filePath("scripts/game/");
-                }
-            }
-        }
-    }
-
-    return QString();
-}
-
-QString ESModModel::ESTraceFolderForIOS(QStringList &dirs)
-{
-    // iOS < 8
-    if (m_ESModsFolder.startsWith("/User/Applications/") || m_ESModsFolder.startsWith("/var/mobile/Applications/"))
-    {
-        QString ret = m_ESModsFolder;
-        ret.remove(QRegExp("/.*\\.app/scripts/game/*$"));
-        ret += "/tmp/";
-        return ret;
-    }
-
-    // iOS >= 8
-    foreach (QString dir, dirs) // Top data directories
-    {
-        m_FolderFoundDebugLogString += dir + "\n";
-        QFileInfoList uuidlist = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
-        foreach (QFileInfo fiuuid, uuidlist) // Application UUIDs directories
-        {
-            m_FolderFoundDebugLogString += "  " + fiuuid.filePath() + "\n";
-
-            QFileInfoList plistFiles = QDir(fiuuid.filePath()).entryInfoList(QStringList("*.plist"), QDir::Files | QDir::Hidden);
-            foreach (QFileInfo iplist, plistFiles)
-            {
-                m_FolderFoundDebugLogString += "      " + iplist.filePath() + "\n";
-
-                QString bunid = QSettings(iplist.absoluteFilePath(), QSettings::NativeFormat).value("MCMMetadataIdentifier").toString();
-                m_FolderFoundDebugLogString += "      " + bunid + "\n";
-                if (bunid != "com.mifki.everlastingsummer")
-                    continue;
-
-                m_FolderFoundDebugLogString += "      FOUND!\n";
-                return QDir(fiuuid.filePath()).filePath("tmp/");
-            }
-        }
-    }
-
-    return QString();
-}
-
-#elif defined(ANDROID)
-
-QString ESModModel::ESFolderForAndroid(QStringList &dirs)
-{
-    foreach (QString dir, dirs) // Top storage directories
-    {
-        m_FolderFoundDebugLogString += dir + "\n";
-        QFileInfoList storageList = QDir(dir).entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
-        storageList << QFileInfo(ANDROID_ES_MODS_EXTERNAL_STORAGE);
-        foreach (QFileInfo storageDir, storageList)
-        {
-            m_FolderFoundDebugLogString += "  " + storageDir.filePath() + "\n";
-            QString checkDir = QDir(storageDir.filePath()).filePath(QString("%1/%2").arg(ANDROID_ES_MODS_FOLDER, ANDROID_ES_MODS_SUBFOLDER));
-            if (QFileInfo(checkDir).isDir())
-                return checkDir;
-        }
-    }
-
-    return QString();
-}
-#endif
