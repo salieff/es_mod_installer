@@ -55,8 +55,7 @@ ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, in
 
     connect(&m_asyncDeleter, SIGNAL(finished()), this, SLOT(filesDeleted()), Qt::QueuedConnection);
 
-    auto defaultPath = QString("%1/%2/%3").arg(ANDROID_ES_MODS_EXTERNAL_STORAGE, ANDROID_ES_MODS_FOLDER, ANDROID_ES_MODS_SUBFOLDER);
-    if (QDir(m_path).absolutePath() != QDir(defaultPath).absolutePath())
+    if (m_path != ANDROID_ES_MODS_FOLDER)
         m_asyncDeleter.setStopFolder(m_path);
 }
 
