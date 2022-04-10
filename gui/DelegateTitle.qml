@@ -1,22 +1,26 @@
-import QtQuick 2.5
-import QtQuick.Layouts 1.2
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
 import org.salieff.esmodinstaller 1.0
 
-RowLayout {
+ColumnLayout {
     property var modeldata
-    property Rectangle outrect: parent.parent
+    property var maxTextWidth
 
-    Item {
+    RowLayout {
+        id: rowLayout
         Layout.fillWidth: true
-        Layout.fillHeight: true
-    }
 
-    ColumnLayout {
-        Layout.fillWidth: false
+        Item {
+            // spacer item
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            // Rectangle { anchors.fill: parent; color: "#ffaaaa" } // to visualize the spacer
+        }
 
         Text {
             id: delegateText1
-            Layout.fillWidth: true
+            // Layout.fillWidth: true
+            Layout.maximumWidth: maxTextWidth - (rowLayout.spacing * 2)
             horizontalAlignment: Text.AlignHCenter
             font.pointSize: 13.5
             wrapMode: Text.Wrap
@@ -24,70 +28,73 @@ RowLayout {
             color: "white"
             styleColor: "black"
             text: modeldata.title
+
+            MouseArea {
+                anchors.fill: parent
+
+                onContainsPressChanged: {
+                    if (containsPress) {
+                        delegateText1.color = "red"
+                        // delegateText2.color = "red"
+                    }
+                    else {
+                        delegateText1.color = "white"
+                        // delegateText2.color = "white"
+                    }
+                }
+
+                onClicked: {
+                    if (modeldata.modstate === ESModElement.Failed)
+                    {
+                        var operationModel = mainDelegateContainer.ListView.view.model
+                        operationModel.ShowError(modeldata.index)
+                    }
+                    else
+                    {
+                        mainWindow.infoUriSignal(infouri)
+                    }
+                }
+            }
         }
 
-        Text {
-            id: delegateText2
+        Item {
+            // spacer item
             Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            font.pointSize: 9
-            wrapMode: Text.Wrap
-            style: Text.Sunken
-            color: "white"
-            styleColor: "black"
-            text: "[" + modeldata.status + "] {" + getReadableFileSizeString(modeldata.modsize) + ", " + modeldata.timestamp + "}" + percentIndicator()
-
-            function getReadableFileSizeString(fileSizeInBytes) {
-                var i = -1;
-                var byteUnits = [' kb', ' Mb', ' Gb', ' Tb', 'Pb', 'Eb', 'Zb', 'Yb'];
-                do {
-                    fileSizeInBytes = fileSizeInBytes / 1024;
-                    i++;
-                } while (fileSizeInBytes > 1024 && i < (byteUnits.length - 1));
-
-                return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
-            }
-
-            function percentIndicator() {
-                if (modeldata.modstate === ESModElement.Downloading ||
-                        ((modeldata.modstate === ESModElement.Available || modeldata.modstate === ESModElement.Failed) && modeldata.progress !== 100))
-                    return " " + modeldata.progress +"%";
-
-                return "";
-            }
-
-        }
-
-        MouseArea {
-            anchors.fill: parent
-
-            onContainsPressChanged: {
-                if (containsPress) {
-                    delegateText1.color = "red"
-                    delegateText2.color = "red"
-                }
-                else {
-                    delegateText1.color = "white"
-                    delegateText2.color = "white"
-                }
-            }
-
-            onClicked: {
-                if (modeldata.modstate === ESModElement.Failed)
-                {
-                    var operationModel = mainDelegateContainer.ListView.view.model
-                    operationModel.ShowError(modeldata.index)
-                }
-                else
-                {
-                    mainWindow.infoUriSignal(infouri)
-                }
-            }
+            Layout.fillHeight: true
+            // Rectangle { anchors.fill: parent; color: "#ffaaaa" } // to visualize the spacer
         }
     }
 
-    Item {
+    Text {
+        id: delegateText2
         Layout.fillWidth: true
-        Layout.fillHeight: true
+        // Layout.maximumWidth: maxTextWidth
+        horizontalAlignment: Text.AlignHCenter
+        font.pointSize: 9
+        wrapMode: Text.Wrap
+        style: Text.Sunken
+        color: "white"
+        styleColor: "black"
+        text: "[" + modeldata.status + "] {" + getReadableFileSizeString(modeldata.modsize) + ", " + modeldata.timestamp + "}" + percentIndicator()
+
+        function getReadableFileSizeString(fileSizeInBytes) {
+            var i = -1;
+            var byteUnits = [' kb', ' Mb', ' Gb', ' Tb', 'Pb', 'Eb', 'Zb', 'Yb'];
+            do {
+                fileSizeInBytes = fileSizeInBytes / 1024;
+                i++;
+            } while (fileSizeInBytes > 1024 && i < (byteUnits.length - 1));
+
+            return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
+        }
+
+        function percentIndicator() {
+            if (modeldata.modstate === ESModElement.Downloading ||
+                    ((modeldata.modstate === ESModElement.Available || modeldata.modstate === ESModElement.Failed) && modeldata.progress !== 100))
+                return " " + modeldata.progress +"%";
+
+            return "";
+        }
+
     }
 }

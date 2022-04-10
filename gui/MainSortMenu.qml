@@ -1,8 +1,8 @@
-import QtQuick 2.3
-import QtQuick.Controls 1.2
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import org.salieff.esmodinstaller 1.0
 
-Menu {
+AutoSizingMenu {
     title: qsTr("Sort mode")
 
     MenuItem {
@@ -11,7 +11,6 @@ Menu {
     }
 
     MenuItem {
-
         text: qsTr("By name a→Z")
         onTriggered: esModel.sortList(ESModModel.ByNameUp)
     }

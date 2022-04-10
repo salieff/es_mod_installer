@@ -1,5 +1,5 @@
-import QtQuick 2.5
-import QtQuick.Layouts 1.2
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
 
 Rectangle {
     id: mainDelegateContainer
@@ -25,24 +25,28 @@ Rectangle {
         spacing: parent.margin
 
         DelegateLeftButton {
+            id: leftButton
             modeldata: model
         }
 
         DelegateTitle {
             modeldata: model
+            maxTextWidth: mainLayout.width - (mainLayout.spacing * 3) - leftButton.width - likeSign.width - langSign.width - (rightButton.visible ? (mainLayout.spacing + rightButton.width) : 0)
         }
 
         DelegateLike {
+            id: likeSign
             modeldata: model
         }
 
         DelegateLangFlags {
+            id: langSign
             modeldata: model
         }
 
         DelegateRightButton {
+            id: rightButton
             modeldata: model
         }
-
     }
 }

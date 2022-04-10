@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += qml quick widgets network webview
+QT += qml quick widgets network webview quickcontrols2
 
 android {
     QT += androidextras

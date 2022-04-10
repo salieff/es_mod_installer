@@ -1,5 +1,5 @@
-import QtQuick 2.5
-import QtWebView 1.1
+import QtQuick 2.15
+import QtWebView 1.15
 
 WebView {
     visible: false

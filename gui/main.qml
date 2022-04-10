@@ -1,7 +1,6 @@
-import QtQuick 2.3
-import QtQuick.Controls 1.2
-import QtQuick.Dialogs 1.2
-import QtQuick.Layouts 1.2
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
 ApplicationWindow {
     id: mainWindow
@@ -93,11 +92,6 @@ ApplicationWindow {
 
     MainMenu {
         id: mainMenu
-    }
-
-    Connections {
-        target: esModel
-        onCurrentModsFolder: modsPathDialog.folder = "file://" + newFolder
     }
 
     Item {

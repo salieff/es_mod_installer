@@ -1,4 +1,4 @@
-import QtQuick 2.3
+import QtQuick 2.15
 
 Rectangle {
     height: parent.height - mainAppTitle.height

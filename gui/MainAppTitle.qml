@@ -1,5 +1,5 @@
-import QtQuick 2.5
-import QtQuick.Layouts 1.2
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
 
 Rectangle {
     property alias closeButton: mailCloseButton
@@ -33,8 +33,6 @@ Rectangle {
                     mainWindow.infoUriSignal("file:///android_asset/help/index.html" + chapter)
                 else if (Qt.platform.os === "ios")
                     mainWindow.infoUriSignal("file:///Applications/ESManager.app/help.html" + chapter)
-                else
-                    mainWindow.infoUriSignal(modsPathDialog.shortcuts.home + "/Work/ESManager_github/es_mod_installer/help/help.html" + chapter)
             }
 
             MouseArea {
