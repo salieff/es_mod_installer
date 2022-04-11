@@ -40,6 +40,5 @@
         <file>gui/MainBalloon.qml</file>
         <file>gui/MainMenu.qml</file>
         <file>gui/MainLists.qml</file>
-        <file>gui/AutoSizingMenu.qml</file>
     </qresource>
 </RCC>

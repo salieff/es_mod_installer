@@ -31,7 +31,7 @@ Rectangle {
 
         DelegateTitle {
             modeldata: model
-            maxTextWidth: mainLayout.width - (mainLayout.spacing * 3) - leftButton.width - likeSign.width - langSign.width - (rightButton.visible ? (mainLayout.spacing + rightButton.width) : 0)
+            maxTextWidth: mainLayout.width - (mainLayout.spacing * 3) - leftButton.width - likeSign.width - langSign.width - (rightButton.visible ? (mainLayout.spacing + rightButton.width) : 0) - 10
         }
 
         DelegateLike {

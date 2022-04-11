@@ -1,8 +1,8 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick.Controls 1.4
 import org.salieff.esmodinstaller 1.0
 
-AutoSizingMenu {
+Menu {
     title: qsTr("Sort mode")
 
     MenuItem {

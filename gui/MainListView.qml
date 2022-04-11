@@ -13,8 +13,35 @@ ListView {
     spacing: 5
     // clip: true
     maximumFlickVelocity: 5000
-    headerPositioning: ListView.OverlayHeader
+
     header: Item {
+        // Empty placeholder
+        width: parent.width
+        height: hdrRect.height + 10
+        anchors.horizontalCenter: parent.horizontalCenter
+    }
+
+    remove: Transition {
+        NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 400 }
+        NumberAnimation { property: "scale"; from: 1.0; to: 0; duration: 400 }
+    }
+
+    displaced: Transition {
+        NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutBounce }
+    }
+
+    Rectangle {
+        anchors.left: parent.right
+        anchors.leftMargin: 2
+        y: parent.visibleArea.yPosition * parent.height
+        width: 6
+        radius: 2
+        height: parent.visibleArea.heightRatio * parent.height
+        color: "black"
+        opacity: 0.5
+    }
+
+    Item {
         z: 2
         width: parent.width
         height: hdrRect.height + 10
@@ -44,25 +71,5 @@ ListView {
                 text: headerText
             }
         }
-    }
-
-    remove: Transition {
-        NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 400 }
-        NumberAnimation { property: "scale"; from: 1.0; to: 0; duration: 400 }
-    }
-
-    displaced: Transition {
-        NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutBounce }
-    }
-
-    Rectangle {
-        anchors.left: parent.right
-        anchors.leftMargin: 2
-        y: parent.visibleArea.yPosition * parent.height
-        width: 6
-        radius: 2
-        height: parent.visibleArea.heightRatio * parent.height
-        color: "black"
-        opacity: 0.5
     }
 }
