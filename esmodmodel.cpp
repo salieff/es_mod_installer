@@ -859,8 +859,7 @@ void ESModModel::helpRead(QString str)
 void ESModModel::copyTraceback(bool forLog)
 {
     QFile f;
-    int fd = SafAdapter::CreateFile(m_ESModsFolder, forLog ? "log.txt" : "traceback.txt");
-    if (fd < 0 || !f.open(fd, QIODevice::ReadOnly | QIODevice::Text, QFileDevice::AutoCloseHandle))
+    if (!SafAdapter::OpenQFile(f, QDir(m_ESModsFolder).filePath(forLog ? "log.txt" : "traceback.txt"), QIODevice::ReadOnly | QIODevice::Text))
         return;
 
     QDateTime modTime = QFileInfo(f).lastModified();

@@ -199,20 +199,10 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
         return true;
     }
 
-    QString fullDir = QFileInfo(fname).dir().path();
-    QString fullFname = QFileInfo(fname).fileName();
-
-    if (!SafAdapter::CreateFoldersRecursively(fullDir))
-    {
-        m_errorString = tr("Can't create directory ") + fullDir;
-        return false;
-    }
-
     QFile file;
-    int fd = SafAdapter::CreateFile(fullDir, fullFname);
-    if (fd < 0 || !file.open(fd, QIODevice::WriteOnly, QFileDevice::AutoCloseHandle))
+    if (!SafAdapter::CreateQFile(file, fname, QIODevice::WriteOnly | QIODevice::Truncate, SafAdapter::CREATE_FOLDERS))
     {
-        m_errorString = file.errorString();
+        m_errorString = tr("Can't create file ") + fname + " : " + file.errorString();
         return false;
     }
 

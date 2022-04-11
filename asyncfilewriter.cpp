@@ -24,22 +24,10 @@ bool AsyncFileWriter::open(QString &destdir, QString &fname, QIODevice::OpenMode
 {
     reset();
 
-    QString fullPath = QDir(destdir).filePath(fname);
-    QString fullDir = QFileInfo(fullPath).dir().path();
-    QString fullFname = QFileInfo(fullPath).fileName();
-
-    if (!SafAdapter::CreateFoldersRecursively(fullDir))
-    {
-        m_errorString = tr("Can't create directory ") + destdir;
-        m_wasError = true;
-        return false;
-    }
-
-    int fd = SafAdapter::CreateFile(fullDir, fullFname);
-    if (fd < 0 || !m_file.open(fd, mode, QFileDevice::AutoCloseHandle))
+    if (!SafAdapter::CreateQFile(m_file, QDir(destdir).filePath(fname), mode, SafAdapter::CREATE_FOLDERS))
     {
         m_wasError = true;
-        m_errorString = m_file.fileName() + " : " + m_file.errorString();
+        m_errorString = tr("Can't create file ") + QDir(destdir).filePath(fname) + " : " + m_file.errorString();
         return false;
     }
 

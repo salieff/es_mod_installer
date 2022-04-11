@@ -74,7 +74,24 @@ public class SafAdapter
         return false;
     }
 
-    public static int createFile(Context context, String rootFolderName, String fileName)
+    public static int openFile(Context context, String rootFolderName, String fileName, String mode)
+    {
+        try
+        {
+            Uri rootFolderUri = DocumentsContract.buildChildDocumentsUriUsingTree(RootUri, DocumentsContract.getTreeDocumentId(RootUri) + rootFolderName);
+            Uri fileUri = DocumentsContract.buildChildDocumentsUriUsingTree(RootUri, DocumentsContract.getTreeDocumentId(RootUri) + rootFolderName + "/" + fileName);
+            ParcelFileDescriptor fileDiscriptor = context.getContentResolver().openFileDescriptor(fileUri, mode);
+            return fileDiscriptor.detachFd();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
+
+    public static int createFile(Context context, String rootFolderName, String fileName, String mode)
     {
         try
         {
@@ -92,7 +109,7 @@ public class SafAdapter
                 Log.d("File created: ", fileUri.toString());
             }
 
-            ParcelFileDescriptor fileDiscriptor = context.getContentResolver().openFileDescriptor(fileUri, "rw");
+            ParcelFileDescriptor fileDiscriptor = context.getContentResolver().openFileDescriptor(fileUri, mode);
             return fileDiscriptor.detachFd();
         }
         catch (Exception e)

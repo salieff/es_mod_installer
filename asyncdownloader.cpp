@@ -197,27 +197,14 @@ void AsyncDownloader::fileWritten()
             return;
         }
 
-        if (!m_file.open(m_destDir, m_files[m_currFileIndex], m_resumeDownloadSize == RESUME_NOT_FOUND ? QIODevice::WriteOnly : QIODevice::ReadWrite))
+        if (!m_file.open(m_destDir,
+                         m_files[m_currFileIndex],
+                         QIODevice::WriteOnly | (m_resumeDownloadSize == RESUME_NOT_FOUND ? QIODevice::Truncate : QIODevice::Append)))
         {
             m_wasError = true;
             m_errorString = m_file.errorString();
             emit finished();
             return;
-        }
-
-        if (m_resumeDownloadSize != RESUME_NOT_FOUND)
-        {
-            m_resumeDownloadSize -= RESUME_BACK_STEP;
-            if (m_resumeDownloadSize < 0)
-                m_resumeDownloadSize = 0;
-
-            if (!m_file.seek(m_resumeDownloadSize))
-            {
-                m_wasError = true;
-                m_errorString = m_file.errorString();
-                emit finished();
-                return;
-            }
         }
 
         m_localFiles << QDir(m_destDir).filePath(m_files[m_currFileIndex]);

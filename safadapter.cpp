@@ -1,4 +1,6 @@
 #include <QtAndroid>
+#include <QFileInfo>
+#include <QDir>
 
 #include "safadapter.h"
 
@@ -74,16 +76,66 @@ bool SafAdapter::CreateFoldersRecursively(const QString &foldersPath)
     return true;
 }
 
-int SafAdapter::CreateFile(const QString &parentFolder, const QString &fileName)
+int SafAdapter::OpenFile(const QString &parentFolder, const QString &fileName, const QString &mode)
+{
+    return QAndroidJniObject::callStaticMethod<jint>(
+                "org/salieff/SafAdapter",
+                "openFile",
+                "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I",
+                QtAndroid::androidContext().object(),
+                QAndroidJniObject::fromString(parentFolder).object<jstring>(),
+                QAndroidJniObject::fromString(fileName).object<jstring>(),
+                QAndroidJniObject::fromString(mode).object<jstring>()
+                );
+}
+
+int SafAdapter::CreateFile(const QString &parentFolder, const QString &fileName, const QString &mode)
 {
     return QAndroidJniObject::callStaticMethod<jint>(
                 "org/salieff/SafAdapter",
                 "createFile",
-                "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)I",
+                "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I",
                 QtAndroid::androidContext().object(),
                 QAndroidJniObject::fromString(parentFolder).object<jstring>(),
-                QAndroidJniObject::fromString(fileName).object<jstring>()
+                QAndroidJniObject::fromString(fileName).object<jstring>(),
+                QAndroidJniObject::fromString(mode).object<jstring>()
                 );
+}
+
+bool SafAdapter::CreateOrOpenQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, int (*java_func)(const QString &parentFolder, const QString &fileName, const QString &mode), bool createFolders)
+{
+    QString folderName = QFileInfo(filePath).dir().path();
+    QString fileName = QFileInfo(filePath).fileName();
+
+    if (createFolders && !CreateFoldersRecursively(folderName))
+        return false;
+
+    QString javaMode;
+
+    if (mode & QIODevice::ReadOnly)
+        javaMode += "r";
+
+    if (mode & QIODevice::WriteOnly)
+        javaMode += "w";
+
+    if (mode & QIODevice::Truncate)
+        javaMode += "t";
+
+    if (mode & QIODevice::Append)
+        javaMode += "a";
+
+    int fd = java_func(folderName, fileName, javaMode);
+    return fd >= 0 && qf.open(fd, mode, QFileDevice::AutoCloseHandle);
+}
+
+bool SafAdapter::OpenQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, bool createFolders)
+{
+    return CreateOrOpenQFile(qf, filePath, mode, OpenFile, createFolders);
+}
+
+bool SafAdapter::CreateQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, bool createFolders)
+{
+    return CreateOrOpenQFile(qf, filePath, mode, CreateFile, createFolders);
 }
 
 bool SafAdapter::FileExists(const QString &fileName)
