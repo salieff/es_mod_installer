@@ -40,5 +40,6 @@
         <file>gui/MainBalloon.qml</file>
         <file>gui/MainMenu.qml</file>
         <file>gui/MainLists.qml</file>
+        <file>icons/saf_access_request.png</file>
     </qresource>
 </RCC>

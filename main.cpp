@@ -17,10 +17,12 @@
 #include "statisticsmanager.h"
 #include "safadapter.h"
 
-
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    SafAdapter::RequestExternalStorageReadWrite();
+    SafAdapter::RequestRootUriPermissions();
 
     AsyncDownloader::createNetworkManager(&app);
     StatisticsManager::getInstance(&app);
@@ -47,9 +49,6 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("esServerModel", &esServerModel);
     engine.rootContext()->setContextProperty("esIncompletedModel", &esIncompletedModel);
     engine.load(QUrl(QStringLiteral("qrc:/gui/main.qml")));
-
-    SafAdapter::RequestExternalStorageReadWrite();
-    SafAdapter::RequestRootUriPermissions();
 
 #if 0
     if (SafAdapter::CheckRootUriPermissions())

@@ -3,6 +3,7 @@
 #include <QDir>
 
 #include "safadapter.h"
+#include "safaccessdialog.h"
 
 
 void SafAdapter::RequestExternalStorageReadWrite(void)
@@ -31,6 +32,10 @@ void SafAdapter::RequestRootUriPermissions(void)
 {
     if (CheckRootUriPermissions())
         return;
+
+    SafAccessDialog safAccessDialog;
+    safAccessDialog.adjustSize();
+    safAccessDialog.exec();
 
     auto intent = QAndroidJniObject::callStaticObjectMethod("org/salieff/SafAdapter",
                                                             "intentForRootUriPermissionRequest",

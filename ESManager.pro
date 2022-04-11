@@ -11,6 +11,7 @@ SOURCES += main.cpp \
     esmodmodel.cpp \
     minizip/ioapi.c \
     minizip/unzip.c \
+    safaccessdialog.cpp \
     zlib/adler32.c \
     zlib/compress.c \
     zlib/crc32.c \
@@ -50,6 +51,7 @@ HEADERS += \
     minizip/crypt.h \
     minizip/ioapi.h \
     minizip/unzip.h \
+    safaccessdialog.h \
     zlib/crc32.h \
     zlib/deflate.h \
     zlib/gzguts.h \
@@ -102,3 +104,6 @@ ios {
 
     LIBS += -framework Foundation -framework CoreFoundation -framework UIKit
 }
+
+FORMS += \
+    safaccessdialog.ui
