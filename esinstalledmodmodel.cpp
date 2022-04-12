@@ -24,6 +24,9 @@ bool ESInstalledModModel::filterAcceptsRow(int source_row, const QModelIndex &so
     case ESModElement::Unpacking :
         return true;
 
+    case ESModElement::Failed :
+        return false;
+
     case ESModElement::InstalledAvailable :
     case ESModElement::InstalledHasUpdate :
     case ESModElement::Installed :
@@ -31,7 +34,6 @@ bool ESInstalledModModel::filterAcceptsRow(int source_row, const QModelIndex &so
 
     case ESModElement::Unknown :
     case ESModElement::Available :
-    case ESModElement::Failed :
     default :
         break;
     }
@@ -85,15 +87,31 @@ bool ESIncompletedModModel::filterAcceptsRow(int source_row, const QModelIndex &
     switch (st) {
     case ESModElement::Downloading :
     case ESModElement::Unpacking :
-    case ESModElement::Failed :
         return true;
 
     case ESModElement::Available :
         return (pr != 100);
 
+    case ESModElement::Failed :
     default :
         break;
     }
 
     return false;
+}
+
+ESBrokenModModel::ESBrokenModModel(QObject *parent) : ESInstalledModModel(false, parent)
+{
+
+}
+
+ESBrokenModModel::~ESBrokenModModel()
+{
+
+}
+
+bool ESBrokenModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+{
+    QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
+    return sourceModel()->data(ind, ESModModel::StateRole).toInt() == ESModElement::Failed;
 }

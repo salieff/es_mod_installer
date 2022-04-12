@@ -8,8 +8,8 @@
 
 void SafAdapter::RequestExternalStorageReadWrite(void)
 {
-    if(QtAndroid::checkPermission("android.permission.READ_EXTERNAL_STORAGE") == QtAndroid::PermissionResult::Denied ||
-       QtAndroid::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE") == QtAndroid::PermissionResult::Denied)
+    if(QtAndroid::checkPermission("android.permission.READ_EXTERNAL_STORAGE") != QtAndroid::PermissionResult::Granted ||
+       QtAndroid::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE") != QtAndroid::PermissionResult::Granted)
     {
         QtAndroid::requestPermissionsSync(QStringList({
             "android.permission.READ_EXTERNAL_STORAGE",

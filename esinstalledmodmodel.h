@@ -37,4 +37,15 @@ protected:
     virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
 };
 
+class ESBrokenModModel : public ESInstalledModModel
+{
+    Q_OBJECT
+public:
+    ESBrokenModModel(QObject *parent = 0);
+    virtual ~ESBrokenModModel();
+
+protected:
+    virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
+};
+
 #endif // ESINSTALLEDMODMODEL_H

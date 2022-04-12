@@ -206,6 +206,8 @@ QHash<int, QByteArray> ESModModel::roleNames() const
 
 void ESModModel::ESModIndexDownloaded()
 {
+    QString appTitle("ES mod manager");
+
     QList<ESModElement *> local_elements;
     LoadLocalModsDB(local_elements);
 
@@ -232,9 +234,11 @@ void ESModModel::ESModIndexDownloaded()
         {
             QJsonObject obj = doc.object();
 
-            QString appTitle = obj["appTitle"].toString();
+            appTitle = obj["appTitle"].toString();
             if (!appTitle.isEmpty())
                 emit appTitleReceived(appTitle + QString(" %1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD));
+            else
+                appTitle = "ES mod manager";
 
             QString appHelp = obj["appReadMe"].toString();
             if (!appHelp.isEmpty())
@@ -274,6 +278,12 @@ void ESModModel::ESModIndexDownloaded()
 
     if (m_needShowHelp)
         QTimer::singleShot(1000, this, SLOT(showDefferedHelp()));
+
+    emit appTitleReceived(appTitle + QString(" %1.%2-%3 (%4 M)")
+                          .arg(ESM_VERSION_MAJOR)
+                          .arg(ESM_VERSION_MINOR)
+                          .arg(ESM_VERSION_BUILD)
+                          .arg(m_initialElements.size()));
 }
 
 void ESModModel::ESModIndexError(QNetworkReply::NetworkError code)

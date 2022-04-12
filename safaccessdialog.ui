@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>578</width>
-    <height>1050</height>
+    <width>601</width>
+    <height>558</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Please, just click &amp;quot;&lt;span style=&quot; font-weight:700; text-decoration: underline;&quot;&gt;use this folder&lt;/span&gt;&amp;quot; then &amp;quot;&lt;span style=&quot; font-weight:700; text-decoration: underline;&quot;&gt;allow&lt;/span&gt;&amp;quot; without any folder navigation in next dialog:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Please, just click &amp;quot;&lt;span style=&quot; font-weight:700; text-decoration: underline;&quot;&gt;use this folder&lt;/span&gt;&amp;quot; then &amp;quot;&lt;span style=&quot; font-weight:700; text-decoration: underline;&quot;&gt;allow&lt;/span&gt;&amp;quot; &lt;span style=&quot; font-weight:700; font-style:italic;&quot;&gt;without any file navigation&lt;/span&gt; in the next dialog window:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -25,11 +25,73 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label">
-     <property name="pixmap">
-      <pixmap resource="qml.qrc">:/icons/saf_access_request.png</pixmap>
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>1</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>1</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="pixmap">
+        <pixmap resource="qml.qrc">:/icons/saf_access_request.png</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>1</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>1</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

@@ -452,7 +452,7 @@ void ESModElement::DeserializeFromDB(const QJsonObject &obj)
     QJsonArray files_arr = obj["files"].toArray();
     m_localFiles.clear();
     for (int i = 0; i < files_arr.size(); ++i)
-        m_localFiles << files_arr[i].toString();
+        m_localFiles << files_arr[i].toString().remove(QRegularExpression("^\\/sdcard\\/"));
 
     QJsonArray langs_arr = obj["langs"].toArray();
     langs.clear();
