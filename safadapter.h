@@ -11,18 +11,23 @@ class SafAdapter
 {
 public:
     static void RequestExternalStorageReadWrite(void);
-    static bool CheckRootUriPermissions(void);
     static void RequestRootUriPermissions(void);
+
     static bool CreateFolder(const QString &parentFolder, const QString &subFolder);
     static bool CreateFoldersRecursively(const QString &foldersPath);
+    static bool DeleteEmptyFoldersRecursively(const QString &foldersPath, const QString &stopRootPath);
+    static bool FolderExists(const QString &folderPath);
+    static bool FolderEmpty(const QString &folderPath);
+    static bool DeleteFolder(const QString &folderPath);
+
     static int OpenFile(const QString &parentFolder, const QString &fileName, const QString &mode);
     static int CreateFile(const QString &parentFolder, const QString &fileName, const QString &mode);
+
     static bool OpenQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, bool createFolders = false);
     static bool CreateQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, bool createFolders = false);
-    static bool FileExists(const QString &fileName);
+
+    static bool FileExists(const QString &filePath);
     static bool DeleteFile(const QString &fileName);
-    static bool DeleteEmptyFoldersRecursively(const QString &foldersPath, const QString &stopRootPath);
-    static bool FolderEmpty(const QString &folderName);
     static int64_t FileSize(const QString &fileName);
 
     const static bool CREATE_FOLDERS = true;
@@ -30,6 +35,10 @@ public:
 
 private:
     const static int RootUriPermissionsRequestCode = 513375;
+    const static int MinimalSdkVersionForSaf = 30;
+
+    static bool CheckRootUriPermissions(void);
+    static int FolderSize(const QString &folderPath);
     static bool CreateOrOpenQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, int (*java_func)(const QString &parentFolder, const QString &fileName, const QString &mode), bool createFolders);
 };
 

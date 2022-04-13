@@ -32,8 +32,16 @@ public class SafAdapter
 
     public static Intent intentForRootUriPermissionRequest()
     {
+        Intent intent = new Intent("android.intent.action.OPEN_DOCUMENT_TREE");
+
         Uri intentRootUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:");
-        return (new Intent("android.intent.action.OPEN_DOCUMENT_TREE")).putExtra("android.provider.extra.INITIAL_URI", (Parcelable)intentRootUri);
+        intent.putExtra("android.provider.extra.INITIAL_URI", (Parcelable)intentRootUri);
+
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+        intent.putExtra("android.content.extra.FANCY", true);
+        intent.putExtra("android.content.extra.SHOW_FILESIZE", true);
+
+        return intent;
     }
 
     public static void takeRootUriPermission(Context context, Intent intent)
@@ -50,19 +58,11 @@ public class SafAdapter
     {
         try
         {
+            if (folderSize(context, rootFolderName + "/" + subFolderName) >= 0)
+                return true;
+
             Uri rootFolderUri = DocumentsContract.buildChildDocumentsUriUsingTree(RootUri, DocumentsContract.getTreeDocumentId(RootUri) + rootFolderName);
-            Uri subFolderUri = DocumentsContract.buildChildDocumentsUriUsingTree(RootUri, DocumentsContract.getTreeDocumentId(RootUri) + rootFolderName + "/" + subFolderName);
-            try
-            {
-                DocumentsContract.Path filePath = DocumentsContract.findDocumentPath(context.getContentResolver(), subFolderUri);
-                Log.d("Folder already exists: ", subFolderUri.toString());
-            }
-            catch (Exception e)
-            {
-                // e.printStackTrace();
-                subFolderUri = DocumentsContract.createDocument(context.getContentResolver(), rootFolderUri, DocumentsContract.Document.MIME_TYPE_DIR, subFolderName);
-                Log.d("Folder created: ", subFolderUri.toString());
-            }
+            Uri subFolderUri = DocumentsContract.createDocument(context.getContentResolver(), rootFolderUri, DocumentsContract.Document.MIME_TYPE_DIR, subFolderName);
 
             return true;
         }
@@ -96,19 +96,11 @@ public class SafAdapter
         try
         {
             Uri rootFolderUri = DocumentsContract.buildChildDocumentsUriUsingTree(RootUri, DocumentsContract.getTreeDocumentId(RootUri) + rootFolderName);
-            Uri fileUri = DocumentsContract.buildChildDocumentsUriUsingTree(RootUri, DocumentsContract.getTreeDocumentId(RootUri) + rootFolderName + "/" + fileName);
-            try
-            {
-                DocumentsContract.Path filePath = DocumentsContract.findDocumentPath(context.getContentResolver(), fileUri);
-                Log.d("File already exists: ", fileUri.toString());
-            }
-            catch (Exception e)
-            {
-                // e.printStackTrace();
-                fileUri = DocumentsContract.createDocument(context.getContentResolver(), rootFolderUri, "application/octet-stream", fileName);
-                Log.d("File created: ", fileUri.toString());
-            }
+            int fd = openFile(context, rootFolderName, fileName, mode);
+            if (fd >= 0)
+                return fd;
 
+            Uri fileUri = DocumentsContract.createDocument(context.getContentResolver(), rootFolderUri, "application/octet-stream", fileName);
             ParcelFileDescriptor fileDiscriptor = context.getContentResolver().openFileDescriptor(fileUri, mode);
             return fileDiscriptor.detachFd();
         }
@@ -118,23 +110,6 @@ public class SafAdapter
         }
 
         return -1;
-    }
-
-    public static boolean fileExists(Context context, String fileName)
-    {
-        try
-        {
-            Uri fileUri = DocumentsContract.buildChildDocumentsUriUsingTree(RootUri, DocumentsContract.getTreeDocumentId(RootUri) + fileName);
-            DocumentsContract.Path filePath = DocumentsContract.findDocumentPath(context.getContentResolver(), fileUri);
-
-            return true;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        return false;
     }
 
     public static boolean deleteFile(Context context, String fileName)
@@ -152,9 +127,9 @@ public class SafAdapter
         return false;
     }
 
-    public static boolean folderEmpty(Context context, String folderName)
+    public static int folderSize(Context context, String folderName)
     {
-        boolean retValue = false;
+        int retValue = -1;
         Cursor cursor = null;
 
         try
@@ -162,12 +137,15 @@ public class SafAdapter
             Uri folderUri = DocumentsContract.buildChildDocumentsUriUsingTree(RootUri, DocumentsContract.getTreeDocumentId(RootUri) + folderName);
             cursor = context.getContentResolver().query(folderUri, new String[]{DocumentsContract.Document.COLUMN_DOCUMENT_ID}, null, null, null);
 
-            retValue = (cursor != null && cursor.getCount() == 0);
+            if (cursor == null)
+                retValue = -1;
+            else
+                retValue = cursor.getCount();
         }
         catch (Exception e)
         {
             e.printStackTrace();
-            retValue = false;
+            retValue = -1;
         }
         finally
         {

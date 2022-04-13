@@ -36,7 +36,7 @@ Rectangle {
                 anchors.fill: parent
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                font.pointSize: 25
+                font.pointSize: 15
                 style: Text.Raised
                 styleColor: "white"
                 text: "•"
