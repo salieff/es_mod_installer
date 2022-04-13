@@ -90,6 +90,8 @@ DISTFILES += \
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
+ANDROID_TARGET_SDK_VERSION = 30
+
 ios {
     QMAKE_INFO_PLIST = $$PWD/ESInfo.plist
     ios_icon.files = $$PWD/ios/icon.png $$files($$PWD/ios/AppIcon*.png)

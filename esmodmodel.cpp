@@ -674,13 +674,6 @@ static bool lessThanByDate1(ESModElement *a, ESModElement *b)
     return tm1 >= tm2;
 }
 
-static const char *scoreStringsArr[] = { \
-          "1", "1+", \
-    "2-", "2", "2+", \
-    "3-", "3", "3+", \
-    "4-", "4", "4+", \
-    "5-", "5", "5+" };
-
 static int calcFiveScore(ESModElement *el)
 {
     if (el->likemarkscount <= 0 && el->dislikemarkscount <= 0)
@@ -698,7 +691,18 @@ static int calcFiveScore(ESModElement *el)
     if (el->dislikemarkscount > 0)
         div2 += el->dislikemarkscount;
 
+    /*
+    static const char *scoreStringsArr[] = { \
+              "1", "1+", \
+        "2-", "2", "2+", \
+        "3-", "3", "3+", \
+        "4-", "4", "4+", \
+        "5-", "5", "5+" };
+
     size_t arrSize = sizeof(scoreStringsArr) / sizeof(scoreStringsArr[0]);
+    */
+
+    size_t arrSize = 14;
     return arrSize * div1 / (div2 + 1); // [0, arrSize)
 }
 
@@ -786,7 +790,7 @@ void ESModModel::sortList(SortMode m)
     beginResetModel();
     m_elements = m_initialElements;
     if (lessThanArray[m])
-        qSort(m_elements.begin(), m_elements.end(), lessThanArray[m]);
+        std::sort(m_elements.begin(), m_elements.end(), lessThanArray[m]);
     ReindexElements();
     endResetModel();
 
@@ -817,7 +821,7 @@ void ESModModel::filterByKeywords(QString str)
         return;
     }
 
-    QStringList strList = str.trimmed().split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    QStringList strList = str.trimmed().split(QRegExp("\\s+"), Qt::SkipEmptyParts);
     QStringList::iterator sit = strList.begin();
     while (sit != strList.end())
     {
@@ -855,7 +859,7 @@ void ESModModel::filterByKeywords(QString str)
         it = m_elements.erase(it);
     }
 
-    qSort(m_elements.begin(), m_elements.end(), lessThanKeyword);
+    std::sort(m_elements.begin(), m_elements.end(), lessThanKeyword);
     ReindexElements();
     endResetModel();
 }

@@ -9,6 +9,8 @@
 #include "safadapter.h"
 #include "safaccessdialog.h"
 
+static const char *NativePathPrefix = "/sdcard/Android";
+
 
 void SafAdapter::RequestExternalStorageReadWrite(void)
 {
@@ -65,7 +67,7 @@ void SafAdapter::RequestRootUriPermissions(void)
 bool SafAdapter::CreateFolder(const QString &parentFolder, const QString &subFolder)
 {
     if (QtAndroid::androidSdkVersion() < MinimalSdkVersionForSaf)
-        return QDir("/sdcard/" + parentFolder).mkdir(subFolder);
+        return QDir(NativePathPrefix + parentFolder).mkdir(subFolder);
 
     return QAndroidJniObject::callStaticMethod<jboolean>(
                 "org/salieff/SafAdapter",
@@ -113,7 +115,7 @@ int SafAdapter::OpenFile(const QString &parentFolder, const QString &fileName, c
             flags |= O_TRUNC;
 
 
-        return open(("/sdcard/" + parentFolder + "/" + fileName).toLocal8Bit().constData(), flags);
+        return open((NativePathPrefix + parentFolder + "/" + fileName).toLocal8Bit().constData(), flags);
     }
 
     return QAndroidJniObject::callStaticMethod<jint>(
@@ -149,7 +151,7 @@ int SafAdapter::CreateFile(const QString &parentFolder, const QString &fileName,
             flags |= O_TRUNC;
 
 
-        return open(("/sdcard/" + parentFolder + "/" + fileName).toLocal8Bit().constData(), flags);
+        return open((NativePathPrefix + parentFolder + "/" + fileName).toLocal8Bit().constData(), flags);
     }
 
     return QAndroidJniObject::callStaticMethod<jint>(
@@ -203,7 +205,7 @@ bool SafAdapter::CreateQFile(QFile &qf, const QString &filePath, QIODevice::Open
 bool SafAdapter::FileExists(const QString &filePath)
 {
     if (QtAndroid::androidSdkVersion() < MinimalSdkVersionForSaf)
-        return QFile::exists("/sdcard/" + filePath);
+        return QFile::exists(NativePathPrefix + filePath);
 
     QString folderName = QFileInfo(filePath).dir().path();
     QString fileName = QFileInfo(filePath).fileName();
@@ -217,7 +219,7 @@ bool SafAdapter::FileExists(const QString &filePath)
 bool SafAdapter::FolderExists(const QString &folderPath)
 {
     if (QtAndroid::androidSdkVersion() < MinimalSdkVersionForSaf)
-        return QDir("/sdcard/" + folderPath).exists();
+        return QDir(NativePathPrefix + folderPath).exists();
 
     return FolderSize(folderPath) >= 0;
 }
@@ -237,7 +239,7 @@ int SafAdapter::FolderSize(const QString &folderPath)
 bool SafAdapter::DeleteFile(const QString &fileName)
 {
     if (QtAndroid::androidSdkVersion() < MinimalSdkVersionForSaf)
-        return QFile("/sdcard/" + fileName).remove();
+        return QFile(NativePathPrefix + fileName).remove();
 
     return QAndroidJniObject::callStaticMethod<jboolean>(
                 "org/salieff/SafAdapter",
@@ -255,7 +257,7 @@ bool SafAdapter::DeleteEmptyFoldersRecursively(const QString &foldersPath, const
 
     while (!foldersList.empty() && foldersList != stopRootList)
     {
-        auto currentPath = foldersList.join("/");
+        auto currentPath = "/" + foldersList.join("/");
 
         if (!FolderEmpty(currentPath))
             return false;
@@ -272,7 +274,7 @@ bool SafAdapter::DeleteEmptyFoldersRecursively(const QString &foldersPath, const
 bool SafAdapter::DeleteFolder(const QString &folderPath)
 {
     if (QtAndroid::androidSdkVersion() < MinimalSdkVersionForSaf)
-        return QDir().rmdir("/sdcard/" + folderPath);
+        return QDir().rmdir(NativePathPrefix + folderPath);
 
     return DeleteFile(folderPath);
 }
@@ -280,7 +282,7 @@ bool SafAdapter::DeleteFolder(const QString &folderPath)
 bool SafAdapter::FolderEmpty(const QString &folderPath)
 {
     if (QtAndroid::androidSdkVersion() < MinimalSdkVersionForSaf)
-        return QDir("/sdcard/" + folderPath).isEmpty();
+        return QDir(NativePathPrefix + folderPath).isEmpty();
 
     return FolderSize(folderPath) == 0;
 }
@@ -288,7 +290,7 @@ bool SafAdapter::FolderEmpty(const QString &folderPath)
 int64_t SafAdapter::FileSize(const QString &fileName)
 {
     if (QtAndroid::androidSdkVersion() < MinimalSdkVersionForSaf)
-        return QFileInfo("/sdcard/" + fileName).size();
+        return QFileInfo(NativePathPrefix + fileName).size();
 
     return QAndroidJniObject::callStaticMethod<jlong>(
                 "org/salieff/SafAdapter",

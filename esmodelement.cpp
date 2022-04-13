@@ -477,7 +477,7 @@ bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
     id = obj["idmod"].toInt(-1);
     title = obj["title"].toString().trimmed();
     status = obj["status"].toString().trimmed();
-    langs = obj["lang"].toString().trimmed().split(QRegExp("[,\\s]+"), QString::SkipEmptyParts);
+    langs = obj["lang"].toString().trimmed().split(QRegularExpression("[,\\s]+"), Qt::SkipEmptyParts);
     infouri = obj[QString("infouri_") + MY_PLATFORM].toString().trimmed();
 
     QJsonArray files_arr = obj[QString("files_") + MY_PLATFORM].toArray();

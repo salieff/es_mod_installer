@@ -20,7 +20,7 @@ public class SafAdapter
     {
         for (UriPermission p : context.getContentResolver().getPersistedUriPermissions())
         {
-            if (p.getUri().toString().equals("content://com.android.externalstorage.documents/tree/primary%3A") && p.isReadPermission() && p.isWritePermission())
+            if (p.getUri().toString().equals("content://com.android.externalstorage.documents/tree/primary%3AAndroid") && p.isReadPermission() && p.isWritePermission())
             {
                 RootUri = p.getUri();
                 return true;
@@ -34,7 +34,7 @@ public class SafAdapter
     {
         Intent intent = new Intent("android.intent.action.OPEN_DOCUMENT_TREE");
 
-        Uri intentRootUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:");
+        Uri intentRootUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Android");
         intent.putExtra("android.provider.extra.INITIAL_URI", (Parcelable)intentRootUri);
 
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
@@ -47,7 +47,7 @@ public class SafAdapter
     public static void takeRootUriPermission(Context context, Intent intent)
     {
         Uri intentRootUri = intent.getData();
-        if (!intentRootUri.toString().equals("content://com.android.externalstorage.documents/tree/primary%3A"))
+        if (!intentRootUri.toString().equals("content://com.android.externalstorage.documents/tree/primary%3AAndroid"))
             return;
 
         context.getContentResolver().takePersistableUriPermission(intentRootUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);

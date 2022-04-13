@@ -1,6 +1,6 @@
 Package: org.salieff.esmodinstaller
 Name: ES Mod Installer
-Version: 1.5-3
+Version: 1.6-0
 Section: Games
 Depends: firmware (>= 5.0)
 Architecture: iphoneos-arm
