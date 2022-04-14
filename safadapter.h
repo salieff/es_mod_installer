@@ -35,7 +35,7 @@ public:
 
 private:
     static const int RootUriPermissionsRequestCode = 513375;
-    static const int MinimalSdkVersionForSaf = 30;
+    static const int MinimalSdkVersionForSaf = 29; // Android 10
     static const char *NativePathPrefix;
 
     static bool CheckRootUriPermissions(void);
