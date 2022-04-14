@@ -9,7 +9,7 @@
 #include "safadapter.h"
 #include "safaccessdialog.h"
 
-static const char *NativePathPrefix = "/sdcard/Android";
+const char * SafAdapter::NativePathPrefix = "/sdcard/Android/data";
 
 
 void SafAdapter::RequestExternalStorageReadWrite(void)

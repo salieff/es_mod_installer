@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>601</width>
-    <height>554</height>
+    <width>594</width>
+    <height>608</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -56,9 +56,6 @@
       <widget class="QLabel" name="label">
        <property name="pixmap">
         <pixmap resource="qml.qrc">:/icons/saf_access_request.png</pixmap>
-       </property>
-       <property name="scaledContents">
-        <bool>true</bool>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>

@@ -14,13 +14,13 @@ import android.util.Log;
 public class SafAdapter
 {
     public static final int RequestCode = 513375;
-    public static Uri RootUri = null;
+    public static Uri RootUri = Uri.parse("content://com.android.externalstorage.documents/tree/primary:Android/data");
 
     public static boolean rootUriPermissionGranted(Context context)
     {
         for (UriPermission p : context.getContentResolver().getPersistedUriPermissions())
         {
-            if (p.getUri().toString().equals("content://com.android.externalstorage.documents/tree/primary%3AAndroid") && p.isReadPermission() && p.isWritePermission())
+            if (p.getUri().toString().equals("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata") && p.isReadPermission() && p.isWritePermission())
             {
                 RootUri = p.getUri();
                 return true;
@@ -34,12 +34,14 @@ public class SafAdapter
     {
         Intent intent = new Intent("android.intent.action.OPEN_DOCUMENT_TREE");
 
-        Uri intentRootUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Android");
+        Uri intentRootUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Android/data");
         intent.putExtra("android.provider.extra.INITIAL_URI", (Parcelable)intentRootUri);
 
+        /*
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
         intent.putExtra("android.content.extra.FANCY", true);
         intent.putExtra("android.content.extra.SHOW_FILESIZE", true);
+        */
 
         return intent;
     }
@@ -47,7 +49,7 @@ public class SafAdapter
     public static void takeRootUriPermission(Context context, Intent intent)
     {
         Uri intentRootUri = intent.getData();
-        if (!intentRootUri.toString().equals("content://com.android.externalstorage.documents/tree/primary%3AAndroid"))
+        if (!intentRootUri.toString().equals("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata"))
             return;
 
         context.getContentResolver().takePersistableUriPermission(intentRootUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);

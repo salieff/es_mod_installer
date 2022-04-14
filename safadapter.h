@@ -34,8 +34,9 @@ public:
     static zlib_filefunc_def MiniZipFileAPI;
 
 private:
-    const static int RootUriPermissionsRequestCode = 513375;
-    const static int MinimalSdkVersionForSaf = 30;
+    static const int RootUriPermissionsRequestCode = 513375;
+    static const int MinimalSdkVersionForSaf = 30;
+    static const char *NativePathPrefix;
 
     static bool CheckRootUriPermissions(void);
     static int FolderSize(const QString &folderPath);
