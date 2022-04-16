@@ -44,8 +44,8 @@ void SafAdapter::RequestRootUriPermissions(void)
         return;
 
     SafAccessDialog safAccessDialog;
-    safAccessDialog.show();
-    safAccessDialog.adjustSize();
+    safAccessDialog.showMaximized();
+    safAccessDialog.adjustImage();
     safAccessDialog.exec();
 
     auto intent = QAndroidJniObject::callStaticObjectMethod("org/salieff/SafAdapter",

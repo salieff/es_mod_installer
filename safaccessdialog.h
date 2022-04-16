@@ -15,6 +15,12 @@ public:
     explicit SafAccessDialog(QWidget *parent = nullptr);
     ~SafAccessDialog();
 
+public slots:
+    void adjustImage(void);
+
+protected:
+    virtual bool eventFilter(QObject *obj, QEvent *event) override;
+
 private:
     Ui::SafAccessDialog *ui;
 };
