@@ -1,4 +1,5 @@
 import QtQuick 2.15
+import QtQuick.Controls 2.15
 
 Rectangle {
     height: parent.height - mainAppTitle.height
@@ -56,9 +57,29 @@ Rectangle {
     }
 
     Flickable {
+        id: infoPanelFlickable
+
         anchors.fill: parent;
         anchors.margins: 10
         contentHeight: infoText.implicitHeight
+        maximumFlickVelocity: 7000
+
+        ScrollBar.vertical: ScrollBar {
+            id: infoPanelScrollBar
+            minimumSize: 0.07
+
+            parent: infoPanelFlickable.parent
+            anchors.top: infoPanelFlickable.top
+            anchors.left: infoPanelFlickable.right
+            anchors.bottom: infoPanelFlickable.bottom
+
+            contentItem: Rectangle {
+                implicitWidth: 10
+                implicitHeight: 100
+                radius: width / 2
+                color: infoPanelScrollBar.pressed ? "black" : "darkgrey"
+            }
+        }
 
         Text {
             id: infoText

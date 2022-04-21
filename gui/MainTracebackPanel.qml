@@ -1,4 +1,5 @@
 import QtQuick 2.15
+import QtQuick.Controls 2.15
 
 Rectangle {
     height: parent.height - mainAppTitle.height
@@ -49,9 +50,28 @@ Rectangle {
     }
 
     Flickable {
+        id: tracebackPanelFlickable
+
         anchors.fill: parent;
         anchors.margins: 10
         contentHeight: tracebackText.implicitHeight
+
+        ScrollBar.vertical: ScrollBar {
+            id: tracebackPanelScrollBar
+            minimumSize: 0.07
+
+            parent: tracebackPanelFlickable.parent
+            anchors.top: tracebackPanelFlickable.top
+            anchors.left: tracebackPanelFlickable.right
+            anchors.bottom: tracebackPanelFlickable.bottom
+
+            contentItem: Rectangle {
+                implicitWidth: 10
+                implicitHeight: 100
+                radius: width / 2
+                color: tracebackPanelScrollBar.pressed ? "black" : "darkgrey"
+            }
+        }
 
         Text {
             id: tracebackText

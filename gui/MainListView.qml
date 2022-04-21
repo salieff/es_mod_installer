@@ -4,15 +4,32 @@ import QtQuick.Layouts 1.15
 
 ListView {
     property string headerText
-
     delegate: Delegate {}
 
+    id: modsListView
     Layout.margins: 10
     Layout.fillHeight: true
     Layout.preferredWidth: mainWindow.width - Layout.margins * 2
     spacing: 5
     // clip: true
-    maximumFlickVelocity: 5000
+    maximumFlickVelocity: 7000
+
+    ScrollBar.vertical: ScrollBar {
+        id: modListScrollBar
+        minimumSize: 0.07
+
+        parent: modsListView.parent
+        anchors.top: modsListView.top
+        anchors.left: modsListView.right
+        anchors.bottom: modsListView.bottom
+
+        contentItem: Rectangle {
+            implicitWidth: 10
+            implicitHeight: 100
+            radius: width / 2
+            color: modListScrollBar.pressed ? "black" : "darkgrey"
+        }
+    }
 
     header: Item {
         // Empty placeholder
@@ -28,17 +45,6 @@ ListView {
 
     displaced: Transition {
         NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutBounce }
-    }
-
-    Rectangle {
-        anchors.left: parent.right
-        anchors.leftMargin: 2
-        y: parent.visibleArea.yPosition * parent.height
-        width: 6
-        radius: 2
-        height: parent.visibleArea.heightRatio * parent.height
-        color: "black"
-        opacity: 0.5
     }
 
     Item {
