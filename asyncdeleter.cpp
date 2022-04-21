@@ -31,13 +31,13 @@ void AsyncDeleter::run()
 {
     std::set<QString> localPaths;
 
-    foreach (const QString &fname, m_localFiles)
+    for (const auto &fname: m_localFiles)
     {
-        SafAdapter::DeleteFile(fname);
+        SafAdapter::getCurrentAdapter().DeleteFile(fname);
         if (fname.endsWith(".rpy", Qt::CaseInsensitive))
         {
-            SafAdapter::DeleteFile(fname + "c");
-            SafAdapter::DeleteFile(fname + "C");
+            SafAdapter::getCurrentAdapter().DeleteFile(fname + "c");
+            SafAdapter::getCurrentAdapter().DeleteFile(fname + "C");
         }
 
         localPaths.insert(QFileInfo(fname).dir().path());
@@ -59,5 +59,5 @@ void AsyncDeleter::run()
     }
 
     for (auto const &path : optimizedPaths)
-        SafAdapter::DeleteEmptyFoldersRecursively(path, m_parentStopFolder);
+        SafAdapter::getCurrentAdapter().DeleteEmptyFoldersRecursively(path, m_parentStopFolder);
 }

@@ -15,17 +15,17 @@ static voidpf minizip_saf_open(voidpf, const char *filename, int mode)
     if ((mode & ZLIB_FILEFUNC_MODE_READWRITEFILTER) == ZLIB_FILEFUNC_MODE_READ)
     {
         mode_fopen = "rb";
-        fd = SafAdapter::OpenFile(fullDir, fullFname, "r");
+        fd = SafAdapter::getCurrentAdapter().OpenFile(fullDir, fullFname, "r");
     }
     else if (mode & ZLIB_FILEFUNC_MODE_EXISTING)
     {
         mode_fopen = "r+b";
-        fd = SafAdapter::OpenFile(fullDir, fullFname, "rw");
+        fd = SafAdapter::getCurrentAdapter().OpenFile(fullDir, fullFname, "rw");
     }
     else if (mode & ZLIB_FILEFUNC_MODE_CREATE)
     {
         mode_fopen = "wb";
-        fd = SafAdapter::CreateFile(fullDir, fullFname, "wt");
+        fd = SafAdapter::getCurrentAdapter().CreateFile(fullDir, fullFname, "wt");
     }
 
     if ((fd >= 0) && (filename!=NULL) && (mode_fopen != NULL))

@@ -26,7 +26,7 @@ public:
         InstalledHasUpdate,
         Installed
     };
-    Q_ENUMS(State)
+    Q_ENUM(State)
 
     enum GuiBlockReason {
         NoBlock,
@@ -38,14 +38,14 @@ public:
         ByUpdate,
         ByDelete
     };
-    Q_ENUMS(GuiBlockReason)
+    Q_ENUM(GuiBlockReason)
 
     enum LikeType {
         LikeMarkNotFound,
         LikeMark,
         DislikeMark
     };
-    Q_ENUMS(LikeType)
+    Q_ENUM(LikeType)
 
     ESModElement(QString au = QString(), QString ap = QString(), QObject *parent = NULL, State st = Unknown, int pr = 100);
 
@@ -66,6 +66,15 @@ public:
     void SetInstallPath(QString p);
 
     void TryToPickupFrom(QList<ESModElement *> &list);
+
+    const static bool REPLACE_LOCAL_FILES = true;
+    QStringList LocalFiles(void);
+    void AddToLocalFiles(const QStringList &l, bool replace = false);
+    void AddToLocalFiles(const QString &s, bool replace = false);
+    void EraseFromLocalFiles(const QString &ext);
+    void ClearLocalFiles(void);
+
+    std::map<QString, QStringList> m_localFilesMap; // Для каждого SAF root держим свой список, для поддержки переключения Data/Media
 
     int id;
     QString title;
@@ -96,15 +105,21 @@ public:
 
     GuiBlockReason guiblocked;
 
-    QStringList m_localFiles;
-    double m_localSize;
-    double m_localTimestamp;
+    std::map<QString, double> m_localSizesMap;
+    std::map<QString, double> m_localTimestampsMap;
+
+    double LocalSize(void);
+    double LocalTimeStamp(void);
+    void SetLocalSize(double s);
+    void SetLocalTimeStamp(double t);
 
     int m_modelIndex;
     std::vector<int> m_keywordFilterCounter;
 
-private slots:
+public slots:
     void headersReceived();
+
+private slots:
     void filesDownloaded();
     void downloadProgress(int p);
     void zipListUnpacked();
@@ -132,6 +147,9 @@ private:
     void sendStatistics(bool inst = true);
 
     bool idEquals(ESModElement *el);
+
+    QString removeOldLocalFilePrefixes(QString filePath);
+    void addLocalFilesForSafRoot(const QString &safRoot, const QJsonValue jvr);
 
     AsyncDownloader m_asyncDownloader;
     AsyncUnzipper m_asyncUnzipper;

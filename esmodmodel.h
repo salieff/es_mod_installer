@@ -6,6 +6,8 @@
 
 #include "esmodelement.h"
 #include "asyncjsonwriter.h"
+#include "modpaths.h"
+
 
 class ESModModel : public QAbstractListModel
 {
@@ -50,7 +52,13 @@ public:
         ByTotalInstalls  = 10,
         ByLifeTime       = 11
     };
-    Q_ENUMS(SortMode)
+    Q_ENUM(SortMode)
+
+    enum ModsInstallLocation {
+        ModsInstallLocationData  = 0,
+        ModsInstallLocationMedia = 1
+    };
+    Q_ENUM(ModsInstallLocation)
 
     ESModModel(QObject *parent = 0);
     virtual ~ESModModel();
@@ -64,10 +72,10 @@ signals:
     void appHelpReceived(const QString &text, bool fromServer = true);
     void esIndexReceived();
     void listSorted(SortMode m);
-    void currentModsFolder(QString newFolder);
     void tracebackText(QString text);
     void balloonText(QString text);
     void showMeHelp(QString chapter);
+    void currentModsInstallLocation(ModsInstallLocation location);
 
 public slots:
     void ESModIndexDownloaded();
@@ -94,6 +102,8 @@ public slots:
     void helpRead(QString str);
     void copyTraceback(bool forLog = false);
 
+    void setModsInstallLocation(ModsInstallLocation location);
+
 private slots:
     void showDefferedHelp();
 
@@ -113,14 +123,12 @@ private:
     QList<ESModElement *> m_initialElements;
     QList<ESModElement *> m_elements;
 
-    SortMode m_lastSortMode;
+    SortMode m_lastSortMode = AsServer;
     QString m_helpText;
 
-    static QString m_ESModsFolder;
-    static QString m_CustomUserModsFolder;
-    static QString m_FolderFoundDebugLogString;
-
-    bool m_needShowHelp;
+    QString m_ESModsFolder = ANDROID_ES_MODS_FOLDER_DATA;
+    bool m_needShowHelp = false;
+    ModsInstallLocation m_ModsInstallLocation = ModsInstallLocationData;
 };
 
 #endif // ESMODMODEL_H

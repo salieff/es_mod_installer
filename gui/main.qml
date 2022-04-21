@@ -26,6 +26,27 @@ ApplicationWindow {
 
         MainLists {
             id: mainLists
+
+            MMImage {
+                id: locationGear
+
+                anchors {
+                    top: parent.top
+                    right: parent.right
+                    topMargin: 5
+                    rightMargin: 20
+                }
+
+                source: "/icons/gear.png"
+                mmwidth: 5
+                mmheight: 5
+                opacity: 0.75
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: mainInstallLocationPanel.show()
+                }
+            }
         }
 
         MainSortSearchBox {
@@ -90,6 +111,10 @@ ApplicationWindow {
         id: mainLikePanel
     }
 
+    MainInstallLocationPanel {
+        id: mainInstallLocationPanel
+    }
+
     MainMenu {
         id: mainMenu
     }
@@ -121,7 +146,7 @@ ApplicationWindow {
     }
 
     function hideAllPanels() {
-        if (mainInfoPanel.hide() || mainWebView.hide() || mainLikePanel.hide() || mainTracebackPanel.hide() || mainButtonSelector.activeFocus == false)
+        if (mainInfoPanel.hide() || mainWebView.hide() || mainLikePanel.hide() || mainTracebackPanel.hide() || mainInstallLocationPanel.hide() || mainButtonSelector.activeFocus == false)
         {
             mainAppTitle.closeButton.state = "NORMAL"
             mainButtonSelector.forceActiveFocus()

@@ -137,10 +137,6 @@ int AsyncDownloader::resumedProgress(QStringList &files, QString destdir)
             continue;
         }
 
-        rds -= RESUME_BACK_STEP;
-        if (rds < 0)
-            rds = 0;
-
         if (refSize != 0)
             ret += rds * 100 / (refSize * files.count());
         else
@@ -289,7 +285,7 @@ void AsyncDownloader::downloadError(QNetworkReply::NetworkError code)
 
 bool AsyncDownloader::checkOverwrite(QString fname)
 {
-    if (m_alwaysOverwrite || !SafAdapter::FileExists(fname))
+    if (m_alwaysOverwrite || !SafAdapter::getCurrentAdapter().FileExists(fname))
         return true;
 
     QMessageBox::StandardButton b = QMessageBox::warning(NULL, tr("Risk of overwriting"), \
@@ -375,7 +371,7 @@ QNetworkReply * AsyncDownloader::head(QUrl url)
 
 qint64 AsyncDownloader::resumeDownloadSize(QString fname, QString destdir, qint64 *refSize)
 {
-    qint64 sz = SafAdapter::FileSize(QDir(destdir).filePath(fname)); // If the file does not exist or cannot be fetched, 0 (RESUME_NOT_FOUND) is returned
+    qint64 sz = SafAdapter::getCurrentAdapter().FileSize(QDir(destdir).filePath(fname)); // If the file does not exist or cannot be fetched, 0 (RESUME_NOT_FOUND) is returned
     if (sz <= 0)
         return RESUME_NOT_FOUND;
 

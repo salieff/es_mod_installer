@@ -1,12 +1,19 @@
 #include "safaccessdialog.h"
 #include "ui_safaccessdialog.h"
 
+#include <QScreen>
+
 
 SafAccessDialog::SafAccessDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SafAccessDialog)
 {
     ui->setupUi(this);
+
+    auto font = ui->textLabel->font();
+    font.setPixelSize(QGuiApplication::primaryScreen()->size().height() / 30);
+    ui->textLabel->setFont(font);
+
     ui->imageLabel->installEventFilter(this);
 }
 

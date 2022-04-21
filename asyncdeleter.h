@@ -9,7 +9,7 @@ class AsyncDeleter : public QThread
 {
     Q_OBJECT
 public:
-    explicit AsyncDeleter(QObject *parent = NULL, QString stopFolder = ANDROID_ES_MODS_FOLDER);
+    explicit AsyncDeleter(QObject *parent = NULL, QString stopFolder = ANDROID_ES_MODS_FOLDER_DATA);
     bool deleteFiles(QStringList flist);
     void setStopFolder(QString stopFolder);
 

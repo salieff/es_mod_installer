@@ -40,5 +40,4 @@ Rectangle {
             opacityAnim.restart()
         }
     }
-
 }

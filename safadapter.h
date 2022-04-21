@@ -4,43 +4,66 @@
 #include <QString>
 #include <QFile>
 #include <QAndroidJniObject>
+#include <QRandomGenerator>
+#include <QMutex>
+
+#include <map>
 
 #include "minizip/ioapi.h"
+
 
 class SafAdapter
 {
 public:
+    static SafAdapter & setCurrentAdapter(const QString &root);
+    static SafAdapter & getCurrentAdapter(void);
+    static SafAdapter & getAdapter(const QString &root);
+    static QString getCurrentAdapterRoot(void);
+
     static void RequestExternalStorageReadWrite(void);
-    static void RequestRootUriPermissions(void);
 
-    static bool CreateFolder(const QString &parentFolder, const QString &subFolder);
-    static bool CreateFoldersRecursively(const QString &foldersPath);
-    static bool DeleteEmptyFoldersRecursively(const QString &foldersPath, const QString &stopRootPath);
-    static bool FolderExists(const QString &folderPath);
-    static bool FolderEmpty(const QString &folderPath);
-    static bool DeleteFolder(const QString &folderPath);
+    void RequestRootUriPermissions(void);
 
-    static int OpenFile(const QString &parentFolder, const QString &fileName, const QString &mode);
-    static int CreateFile(const QString &parentFolder, const QString &fileName, const QString &mode);
+    bool CreateFolder(const QString &parentFolder, const QString &subFolder);
+    bool CreateFoldersRecursively(const QString &foldersPath);
+    bool DeleteEmptyFoldersRecursively(const QString &foldersPath, const QString &stopRootPath);
+    bool FolderExists(const QString &folderPath);
+    bool FolderEmpty(const QString &folderPath);
+    bool DeleteFolder(const QString &folderPath);
 
-    static bool OpenQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, bool createFolders = false);
-    static bool CreateQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, bool createFolders = false);
+    int OpenFile(const QString &parentFolder, const QString &fileName, const QString &mode);
+    int CreateFile(const QString &parentFolder, const QString &fileName, const QString &mode);
 
-    static bool FileExists(const QString &filePath);
-    static bool DeleteFile(const QString &fileName);
-    static int64_t FileSize(const QString &fileName);
+    bool OpenQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, bool createFolders = false);
+    bool CreateQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, bool createFolders = false);
 
-    const static bool CREATE_FOLDERS = true;
+    bool FileExists(const QString &filePath);
+    bool DeleteFile(const QString &fileName);
+    int64_t FileSize(const QString &fileName);
+
+    static const bool CREATE_FOLDERS = true;
     static zlib_filefunc_def MiniZipFileAPI;
 
-private:
-    static const int RootUriPermissionsRequestCode = 513375;
-    static const int MinimalSdkVersionForSaf = 29; // Android 10
-    static const char *NativePathPrefix;
+    SafAdapter(const QString &rootSafPath);
 
-    static bool CheckRootUriPermissions(void);
-    static int FolderSize(const QString &folderPath);
-    static bool CreateOrOpenQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, int (*java_func)(const QString &parentFolder, const QString &fileName, const QString &mode), bool createFolders);
+private:
+    QString m_rootSafPath;
+    QAndroidJniObject m_javaSafAdapter;
+    int RootUriPermissionsRequestCode = QRandomGenerator::global()->generate();
+
+    static const int MinimalSdkVersionForSaf = 29; // Android 10
+    static QString m_currentAdapterRootSafPath;
+    static QMutex m_adapterMutex;
+    static std::map<QString, SafAdapter> m_adaptersMap;
+
+    bool CheckRootUriPermissions(void);
+    int FolderSize(const QString &folderPath);
+    bool CreateOrOpenQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, int (SafAdapter::*java_func)(const QString &parentFolder, const QString &fileName, const QString &mode), bool createFolders);
+
+    bool CanUseNativeAPI(void);
+    QString ConvertToNativePath(const QString &path);
+
+    static SafAdapter & getAdapterForRoot(const QString &root);
 };
 
 #endif // SAFADAPTER_H

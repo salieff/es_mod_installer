@@ -8,7 +8,7 @@
 
 #define UNPACK_BUFFER_SIZE (16*1024)
 
-AsyncUnzipper::AsyncUnzipper(QObject *parent)
+AsyncUnzipper::AsyncUnzipper(QObject *parent, QString stopFolder)
     : QThread(parent),
       m_totalSize(0),
       m_unpackedSize(0),
@@ -16,7 +16,8 @@ AsyncUnzipper::AsyncUnzipper(QObject *parent)
       m_abortFlag(false),
       m_failedFlag(false),
       m_canOverwrite(false),
-      m_alwaysOverwrite(false)
+      m_alwaysOverwrite(false),
+      m_parentStopFolder(stopFolder)
 {
 }
 
@@ -81,6 +82,11 @@ void AsyncUnzipper::setOverwriteFlags(bool ovrw, bool ovrw_always)
     m_overwriteMutex.unlock();
 }
 
+void AsyncUnzipper::setStopFolder(QString stopFolder)
+{
+    m_parentStopFolder = stopFolder;
+}
+
 void AsyncUnzipper::run()
 {
     if (!calculateTotalSize())
@@ -89,7 +95,7 @@ void AsyncUnzipper::run()
         return;
     }
 
-    foreach (const QString &zipFile, m_zipList)
+    for (const QString &zipFile: m_zipList)
     {
         if (!unpackZip(zipFile))
         {
@@ -97,14 +103,14 @@ void AsyncUnzipper::run()
             break;
         }
 
-        if (!SafAdapter::DeleteFile(zipFile))
+        if (!SafAdapter::getCurrentAdapter().DeleteFile(zipFile))
         {
             m_failedFlag = true;
             m_errorString = tr("Can't delete zipfile ") + zipFile;
             break;
         }
 
-        SafAdapter::DeleteEmptyFoldersRecursively(QFileInfo(zipFile).dir().path(), ANDROID_ES_MODS_FOLDER);
+        SafAdapter::getCurrentAdapter().DeleteEmptyFoldersRecursively(QFileInfo(zipFile).dir().path(), m_parentStopFolder);
 
         if (aborted())
             break;
@@ -200,7 +206,7 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
     }
 
     QFile file;
-    if (!SafAdapter::CreateQFile(file, fname, QIODevice::WriteOnly | QIODevice::Truncate, SafAdapter::CREATE_FOLDERS))
+    if (!SafAdapter::getCurrentAdapter().CreateQFile(file, fname, QIODevice::WriteOnly | QIODevice::Truncate, SafAdapter::CREATE_FOLDERS))
     {
         m_errorString = tr("Can't create file ") + fname + " : " + file.errorString();
         return false;
@@ -244,7 +250,7 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
 
 bool AsyncUnzipper::checkOverwrite(QString fname)
 {
-    if (m_alwaysOverwrite || !SafAdapter::FileExists(fname))
+    if (m_alwaysOverwrite || !SafAdapter::getCurrentAdapter().FileExists(fname))
         return true;
 
     m_overwriteMutex.lock();

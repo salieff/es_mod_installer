@@ -16,26 +16,16 @@
 #include "version.h"
 #include "esmodmodel.h"
 #include "statisticsmanager.h"
-#include "modpaths.h"
 #include "safadapter.h"
 
 #define ES_MOD_INDEX_SERVER "http://191.ru/es/"
 #define ES_MOD_INDEX_NAME "project2.json"
 
-QString ESModModel::m_ESModsFolder;
-QString ESModModel::m_CustomUserModsFolder;
-QString ESModModel::m_FolderFoundDebugLogString;
-
 
 ESModModel::ESModModel(QObject *parent)
     : QAbstractListModel(parent),
-      m_JsonWriter(this),
-      m_lastSortMode(AsServer),
-      m_needShowHelp(false)
+      m_JsonWriter(this)
 {
-    m_ESModsFolder = ANDROID_ES_MODS_FOLDER;
-    emit currentModsFolder(m_ESModsFolder);
-
     QNetworkReply *rep = AsyncDownloader::get(ES_MOD_INDEX_SERVER, ES_MOD_INDEX_NAME);
     connect(rep, SIGNAL(finished()), this, SLOT(ESModIndexDownloaded()));
     connect(rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(ESModIndexError(QNetworkReply::NetworkError)));
@@ -69,7 +59,7 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
     if (index.row() < 0 || index.row() >= m_elements.count())
         return QVariant();
 
-    const ESModElement *element = m_elements[index.row()];
+    ESModElement *element = m_elements[index.row()];
 
     switch (role)
     {
@@ -103,7 +93,7 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
 
     case SizeRole:
         if (element->size == 0)
-            return element->m_localSize;
+            return element->LocalSize();
 
         return element->size;
         break;
@@ -113,7 +103,7 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         QDateTime dt;
 
         if (element->timestamp == 0)
-            dt.setTime_t(element->m_localTimestamp);
+            dt.setTime_t(element->LocalTimeStamp());
         else
             dt.setTime_t(element->timestamp);
 
@@ -507,20 +497,20 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
 
     QJsonObject obj = doc.object();
 
+    m_ModsInstallLocation = static_cast<ModsInstallLocation>(obj["mods_install_location"].toInt(ModsInstallLocationData));
+    emit currentModsInstallLocation(m_ModsInstallLocation);
+
+    if (m_ModsInstallLocation == ModsInstallLocationData)
+        m_ESModsFolder = ANDROID_ES_MODS_FOLDER_DATA;
+    else
+        m_ESModsFolder = ANDROID_ES_MODS_FOLDER_MEDIA;
+
     // FIXME: Can't sort by size or date until headers weren't received
     // m_lastSortMode = (ESModModel::SortMode)obj["sortmode"].toInt();
 
     m_helpText = obj["helptext"].toString();
     if (!m_helpText.isEmpty())
         emit appHelpReceived(m_helpText, false);
-
-// #if !defined(Q_OS_IOS) && !defined(ANDROID)
-    m_CustomUserModsFolder = obj["modsfolder"].toString();
-    if (!m_CustomUserModsFolder.isEmpty())
-        m_ESModsFolder = m_CustomUserModsFolder;
-
-    emit currentModsFolder(m_ESModsFolder);
-// #endif
 
     QJsonArray arr = obj["packs"].toArray();
     for (int i = 0; i < arr.size(); ++i)
@@ -550,17 +540,14 @@ void ESModModel::SaveLocalModsDB()
 {
     QJsonArray arr;
     for (int i = 0; i < m_initialElements.size(); ++i)
-        if (!m_initialElements[i]->m_localFiles.empty())
+        if (!m_initialElements[i]->m_localFilesMap.empty())
             arr.push_back(m_initialElements[i]->SerializeToDB());
 
     QJsonObject *obj = new QJsonObject;
+    obj->insert("mods_install_location", (int)m_ModsInstallLocation);
     obj->insert("sortmode", (int)m_lastSortMode);
     obj->insert("helptext", m_helpText);
     obj->insert("packs", arr);
-//#if !defined(Q_OS_IOS) && !defined(ANDROID)
-    if (!m_CustomUserModsFolder.isEmpty())
-        obj->insert("modsfolder", m_CustomUserModsFolder);
-//#endif
     obj->insert("deferredStatistics", StatisticsManager::getInstance()->serializeToJSON());
     obj->insert("version", QString("%1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD));
     m_JsonWriter.write(obj);
@@ -614,11 +601,11 @@ static bool lessThanBySize0(ESModElement *a, ESModElement *b)
 {
     double sz1 = a->size;
     if (sz1 == 0)
-        sz1 = a->m_localSize;
+        sz1 = a->LocalSize();
 
     double sz2 = b->size;
     if (sz2 == 0)
-        sz2 = b->m_localSize;
+        sz2 = b->LocalSize();
 
     if (sz1 == sz2)
         return lessThanAsServer(a, b);
@@ -630,11 +617,11 @@ static bool lessThanBySize1(ESModElement *a, ESModElement *b)
 {
     double sz1 = a->size;
     if (sz1 == 0)
-        sz1 = a->m_localSize;
+        sz1 = a->LocalSize();
 
     double sz2 = b->size;
     if (sz2 == 0)
-        sz2 = b->m_localSize;
+        sz2 = b->LocalSize();
 
     if (sz1 == sz2)
         return lessThanAsServer(a, b);
@@ -646,11 +633,11 @@ static bool lessThanByDate0(ESModElement *a, ESModElement *b)
 {
     double tm1 = a->timestamp;
     if (tm1 == 0)
-        tm1 = a->m_localTimestamp;
+        tm1 = a->LocalTimeStamp();
 
     double tm2 = b->timestamp;
     if (tm2 == 0)
-        tm2 = b->m_localTimestamp;
+        tm2 = b->LocalTimeStamp();
 
     if (tm1 == tm2)
         return lessThanAsServer(a, b);
@@ -662,11 +649,11 @@ static bool lessThanByDate1(ESModElement *a, ESModElement *b)
 {
     double tm1 = a->timestamp;
     if (tm1 == 0)
-        tm1 = a->m_localTimestamp;
+        tm1 = a->LocalTimeStamp();
 
     double tm2 = b->timestamp;
     if (tm2 == 0)
-        tm2 = b->m_localTimestamp;
+        tm2 = b->LocalTimeStamp();
 
     if (tm1 == tm2)
         return lessThanAsServer(a, b);
@@ -873,7 +860,7 @@ void ESModModel::helpRead(QString str)
 void ESModModel::copyTraceback(bool forLog)
 {
     QFile f;
-    if (!SafAdapter::OpenQFile(f, QDir(m_ESModsFolder).filePath(forLog ? "log.txt" : "traceback.txt"), QIODevice::ReadOnly | QIODevice::Text))
+    if (!SafAdapter::getAdapter("Android/data").OpenQFile(f, QDir(ANDROID_ES_MODS_FOLDER_DATA).filePath(forLog ? "log.txt" : "traceback.txt"), QIODevice::ReadOnly | QIODevice::Text))
         return;
 
     QDateTime modTime = QFileInfo(f).lastModified();
@@ -902,4 +889,32 @@ void ESModModel::copyToClipboard(QString &txt, QString msg)
 {
     QApplication::clipboard()->setText(txt);
     emit balloonText(msg);
+}
+
+void ESModModel::setModsInstallLocation(ModsInstallLocation location)
+{
+    m_ModsInstallLocation = location;
+
+    if (m_ModsInstallLocation == ModsInstallLocationData)
+    {
+        m_ESModsFolder = ANDROID_ES_MODS_FOLDER_DATA;
+        SafAdapter::setCurrentAdapter("Android/data");
+    }
+    else
+    {
+        m_ESModsFolder = ANDROID_ES_MODS_FOLDER_MEDIA;
+        SafAdapter::setCurrentAdapter("Android/media");
+    }
+
+    QTimer::singleShot(100, [this]() {
+        for (ESModElement *el: m_initialElements)
+        {
+            el->SetInstallPath(m_ESModsFolder);
+            el->state = ESModElement::Unknown;
+            el->headersReceived();
+        }
+
+        SaveLocalModsDB();
+        emit currentModsInstallLocation(m_ModsInstallLocation);
+    });
 }
