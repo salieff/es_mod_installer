@@ -43,15 +43,12 @@ ColumnLayout {
                     }
                 }
 
-                onClicked: {
-                    if (modeldata.modstate === ESModElement.Failed)
-                    {
+                onClicked: mainWindow.infoUriSignal(infouri)
+
+                onPressAndHold: {
+                    if (modeldata.modstate === ESModElement.Failed) {
                         var operationModel = mainDelegateContainer.ListView.view.model
                         operationModel.ShowError(modeldata.index)
-                    }
-                    else
-                    {
-                        mainWindow.infoUriSignal(infouri)
                     }
                 }
             }

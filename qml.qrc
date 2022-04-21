@@ -45,5 +45,6 @@
         <file>gui/MainInstallLocationPanel.qml</file>
         <file>icons/gear.png</file>
         <file>icons/gear_beta.png</file>
+        <file>icons/external-link.png</file>
     </qresource>
 </RCC>

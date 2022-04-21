@@ -87,17 +87,12 @@ ApplicationWindow {
             onInfoUriSignal: {
                 if (uriStr)
                 {
-                    if (mainWebView.status == Loader.Null) {
-                        var cmp = Qt.createComponent("MainWebView.qml")
-                        mainWebView.sourceComponent = cmp
-                    }
+                    if (mainWebView.status == Loader.Null)
+                        mainWebView.sourceComponent = Qt.createComponent("MainWebView.qml")
 
                     mainWebView.show()
                     if (mainWebView.item.url != uriStr)
-                    {
-                        mainWebView.item.url = "about:blank"
                         mainWebView.item.url = uriStr
-                    }
                 }
             }
         }

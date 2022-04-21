@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
+import QtQml 2.15
 
 Rectangle {
     property alias closeButton: mailCloseButton
@@ -72,6 +73,19 @@ Rectangle {
                         appTitleText.color = "black"
                     }
                 }
+            }
+        }
+
+        MMImage {
+            id: externalLinkButton
+            source: "/icons/external-link.png"
+            visible: mainWebView.status != Loader.Null && mainWebView.item.visible && !mainWebView.item.url.toString().startsWith("file:/")
+            mmwidth: 6
+            mmheight: 6
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: Qt.openUrlExternally(mainWebView.item.url)
             }
         }
 
