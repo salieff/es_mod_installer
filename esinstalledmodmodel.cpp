@@ -2,44 +2,6 @@
 #include "esmodelement.h"
 #include "esmodmodel.h"
 
-ESInstalledModModel::ESInstalledModModel(QAbstractItemModel *sModel, bool inv, QObject *parent)
-    : QSortFilterProxyModel(parent),
-      inverseFilter(inv)
-{
-    setSourceModel(sModel);
-}
-
-ESInstalledModModel::~ESInstalledModModel()
-{
-
-}
-
-bool ESInstalledModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
-{
-    QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
-    int st = sourceModel()->data(ind, ESModModel::StateRole).toInt();
-
-    switch (st) {
-    case ESModElement::Downloading :
-    case ESModElement::Unpacking :
-        return true;
-
-    case ESModElement::Failed :
-        return false;
-
-    case ESModElement::InstalledAvailable :
-    case ESModElement::InstalledHasUpdate :
-    case ESModElement::Installed :
-        return !inverseFilter;
-
-    case ESModElement::Unknown :
-    case ESModElement::Available :
-    default :
-        break;
-    }
-
-    return inverseFilter;
-}
 
 #define REMAP_SOURCE_SLOT(method) \
 void ESInstalledModModel::method(int ind) \
@@ -69,14 +31,32 @@ REMAP_SOURCE_SLOT(ToggleFavorite)
 #undef REMAP_SOURCE_SLOT
 #undef REMAP_SOURCE_SLOT2
 
-ESIncompletedModModel::ESIncompletedModModel(QAbstractItemModel *sModel, QObject *parent) : ESInstalledModModel(sModel, false, parent)
+
+bool ESInstalledModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
+    QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
+    int st = sourceModel()->data(ind, ESModModel::StateRole).toInt();
 
-}
+    switch (st) {
+    case ESModElement::Downloading :
+    case ESModElement::Unpacking :
+        return true;
 
-ESIncompletedModModel::~ESIncompletedModModel()
-{
+    case ESModElement::Failed :
+        return false;
 
+    case ESModElement::InstalledAvailable :
+    case ESModElement::InstalledHasUpdate :
+    case ESModElement::Installed :
+        return !inverseFilter;
+
+    case ESModElement::Unknown :
+    case ESModElement::Available :
+    default :
+        break;
+    }
+
+    return inverseFilter;
 }
 
 bool ESIncompletedModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
@@ -101,36 +81,20 @@ bool ESIncompletedModModel::filterAcceptsRow(int source_row, const QModelIndex &
     return false;
 }
 
-
-ESBrokenModModel::ESBrokenModModel(QAbstractItemModel *sModel, QObject *parent) : ESInstalledModModel(sModel, false, parent)
-{
-
-}
-
-ESBrokenModModel::~ESBrokenModModel()
-{
-
-}
-
 bool ESBrokenModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
     QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
     return sourceModel()->data(ind, ESModModel::StateRole).toInt() == ESModElement::Failed;
 }
 
-
-ESFavoriteModModel::ESFavoriteModModel(QAbstractItemModel *sModel, QObject *parent) : ESInstalledModModel(sModel, false, parent)
-{
-
-}
-
-ESFavoriteModModel::~ESFavoriteModModel()
-{
-
-}
-
 bool ESFavoriteModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
     QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
     return sourceModel()->data(ind, ESModModel::FavoriteRole).toBool();
+}
+
+bool ESReleasedModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+{
+    QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
+    return sourceModel()->data(ind, ESModModel::StatusRole).toString().startsWith("окончен", Qt::CaseInsensitive);
 }

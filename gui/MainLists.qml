@@ -31,8 +31,10 @@ Item {
             }
 
             MainListView {
-                model: esServerModel
-                headerText: qsTr("Not Installed")
+//                model: esServerModel
+//                headerText: qsTr("Not Installed")
+                model: esReleasedModel
+                headerText: qsTr("Released")
             }
 
             MainListView {

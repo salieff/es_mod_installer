@@ -7,8 +7,11 @@ class ESInstalledModModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    ESInstalledModModel(QAbstractItemModel *sModel, bool inv = false, QObject *parent = 0);
-    virtual ~ESInstalledModModel();
+    ESInstalledModModel(QAbstractItemModel *sModel, bool inv = false, QObject *parent = 0) : QSortFilterProxyModel(parent), inverseFilter(inv)
+    {
+        setSourceModel(sModel);
+    }
+
 
 protected:
     virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
@@ -27,37 +30,21 @@ private:
     bool inverseFilter;
 };
 
-class ESIncompletedModModel : public ESInstalledModModel
-{
-    Q_OBJECT
-public:
-    ESIncompletedModModel(QAbstractItemModel *sModel, QObject *parent = 0);
-    virtual ~ESIncompletedModModel();
 
-protected:
-    virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
-};
+#define DECLARE_NEW_PROXY(class_name) \
+    class class_name : public ESInstalledModModel \
+    { \
+        Q_OBJECT \
+    public: \
+        class_name(QAbstractItemModel *sModel, QObject *parent = 0) : ESInstalledModModel(sModel, false, parent) {} \
+     \
+    protected: \
+        virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const; \
+    };
 
-class ESBrokenModModel : public ESInstalledModModel
-{
-    Q_OBJECT
-public:
-    ESBrokenModModel(QAbstractItemModel *sModel, QObject *parent = 0);
-    virtual ~ESBrokenModModel();
-
-protected:
-    virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
-};
-
-class ESFavoriteModModel : public ESInstalledModModel
-{
-    Q_OBJECT
-public:
-    ESFavoriteModModel(QAbstractItemModel *sModel, QObject *parent = 0);
-    virtual ~ESFavoriteModModel();
-
-protected:
-    virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
-};
+DECLARE_NEW_PROXY(ESIncompletedModModel)
+DECLARE_NEW_PROXY(ESBrokenModModel)
+DECLARE_NEW_PROXY(ESFavoriteModModel)
+DECLARE_NEW_PROXY(ESReleasedModModel)
 
 #endif // ESINSTALLEDMODMODEL_H
