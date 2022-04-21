@@ -111,6 +111,10 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
     }
         break;
 
+    case FavoriteRole:
+        return element->favorite;
+        break;
+
     case GuiBlockedRole:
         return element->guiblocked;
         break;
@@ -178,6 +182,7 @@ QHash<int, QByteArray> ESModModel::roleNames() const
     roles[ProgressRole] = "progress";
     roles[SizeRole] = "modsize";
     roles[TimestampRole] = "timestamp";
+    roles[FavoriteRole] = "favorite";
     roles[GuiBlockedRole] = "guiblocked";
     roles[MyLikeMarkRole] = "mylikemark";
     roles[LikeMarksCountRole] = "likemarkscount";
@@ -196,8 +201,6 @@ QHash<int, QByteArray> ESModModel::roleNames() const
 
 void ESModModel::ESModIndexDownloaded()
 {
-    QString appTitle("ES mod manager");
-
     QList<ESModElement *> local_elements;
     LoadLocalModsDB(local_elements);
 
@@ -223,12 +226,6 @@ void ESModModel::ESModIndexDownloaded()
         else
         {
             QJsonObject obj = doc.object();
-
-            appTitle = obj["appTitle"].toString();
-            if (!appTitle.isEmpty())
-                emit appTitleReceived(appTitle + QString(" %1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD));
-            else
-                appTitle = "ES mod manager";
 
             QString appHelp = obj["appReadMe"].toString();
             if (!appHelp.isEmpty())
@@ -269,7 +266,7 @@ void ESModModel::ESModIndexDownloaded()
     if (m_needShowHelp)
         QTimer::singleShot(1000, this, SLOT(showDefferedHelp()));
 
-    emit appTitleReceived(appTitle + QString(" %1.%2-%3 (%4 M)")
+    emit appTitleReceived(QString("Version %1.%2-%3 (%4 mods)")
                           .arg(ESM_VERSION_MAJOR)
                           .arg(ESM_VERSION_MINOR)
                           .arg(ESM_VERSION_BUILD)
@@ -413,6 +410,11 @@ void ESModModel::ShowError(int ind)
     QMessageBox::critical(NULL, tr("Error"), m_elements[ind]->errorString());
 }
 
+void ESModModel::ToggleFavorite(int ind)
+{
+    m_elements[ind]->ToggleFavorite();
+}
+
 void ESModModel::elementChanged()
 {
     ESModElement *el = dynamic_cast<ESModElement *>(sender());
@@ -540,7 +542,7 @@ void ESModModel::SaveLocalModsDB()
 {
     QJsonArray arr;
     for (int i = 0; i < m_initialElements.size(); ++i)
-        if (!m_initialElements[i]->m_localFilesMap.empty())
+        if (!m_initialElements[i]->m_localFilesMap.empty() || m_initialElements[i]->favorite)
             arr.push_back(m_initialElements[i]->SerializeToDB());
 
     QJsonObject *obj = new QJsonObject;
@@ -885,7 +887,7 @@ void ESModModel::ReindexElements()
         m_elements[i]->m_modelIndex = i;
 }
 
-void ESModModel::copyToClipboard(QString &txt, QString msg)
+void ESModModel::copyToClipboard(const QString &txt, const QString &msg)
 {
     QApplication::clipboard()->setText(txt);
     emit balloonText(msg);

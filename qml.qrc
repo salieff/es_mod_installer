@@ -46,5 +46,7 @@
         <file>icons/gear.png</file>
         <file>icons/gear_beta.png</file>
         <file>icons/external-link.png</file>
+        <file>icons/not_fav.png</file>
+        <file>icons/fav.png</file>
     </qresource>
 </RCC>

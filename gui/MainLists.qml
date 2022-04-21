@@ -7,7 +7,7 @@ Item {
     Layout.fillHeight: true
     Layout.fillWidth: true
 
-    property int lastIndex: 2
+    property int lastIndex: 3
     property BusyIndicator busyIndicator: busyIndicator
 
     Flickable {
@@ -17,7 +17,7 @@ Item {
         flickDeceleration: 999999999
 
         contentWidth: listsLayout.implicitWidth
-        contentX: listsLayout.implicitWidth / 5
+        contentX: listsLayout.implicitWidth / 6
 
         RowLayout {
             id: listsLayout
@@ -33,6 +33,11 @@ Item {
             MainListView {
                 model: esServerModel
                 headerText: qsTr("Not Installed")
+            }
+
+            MainListView {
+                model: esFavoriteModel
+                headerText: qsTr("Favorite")
             }
 
             MainListView {
@@ -64,7 +69,7 @@ Item {
         }
 
         onContentXChanged: {
-            var ind2 = Math.round(contentX / mainWindow.width)
+            let ind2 = Math.round(contentX / mainWindow.width)
             pageIndicator.currentIndex = ind2
         }
 
@@ -95,8 +100,8 @@ Item {
             id: pageIndicator
             anchors.centerIn: parent
 
-            count: 5
-            currentIndex: 2
+            count: 6
+            currentIndex: 3
         }
     }
 

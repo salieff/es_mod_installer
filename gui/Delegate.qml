@@ -29,9 +29,25 @@ Rectangle {
             modeldata: model
         }
 
+        MMImage {
+            id: favHeart
+            source: model.favorite ? "/icons/fav.png" : "/icons/not_fav.png"
+            mmwidth: 3
+            mmheight: 3
+            Layout.leftMargin: 10
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    let operationModel = mainDelegateContainer.ListView.view.model
+                    operationModel.ToggleFavorite(model.index)
+                }
+            }
+        }
+
         DelegateTitle {
             modeldata: model
-            maxTextWidth: mainLayout.width - (mainLayout.spacing * 3) - leftButton.width - likeSign.width - langSign.width - (rightButton.visible ? (mainLayout.spacing + rightButton.width) : 0) - 10
+            maxTextWidth: mainLayout.width - (mainLayout.spacing * 4) - leftButton.width - favHeart.width - 10 - likeSign.width - langSign.width - (rightButton.visible ? (mainLayout.spacing + rightButton.width) : 0) - 10
         }
 
         DelegateLike {

@@ -49,11 +49,12 @@ public:
 
     ESModElement(QString au = QString(), QString ap = QString(), QObject *parent = NULL, State st = Unknown, int pr = 100);
 
-    void Download();
-    void Abort();
-    void Update();
-    void Delete();
+    void Download(void);
+    void Abort(void);
+    void Update(void);
+    void Delete(void);
     void SendLike(LikeType l);
+    void ToggleFavorite(void);
 
     void RequestHeaders();
     QString errorString();
@@ -76,34 +77,35 @@ public:
 
     std::map<QString, QStringList> m_localFilesMap; // Для каждого SAF root держим свой список, для поддержки переключения Data/Media
 
-    int id;
-    QString title;
-    QStringList langs;
-    QString status;
+    int id = -1;
+    QString title = "Test sample mod name";
+    QStringList langs = QStringList() << "Ru" << "En" <<"Spa";
+    QString status = "окончен";
     QString infouri;
     QStringList files;
 
     State state;
     int progress;
-    double size;
-    double timestamp;
+    double size = 0;
+    double timestamp = 0;
+    bool favorite = false;
 
     // Likes
-    LikeType mylikemark;
-    int likemarkscount;
-    int dislikemarkscount;
+    LikeType mylikemark = LikeMarkNotFound;
+    int likemarkscount = -1;
+    int dislikemarkscount = -1;
 
     // Installations statistics
-    int insttotal;
-    int instactive;
-    int insttotalmonth;
-    int instactivemonth;
-    int insttotalweek;
-    int instactiveweek;
-    int lifetimeavg;
-    int lifetimemax;
+    int insttotal = -1;
+    int instactive = -1;
+    int insttotalmonth = -1;
+    int instactivemonth = -1;
+    int insttotalweek = -1;
+    int instactiveweek = -1;
+    int lifetimeavg = -1;
+    int lifetimemax = -1;
 
-    GuiBlockReason guiblocked;
+    GuiBlockReason guiblocked = ByUnknown;
 
     std::map<QString, double> m_localSizesMap;
     std::map<QString, double> m_localTimestampsMap;
@@ -113,7 +115,7 @@ public:
     void SetLocalSize(double s);
     void SetLocalTimeStamp(double t);
 
-    int m_modelIndex;
+    int m_modelIndex = -1;
     std::vector<int> m_keywordFilterCounter;
 
 public slots:
@@ -158,7 +160,7 @@ private:
     QString m_uri;
     QString m_path;
 
-    int m_failedDownloadsCount;
+    int m_failedDownloadsCount = 0;
 };
 
 #endif // ESMODELEMENT_H

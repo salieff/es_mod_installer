@@ -2,11 +2,11 @@
 #include "esmodelement.h"
 #include "esmodmodel.h"
 
-ESInstalledModModel::ESInstalledModModel(bool inv, QObject *parent)
+ESInstalledModModel::ESInstalledModModel(QAbstractItemModel *sModel, bool inv, QObject *parent)
     : QSortFilterProxyModel(parent),
       inverseFilter(inv)
 {
-
+    setSourceModel(sModel);
 }
 
 ESInstalledModModel::~ESInstalledModModel()
@@ -64,11 +64,12 @@ REMAP_SOURCE_SLOT(Update)
 REMAP_SOURCE_SLOT(Delete)
 REMAP_SOURCE_SLOT2(SendLike)
 REMAP_SOURCE_SLOT(ShowError)
+REMAP_SOURCE_SLOT(ToggleFavorite)
 
 #undef REMAP_SOURCE_SLOT
 #undef REMAP_SOURCE_SLOT2
 
-ESIncompletedModModel::ESIncompletedModModel(QObject *parent) : ESInstalledModModel(false, parent)
+ESIncompletedModModel::ESIncompletedModModel(QAbstractItemModel *sModel, QObject *parent) : ESInstalledModModel(sModel, false, parent)
 {
 
 }
@@ -100,7 +101,8 @@ bool ESIncompletedModModel::filterAcceptsRow(int source_row, const QModelIndex &
     return false;
 }
 
-ESBrokenModModel::ESBrokenModModel(QObject *parent) : ESInstalledModModel(false, parent)
+
+ESBrokenModModel::ESBrokenModModel(QAbstractItemModel *sModel, QObject *parent) : ESInstalledModModel(sModel, false, parent)
 {
 
 }
@@ -114,4 +116,21 @@ bool ESBrokenModModel::filterAcceptsRow(int source_row, const QModelIndex &sourc
 {
     QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
     return sourceModel()->data(ind, ESModModel::StateRole).toInt() == ESModElement::Failed;
+}
+
+
+ESFavoriteModModel::ESFavoriteModModel(QAbstractItemModel *sModel, QObject *parent) : ESInstalledModModel(sModel, false, parent)
+{
+
+}
+
+ESFavoriteModModel::~ESFavoriteModModel()
+{
+
+}
+
+bool ESFavoriteModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+{
+    QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
+    return sourceModel()->data(ind, ESModModel::FavoriteRole).toBool();
 }

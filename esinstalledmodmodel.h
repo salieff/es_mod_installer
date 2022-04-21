@@ -7,7 +7,7 @@ class ESInstalledModModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    ESInstalledModModel(bool inv = false, QObject *parent = 0);
+    ESInstalledModModel(QAbstractItemModel *sModel, bool inv = false, QObject *parent = 0);
     virtual ~ESInstalledModModel();
 
 protected:
@@ -21,6 +21,7 @@ public slots:
     void Delete(int ind);
     void SendLike(int ind, int l);
     void ShowError(int ind);
+    void ToggleFavorite(int ind);
 
 private:
     bool inverseFilter;
@@ -30,7 +31,7 @@ class ESIncompletedModModel : public ESInstalledModModel
 {
     Q_OBJECT
 public:
-    ESIncompletedModModel(QObject *parent = 0);
+    ESIncompletedModModel(QAbstractItemModel *sModel, QObject *parent = 0);
     virtual ~ESIncompletedModModel();
 
 protected:
@@ -41,8 +42,19 @@ class ESBrokenModModel : public ESInstalledModModel
 {
     Q_OBJECT
 public:
-    ESBrokenModModel(QObject *parent = 0);
+    ESBrokenModModel(QAbstractItemModel *sModel, QObject *parent = 0);
     virtual ~ESBrokenModModel();
+
+protected:
+    virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
+};
+
+class ESFavoriteModModel : public ESInstalledModModel
+{
+    Q_OBJECT
+public:
+    ESFavoriteModModel(QAbstractItemModel *sModel, QObject *parent = 0);
+    virtual ~ESFavoriteModModel();
 
 protected:
     virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;

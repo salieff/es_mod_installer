@@ -306,8 +306,8 @@ Rectangle {
 
                 mainLists.enabled = false
 
-                var tlen = modeldata.title.length
-                var maxlen = 32
+                let tlen = modeldata.title.length
+                let maxlen = 32
                 if ( tlen <= maxlen)
                     likeTitle.text = modeldata.title
                 else

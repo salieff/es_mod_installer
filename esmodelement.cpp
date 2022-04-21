@@ -19,30 +19,10 @@
 
 ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, int pr)
     : QObject(parent),
-      id(-1),
-      title(QStringLiteral("Test sample mod name")),
-      langs(QStringList() << "Ru" << "En" <<"Spa"),
-      status("окончен"),
       state(st),
       progress(pr),
-      size(0),
-      timestamp(0),
-      mylikemark(LikeMarkNotFound),
-      likemarkscount(-1),
-      dislikemarkscount(-1),
-      insttotal(-1),
-      instactive(-1),
-      insttotalmonth(-1),
-      instactivemonth(-1),
-      insttotalweek(-1),
-      instactiveweek(-1),
-      lifetimeavg(-1),
-      lifetimemax(-1),
-      guiblocked(ByUnknown),
-      m_modelIndex(-1),
       m_uri(au),
-      m_path(ap),
-      m_failedDownloadsCount(0)
+      m_path(ap)
 {
     connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
     connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
@@ -61,7 +41,7 @@ ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, in
     }
 }
 
-void ESModElement::Download()
+void ESModElement::Download(void)
 {
     m_failedDownloadsCount = 0;
 
@@ -76,7 +56,7 @@ void ESModElement::Download()
     subDownload();
 }
 
-void ESModElement::subDownload()
+void ESModElement::subDownload(void)
 {
     // Make shure previous async operations already done
     m_asyncDownloader.wait();
@@ -88,13 +68,13 @@ void ESModElement::subDownload()
         changeState(Downloading, progress == 100 ? -1 : progress);
 }
 
-void ESModElement::Abort()
+void ESModElement::Abort(void)
 {
     blockGui(ByAbort);
     emit abortProcessing();
 }
 
-void ESModElement::Update()
+void ESModElement::Update(void)
 {
     blockGui(ByUpdate);
     m_asyncDeleter.wait();
@@ -102,7 +82,7 @@ void ESModElement::Update()
     m_asyncDeleter.deleteFiles(LocalFiles());
 }
 
-void ESModElement::Delete()
+void ESModElement::Delete(void)
 {
     blockGui(ByDelete);
 
@@ -130,6 +110,13 @@ void ESModElement::SendLike(LikeType l)
             .arg(l == DislikeMark ? 0 : 1);
     QNetworkReply *setLikeRep = AsyncDownloader::get(setLikeReq);
     connect(setLikeRep, SIGNAL(finished()), this, SLOT(myLikePosted()));
+}
+
+void ESModElement::ToggleFavorite(void)
+{
+    favorite = !favorite;
+    emit saveMe();
+    emit stateChanged();
 }
 
 void ESModElement::RequestHeaders()
@@ -444,6 +431,7 @@ QJsonObject ESModElement::SerializeToDB()
     obj["files"] = files_obj;
     obj["size"] = sizes_obj;
     obj["timestamp"] = tmstamps_obj;
+    obj["favorite"] = favorite;
 
     return obj;
 }
@@ -478,6 +466,7 @@ void ESModElement::DeserializeFromDB(const QJsonObject &obj)
     title = obj["title"].toString();
     status = obj["status"].toString();
     infouri = obj["infouri"].toString();
+    favorite = obj["favorite"].toBool();
 
     m_localSizesMap.clear();
     if (obj["size"].isObject())
@@ -602,6 +591,7 @@ void ESModElement::TryToPickupFrom(QList<ESModElement *> &list)
             m_localFilesMap = (*it)->m_localFilesMap;
             m_localSizesMap = (*it)->m_localSizesMap;
             m_localTimestampsMap = (*it)->m_localTimestampsMap;
+            favorite = (*it)->favorite;
             delete (*it);
             it = list.erase(it);
         }

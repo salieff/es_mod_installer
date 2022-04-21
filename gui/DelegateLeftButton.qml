@@ -44,7 +44,7 @@ MMImage {
 
         onClicked: {
             if (modeldata.guiblocked === ESModElement.NoBlock) {
-                var operationModel = mainDelegateContainer.ListView.view.model
+                let operationModel = mainDelegateContainer.ListView.view.model
                 switch (modeldata.modstate) {
                 case ESModElement.Available :
                     operationModel.Download(index)

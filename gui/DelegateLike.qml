@@ -7,8 +7,8 @@ RowLayout {
         if (lk <= 0 && dslk <= 0)
             return -1
 
-        var div1 = 0;
-        var div2 = 0;
+        let div1 = 0;
+        let div2 = 0;
 
         if (lk > 0) {
             div1 = lk;
@@ -73,7 +73,7 @@ RowLayout {
         onClicked: {
             if (modeldata.likemarkscount >=0 && modeldata.dislikemarkscount >= 0)
             {
-                var operationModel = mainDelegateContainer.ListView.view.model
+                let operationModel = mainDelegateContainer.ListView.view.model
                 mainWindow.likeBoxSignal(operationModel, modeldata)
             }
         }

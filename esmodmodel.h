@@ -24,6 +24,7 @@ public:
         ProgressRole,
         SizeRole,
         TimestampRole,
+        FavoriteRole,
         GuiBlockedRole,
         MyLikeMarkRole,
         LikeMarksCountRole,
@@ -90,6 +91,7 @@ public slots:
     void Delete(int ind);
     void SendLike(int ind, int l);
     void ShowError(int ind);
+    void ToggleFavorite(int ind);
 
     void elementChanged();
     void elementNeedRemove();
@@ -101,6 +103,7 @@ public slots:
 
     void helpRead(QString str);
     void copyTraceback(bool forLog = false);
+    void copyToClipboard(const QString &txt, const QString &msg);
 
     void setModsInstallLocation(ModsInstallLocation location);
 
@@ -115,8 +118,6 @@ private:
     void requestAllStatistics();
     bool LoadLocalModsDB(QList<ESModElement *> &l);
     void ReindexElements();
-
-    void copyToClipboard(QString &txt, QString msg);
 
     AsyncJsonWriter m_JsonWriter;
 
