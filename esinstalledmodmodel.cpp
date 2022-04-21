@@ -96,5 +96,6 @@ bool ESFavoriteModModel::filterAcceptsRow(int source_row, const QModelIndex &sou
 bool ESReleasedModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
     QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
-    return sourceModel()->data(ind, ESModModel::StatusRole).toString().startsWith("окончен", Qt::CaseInsensitive);
+    return sourceModel()->data(ind, ESModModel::StatusRole).toString().startsWith("окончен", Qt::CaseInsensitive) &&
+           sourceModel()->data(ind, ESModModel::StateRole).toInt() != ESModElement::Failed;
 }
