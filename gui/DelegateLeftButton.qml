@@ -2,50 +2,49 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import org.salieff.esmodinstaller 1.0
 
-MMImage {
-    property var modeldata
 
+MMImage {
     source: {
-        switch (modeldata.modstate) {
+        switch (model.modstate) {
         case ESModElement.Unknown :
             "/icons/info.png"
             break;
 
         case ESModElement.Available :
-            modeldata.guiblocked === ESModElement.ByDownload ? "/icons/download_press.png" : "/icons/download.png"
+            model.guiblocked === ESModElement.ByDownload ? "/icons/download_press.png" : "/icons/download.png"
             break;
 
         case ESModElement.Downloading :
         case ESModElement.Unpacking :
-            modeldata.guiblocked === ESModElement.ByAbort ? "/icons/abort_press.png" : "/icons/abort.png"
+            model.guiblocked === ESModElement.ByAbort ? "/icons/abort_press.png" : "/icons/abort.png"
             break;
 
         case ESModElement.Failed :
-            (modeldata.guiblocked === ESModElement.ByRetry || modeldata.guiblocked === ESModElement.ByDownload) ? "/icons/reload_press.png" : "/icons/reload.png"
+            (model.guiblocked === ESModElement.ByRetry || model.guiblocked === ESModElement.ByDownload) ? "/icons/reload_press.png" : "/icons/reload.png"
             break;
 
         case ESModElement.InstalledAvailable :
         case ESModElement.Installed :
-            modeldata.guiblocked === ESModElement.ByDelete ? "/icons/trash_press.png" : "/icons/trash.png"
+            model.guiblocked === ESModElement.ByDelete ? "/icons/trash_press.png" : "/icons/trash.png"
             break;
 
         case ESModElement.InstalledHasUpdate :
-            modeldata.guiblocked === ESModElement.ByUpdate ? "/icons/update_press.png" : "/icons/update.png"
+            model.guiblocked === ESModElement.ByUpdate ? "/icons/update_press.png" : "/icons/update.png"
         }
     }
 
     mmwidth: 7
     mmheight: 7
 
-    visible: (modeldata.modstate !== ESModElement.Unknown)
+    visible: (model.modstate !== ESModElement.Unknown)
 
     MouseArea {
         anchors.fill: parent
 
         onClicked: {
-            if (modeldata.guiblocked === ESModElement.NoBlock) {
+            if (model.guiblocked === ESModElement.NoBlock) {
                 let operationModel = mainDelegateContainer.ListView.view.model
-                switch (modeldata.modstate) {
+                switch (model.modstate) {
                 case ESModElement.Available :
                     operationModel.Download(index)
                     break;

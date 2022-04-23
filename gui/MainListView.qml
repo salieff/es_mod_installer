@@ -14,22 +14,7 @@ ListView {
     // clip: true
     maximumFlickVelocity: 7000
 
-    ScrollBar.vertical: ScrollBar {
-        id: modListScrollBar
-        minimumSize: 0.07
-
-        parent: modsListView.parent
-        anchors.top: modsListView.top
-        anchors.left: modsListView.right
-        anchors.bottom: modsListView.bottom
-
-        contentItem: Rectangle {
-            implicitWidth: 10
-            implicitHeight: 100
-            radius: width / 2
-            color: modListScrollBar.pressed ? "black" : "darkgrey"
-        }
-    }
+    ScrollBar.vertical: EsScrollBar {}
 
     header: Item {
         // Empty placeholder

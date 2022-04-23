@@ -34,7 +34,7 @@ Rectangle {
 
     Connections {
         target: esModel
-        onBalloonText: {
+        function onBalloonText(text) {
             balloonText.text = text
             visible = true
             opacityAnim.restart()

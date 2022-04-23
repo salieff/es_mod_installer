@@ -295,35 +295,35 @@ Rectangle {
 
     Connections {
         target: mainWindow
-        onLikeBoxSignal: {
+        function onLikeBoxSignal(operationModel, model) {
             if (!visible)
             {
-                likeImg.opacity = modeldata.mylikemark === ESModElement.LikeMark ? 1 : 0.3
-                dislikeImg.opacity = modeldata.mylikemark === ESModElement.DislikeMark ? 1 : 0.3
+                likeImg.opacity = model.mylikemark === ESModElement.LikeMark ? 1 : 0.3
+                dislikeImg.opacity = model.mylikemark === ESModElement.DislikeMark ? 1 : 0.3
 
-                likeText.text = modeldata.likemarkscount > 0 ? modeldata.likemarkscount : ""
-                dislikeText.text = modeldata.dislikemarkscount > 0 ? modeldata.dislikemarkscount : ""
+                likeText.text = model.likemarkscount > 0 ? model.likemarkscount : ""
+                dislikeText.text = model.dislikemarkscount > 0 ? model.dislikemarkscount : ""
 
                 mainLists.enabled = false
 
-                let tlen = modeldata.title.length
+                let tlen = model.title.length
                 let maxlen = 32
                 if ( tlen <= maxlen)
-                    likeTitle.text = modeldata.title
+                    likeTitle.text = model.title
                 else
-                    likeTitle.text = modeldata.title.substring(0, (maxlen - 3) / 2) + "..." + modeldata.title.substring(tlen - (maxlen - 3) / 2)
+                    likeTitle.text = model.title.substring(0, (maxlen - 3) / 2) + "..." + model.title.substring(tlen - (maxlen - 3) / 2)
 
-                instTotal.text = modeldata.insttotal > 0 ? modeldata.insttotal : ""
-                instActive.text = modeldata.instactive > 0 ? modeldata.instactive : ""
-                instTotalMonth.text = modeldata.insttotalmonth > 0 ? modeldata.insttotalmonth : ""
-                instActiveMonth.text = modeldata.instactivemonth > 0 ? modeldata.instactivemonth : ""
-                instTotalWeek.text = modeldata.insttotalweek > 0 ? modeldata.insttotalweek : ""
-                instActiveWeek.text = modeldata.instactiveweek > 0 ? modeldata.instactiveweek : ""
-                lifeTimeAVG.text = modeldata.lifetimeavg > 0 ? modeldata.lifetimeavg : ""
-                lifeTimeMAX.text = modeldata.lifetimemax > 0 ? modeldata.lifetimemax : ""
+                instTotal.text = model.insttotal > 0 ? model.insttotal : ""
+                instActive.text = model.instactive > 0 ? model.instactive : ""
+                instTotalMonth.text = model.insttotalmonth > 0 ? model.insttotalmonth : ""
+                instActiveMonth.text = model.instactivemonth > 0 ? model.instactivemonth : ""
+                instTotalWeek.text = model.insttotalweek > 0 ? model.insttotalweek : ""
+                instActiveWeek.text = model.instactiveweek > 0 ? model.instactiveweek : ""
+                lifeTimeAVG.text = model.lifetimeavg > 0 ? model.lifetimeavg : ""
+                lifeTimeMAX.text = model.lifetimemax > 0 ? model.lifetimemax : ""
 
-                itemIndex = modeldata.index
-                myLike = modeldata.mylikemark
+                itemIndex = model.index
+                myLike = model.mylikemark
                 opModel = operationModel
                 show()
             }

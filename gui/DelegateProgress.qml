@@ -1,23 +1,22 @@
 import QtQuick 2.15
 import org.salieff.esmodinstaller 1.0
 
-Item {
-    anchors.fill: parent
 
-    property var modeldata
-    property Rectangle outrect: parent
+Item {
+    property var delegateRectangle: parent
+    anchors.fill: parent
 
     Rectangle {
         anchors {
             verticalCenter: parent.verticalCenter
             left: parent.left
-            leftMargin: outrect.border.width
+            leftMargin: delegateRectangle.border.width
         }
-        width: (parent.width - outrect.border.width * 2) * modeldata.progress / 100
-        height: parent.height - outrect.border.width * 2
-        radius: outrect.radius - outrect.border.width
+        width: (delegateRectangle.width - delegateRectangle.border.width * 2) * model.progress / 100
+        height: delegateRectangle.height - delegateRectangle.border.width * 2
+        radius: delegateRectangle.radius - delegateRectangle.border.width
         color: {
-            switch (modeldata.modstate) {
+            switch (model.modstate) {
             case ESModElement.Unknown :
                 "darkslategrey"
                 break;
@@ -43,16 +42,16 @@ Item {
             }
         }
 
-        visible: (modeldata.modstate !== ESModElement.Unknown)
+        visible: (model.modstate !== ESModElement.Unknown)
     }
 
     Rectangle {
         anchors.centerIn: parent
-        width: parent.width - outrect.border.width
-        height: parent.height - outrect.border.width
-        radius: parent.radius - outrect.border.width/2
+        width: delegateRectangle.width - delegateRectangle.border.width
+        height: delegateRectangle.height - delegateRectangle.border.width
+        radius: delegateRectangle.radius - delegateRectangle.border.width/2
 
-        border.width: outrect.border.width/2
+        border.width: delegateRectangle.border.width/2
         border.color: "#22FFFFFF"
 
         gradient: Gradient {
@@ -64,6 +63,6 @@ Item {
             GradientStop { position: 1;    color: "#55FFFFFF" }
         }
 
-        visible: (modeldata.modstate !== ESModElement.Unknown)
+        visible: (model.modstate !== ESModElement.Unknown)
     }
 }

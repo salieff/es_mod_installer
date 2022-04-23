@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.UriPermission;
 import android.os.ParcelFileDescriptor;
 import android.database.Cursor;
+import android.provider.OpenableColumns;
 import java.net.URLEncoder;
 
 
@@ -180,17 +181,32 @@ public class SafAdapter
 
     public long fileSize(Context context, String fileName)
     {
+        long retValue = -1;
+        Cursor cursor = null;
+
         try
         {
-            Uri fileUri = DocumentsContract.buildChildDocumentsUriUsingTree(m_rootUri, DocumentsContract.getTreeDocumentId(m_rootUri) + fileName);
-            ParcelFileDescriptor fileDiscriptor = context.getContentResolver().openFileDescriptor(fileUri, "r");
-            return fileDiscriptor.getStatSize();
+            Uri fileUri = DocumentsContract.buildDocumentUriUsingTree(m_rootUri, DocumentsContract.getTreeDocumentId(m_rootUri) + fileName);
+
+            String [] requestedColumns = {OpenableColumns.SIZE};
+            cursor = context.getContentResolver().query(fileUri, requestedColumns, null, null, null);
+            if (cursor == null)
+                return -1;
+
+            int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+            if (sizeIndex >= 0 && cursor.moveToFirst())
+                retValue = cursor.getLong(sizeIndex);
         }
         catch (Exception e)
         {
             // e.printStackTrace();
         }
+        finally
+        {
+            if (cursor != null)
+                cursor.close();
+        }
 
-        return -1;
+        return retValue;
     }
 }

@@ -43,7 +43,7 @@ Rectangle {
 
                 Connections {
                     target: esModel
-                    onListSorted: {
+                    function onListSorted(m) {
                         switch(m)
                         {
                         case ESModModel.AsServer :

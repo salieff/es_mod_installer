@@ -43,7 +43,7 @@ Rectangle {
 
             Connections {
                 target: esModel
-                onShowMeHelp: helpButton.showHelp(chapter)
+                function onShowMeHelp(chapter) { helpButton.showHelp(chapter) }
             }
         }
 
@@ -59,7 +59,7 @@ Rectangle {
 
             Connections {
                 target: esModel
-                onAppTitleReceived: appTitleText.text = text
+                function onAppTitleReceived(text) { appTitleText.text = text }
             }
 
             MouseArea {

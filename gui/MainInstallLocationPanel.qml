@@ -110,7 +110,7 @@ Rectangle {
 
     Connections {
         target: esModel
-        onCurrentModsInstallLocation: {
+        function onCurrentModsInstallLocation(location) {
             if (location === ESModModel.ModsInstallLocationData) {
                 buttonData.checked = true
                 locationGear.source = "/icons/gear.png"

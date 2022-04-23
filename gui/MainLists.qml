@@ -116,7 +116,7 @@ Item {
 
         Connections {
             target: esModel
-            onEsIndexReceived: {
+            function onEsIndexReceived() {
                 busyIndicator.running = false;
                 busyIndicator.visible = false;
             }

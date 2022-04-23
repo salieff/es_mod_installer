@@ -256,13 +256,7 @@ bool SafAdapter::FileExists(const QString &filePath)
     if (CanUseNativeAPI())
         return QFile::exists(ConvertToNativePath(filePath));
 
-    QString folderName = QFileInfo(filePath).dir().path();
-    QString fileName = QFileInfo(filePath).fileName();
-
-    int fd = OpenFile(folderName, fileName, "r");
-    close(fd);
-
-    return fd >= 0;
+    return FileSize(filePath) >= 0;
 }
 
 bool SafAdapter::FolderExists(const QString &folderPath)

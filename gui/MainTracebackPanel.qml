@@ -56,22 +56,7 @@ Rectangle {
         anchors.margins: 10
         contentHeight: tracebackText.implicitHeight
 
-        ScrollBar.vertical: ScrollBar {
-            id: tracebackPanelScrollBar
-            minimumSize: 0.07
-
-            parent: tracebackPanelFlickable.parent
-            anchors.top: tracebackPanelFlickable.top
-            anchors.left: tracebackPanelFlickable.right
-            anchors.bottom: tracebackPanelFlickable.bottom
-
-            contentItem: Rectangle {
-                implicitWidth: 10
-                implicitHeight: 100
-                radius: width / 2
-                color: tracebackPanelScrollBar.pressed ? "black" : "darkgrey"
-            }
-        }
+        ScrollBar.vertical: EsScrollBar {}
 
         Text {
             id: tracebackText
@@ -82,7 +67,7 @@ Rectangle {
 
             Connections {
                 target: esModel
-                onTracebackText: {
+                function onTracebackText(text) {
                     tracebackText.text = text
                     show()
                 }

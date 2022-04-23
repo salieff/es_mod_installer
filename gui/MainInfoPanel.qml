@@ -64,22 +64,7 @@ Rectangle {
         contentHeight: infoText.implicitHeight
         maximumFlickVelocity: 7000
 
-        ScrollBar.vertical: ScrollBar {
-            id: infoPanelScrollBar
-            minimumSize: 0.07
-
-            parent: infoPanelFlickable.parent
-            anchors.top: infoPanelFlickable.top
-            anchors.left: infoPanelFlickable.right
-            anchors.bottom: infoPanelFlickable.bottom
-
-            contentItem: Rectangle {
-                implicitWidth: 10
-                implicitHeight: 100
-                radius: width / 2
-                color: infoPanelScrollBar.pressed ? "black" : "darkgrey"
-            }
-        }
+        ScrollBar.vertical: EsScrollBar {}
 
         Text {
             id: infoText
@@ -90,7 +75,7 @@ Rectangle {
 
             Connections {
                 target: esModel
-                onAppHelpReceived: {
+                function onAppHelpReceived(text, fromServer) {
                     if (infoText.text != text && fromServer)
                         mainAppTitle.closeButton.pulsed = true
 

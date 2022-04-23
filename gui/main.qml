@@ -10,7 +10,7 @@ ApplicationWindow {
     visible: true
 
     signal infoUriSignal(string uriStr)
-    signal likeBoxSignal(var operationModel, var modeldata)
+    signal likeBoxSignal(var operationModel, var model)
 
     MainBalloon {
         id: mainBalloon
@@ -84,7 +84,7 @@ ApplicationWindow {
 
         Connections {
             target: mainWindow
-            onInfoUriSignal: {
+            function onInfoUriSignal(uriStr) {
                 if (uriStr)
                 {
                     if (mainWebView.status == Loader.Null)
