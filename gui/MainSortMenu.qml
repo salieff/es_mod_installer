@@ -11,6 +11,11 @@ Menu {
     }
 
     MenuItem {
+        text: qsTr("By status")
+        onTriggered: esModel.sortList(ESModModel.ByStatus)
+    }
+
+    MenuItem {
         text: qsTr("By name a→Z")
         onTriggered: esModel.sortList(ESModModel.ByNameUp)
     }

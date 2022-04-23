@@ -41,17 +41,18 @@ public:
 
     enum SortMode {
         AsServer         = 0,
-        ByNameUp         = 1,
-        ByNameDown       = 2,
-        BySizeUp         = 3,
-        BySizeDown       = 4,
-        ByDateUp         = 5,
-        ByDateDown       = 6,
-        ByScore          = 7,
-        ByVotesCount     = 8,
-        ByActiveInstalls = 9,
-        ByTotalInstalls  = 10,
-        ByLifeTime       = 11
+        ByStatus         = 1,
+        ByNameUp         = 2,
+        ByNameDown       = 3,
+        BySizeUp         = 4,
+        BySizeDown       = 5,
+        ByDateUp         = 6,
+        ByDateDown       = 7,
+        ByScore          = 8,
+        ByVotesCount     = 9,
+        ByActiveInstalls = 10,
+        ByTotalInstalls  = 11,
+        ByLifeTime       = 12
     };
     Q_ENUM(SortMode)
 

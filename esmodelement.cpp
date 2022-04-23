@@ -580,26 +580,19 @@ void ESModElement::SetInstallPath(QString p)
 
 void ESModElement::TryToPickupFrom(QList<ESModElement *> &list)
 {
-    QList<ESModElement *>::iterator it = list.begin();
-    while (it != list.end())
-    {
-        if (idEquals(*it))
-        {
-            if ((*it)->id != -1)
-                id = (*it)->id;
+    auto it = std::find_if(list.begin(), list.end(), [this](ESModElement *el){ return idEquals(el); });
+    if (it == list.end())
+        return;
 
-            m_localFilesMap = (*it)->m_localFilesMap;
-            m_localSizesMap = (*it)->m_localSizesMap;
-            m_localTimestampsMap = (*it)->m_localTimestampsMap;
-            favorite = (*it)->favorite;
-            delete (*it);
-            it = list.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
+    if ((*it)->id != -1)
+        id = (*it)->id;
+
+    m_localFilesMap = (*it)->m_localFilesMap;
+    m_localSizesMap = (*it)->m_localSizesMap;
+    m_localTimestampsMap = (*it)->m_localTimestampsMap;
+    favorite = (*it)->favorite;
+    delete (*it);
+    list.erase(it);
 }
 
 void ESModElement::blockGui(GuiBlockReason b)

@@ -248,7 +248,10 @@ void ESModModel::ESModIndexDownloaded()
         }
     }
 
-    foreach (ESModElement *el, local_elements)
+    // Пусть последние добавленные будут сверху
+    std::reverse(m_initialElements.begin(), m_initialElements.end());
+
+    for(const auto &el: local_elements)
         addModElement(el);
 
     sortList(m_lastSortMode);
@@ -564,7 +567,7 @@ static const char *statusNamesArr[] = { \
     "обучаловка" \
 };
 
-static bool lessThanAsServer(ESModElement *a, ESModElement *b)
+static bool lessThanByStatus(ESModElement *a, ESModElement *b)
 {
     int i1 = -1;
     int i2 = -1;
@@ -586,7 +589,7 @@ static bool lessThanAsServer(ESModElement *a, ESModElement *b)
 static bool lessThanByName0(ESModElement *a, ESModElement *b)
 {
     if (a->title == b->title)
-        return lessThanAsServer(a, b);
+        return lessThanByStatus(a, b);
 
     return a->title < b->title;
 }
@@ -594,7 +597,7 @@ static bool lessThanByName0(ESModElement *a, ESModElement *b)
 static bool lessThanByName1(ESModElement *a, ESModElement *b)
 {
     if (a->title == b->title)
-        return lessThanAsServer(a, b);
+        return lessThanByStatus(a, b);
 
     return a->title >= b->title;
 }
@@ -610,7 +613,7 @@ static bool lessThanBySize0(ESModElement *a, ESModElement *b)
         sz2 = b->LocalSize();
 
     if (sz1 == sz2)
-        return lessThanAsServer(a, b);
+        return lessThanByStatus(a, b);
 
     return sz1 < sz2;
 }
@@ -626,7 +629,7 @@ static bool lessThanBySize1(ESModElement *a, ESModElement *b)
         sz2 = b->LocalSize();
 
     if (sz1 == sz2)
-        return lessThanAsServer(a, b);
+        return lessThanByStatus(a, b);
 
     return sz1 >= sz2;
 }
@@ -642,7 +645,7 @@ static bool lessThanByDate0(ESModElement *a, ESModElement *b)
         tm2 = b->LocalTimeStamp();
 
     if (tm1 == tm2)
-        return lessThanAsServer(a, b);
+        return lessThanByStatus(a, b);
 
     return tm1 < tm2;
 }
@@ -658,7 +661,7 @@ static bool lessThanByDate1(ESModElement *a, ESModElement *b)
         tm2 = b->LocalTimeStamp();
 
     if (tm1 == tm2)
-        return lessThanAsServer(a, b);
+        return lessThanByStatus(a, b);
 
     return tm1 >= tm2;
 }
@@ -701,7 +704,7 @@ static bool lessThanByVotesCount(ESModElement *a, ESModElement *b)
     int vcb = b->likemarkscount + b->dislikemarkscount;
 
     if (vca == vcb)
-        return lessThanAsServer(a, b);
+        return lessThanByStatus(a, b);
 
     return vca >= vcb;
 }
@@ -728,7 +731,7 @@ static bool lessThanByActiveInstalls(ESModElement *a, ESModElement *b)
     if (a->instactiveweek != b->instactiveweek)
         return a->instactiveweek > b->instactiveweek;
 
-    return lessThanAsServer(a, b);
+    return lessThanByStatus(a, b);
 }
 
 static bool lessThanByTotalInstalls(ESModElement *a, ESModElement *b)
@@ -742,7 +745,7 @@ static bool lessThanByTotalInstalls(ESModElement *a, ESModElement *b)
     if (a->insttotalweek != b->insttotalweek)
         return a->insttotalweek > b->insttotalweek;
 
-    return lessThanAsServer(a, b);
+    return lessThanByStatus(a, b);
 }
 
 static bool lessThanByLifeTime(ESModElement *a, ESModElement *b)
@@ -753,12 +756,13 @@ static bool lessThanByLifeTime(ESModElement *a, ESModElement *b)
     if (a->lifetimemax != b->lifetimemax)
         return a->lifetimemax > b->lifetimemax;
 
-    return lessThanAsServer(a, b);
+    return lessThanByStatus(a, b);
 }
 
 typedef bool (*lessThanSortFunc)(ESModElement *a, ESModElement *b);
 static const lessThanSortFunc lessThanArray[] = { \
-    lessThanAsServer, \
+    nullptr, \
+    lessThanByStatus, \
     lessThanByName0, \
     lessThanByName1, \
     lessThanBySize0, \
