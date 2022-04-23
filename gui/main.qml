@@ -29,6 +29,7 @@ ApplicationWindow {
 
             MMImage {
                 id: locationGear
+                visible: false // Экспериментальная фича
 
                 anchors {
                     top: parent.top

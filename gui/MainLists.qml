@@ -7,7 +7,7 @@ Item {
     Layout.fillHeight: true
     Layout.fillWidth: true
 
-    property int lastIndex: 3
+    property int lastIndex: 2
     property BusyIndicator busyIndicator: busyIndicator
 
     Flickable {
@@ -17,7 +17,7 @@ Item {
         flickDeceleration: 999999999
 
         contentWidth: listsLayout.implicitWidth
-        contentX: listsLayout.implicitWidth / 6
+        contentX: listsLayout.implicitWidth / 5
 
         RowLayout {
             id: listsLayout
@@ -28,13 +28,6 @@ Item {
             MainListView {
                 model: esBrokenModel
                 headerText: qsTr("Broken")
-            }
-
-            MainListView {
-//                model: esServerModel
-//                headerText: qsTr("Not Installed")
-                model: esReleasedModel
-                headerText: qsTr("Released")
             }
 
             MainListView {
@@ -102,8 +95,8 @@ Item {
             id: pageIndicator
             anchors.centerIn: parent
 
-            count: 6
-            currentIndex: 3
+            count: 5
+            currentIndex: 2
         }
     }
 

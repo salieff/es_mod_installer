@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
     ESInstalledModModel esInstalledModel(&esmodel);
     // ESInstalledModModel esServerModel(&esmodel, true);
-    ESReleasedModModel esReleasedModel(&esmodel);
+    // ESReleasedModModel esReleasedModel(&esmodel);
     ESIncompletedModModel esIncompletedModel(&esmodel);
     ESBrokenModModel esBrokenModel(&esmodel);
     ESFavoriteModModel esFavoriteModel(&esmodel);
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("esModel", &esmodel);
     engine.rootContext()->setContextProperty("esInstalledModel", &esInstalledModel);
     // engine.rootContext()->setContextProperty("esServerModel", &esServerModel);
-    engine.rootContext()->setContextProperty("esReleasedModel", &esReleasedModel);
+    // engine.rootContext()->setContextProperty("esReleasedModel", &esReleasedModel);
     engine.rootContext()->setContextProperty("esIncompletedModel", &esIncompletedModel);
     engine.rootContext()->setContextProperty("esBrokenModel", &esBrokenModel);
     engine.rootContext()->setContextProperty("esFavoriteModel", &esFavoriteModel);
