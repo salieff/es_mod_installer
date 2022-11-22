@@ -103,8 +103,8 @@ Rectangle {
         anchors.centerIn: parent
         width: 100
         height: 100
-        running: false;
-        visible: false;
+        running: false
+        visible: false
     }
 
 
@@ -119,8 +119,10 @@ Rectangle {
                 locationGear.source = "/icons/gear_beta.png"
             }
 
-            busyIndicator.running = false;
-            busyIndicator.visible = false;
+            busyIndicator.running = false
+            busyIndicator.visible = false
+
+            mainWindow.hideAllPanels()
         }
     }
 }

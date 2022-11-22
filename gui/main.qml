@@ -1,6 +1,8 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtQuick.Window 2.15
+
 
 ApplicationWindow {
     id: mainWindow
@@ -9,8 +11,9 @@ ApplicationWindow {
     title: qsTr("ES Manager")
     visible: true
 
-    signal infoUriSignal(string uriStr)
-    signal likeBoxSignal(var operationModel, var model)
+    function mm(i) {
+        return Screen.pixelDensity * i
+    }
 
     MainBalloon {
         id: mainBalloon
@@ -26,28 +29,7 @@ ApplicationWindow {
 
         MainLists {
             id: mainLists
-
-            MMImage {
-                id: locationGear
-                visible: false // Экспериментальная фича
-
-                anchors {
-                    top: parent.top
-                    right: parent.right
-                    topMargin: 5
-                    rightMargin: 20
-                }
-
-                source: "/icons/gear.png"
-                mmwidth: 5
-                mmheight: 5
-                opacity: 0.75
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: mainInstallLocationPanel.show()
-                }
-            }
+            LocationGear { id: locationGear; visible: true } // Экспериментальная фича
         }
 
         MainSortSearchBox {
@@ -64,43 +46,9 @@ ApplicationWindow {
         id: mainTracebackPanel
     }
 
-    Loader {
+    MainWebView {
         id: mainWebView
-        asynchronous: false
         anchors.bottom: parent.bottom
-
-        function hide() {
-            if (item)
-                return item.hide()
-            else
-                return false
-        }
-
-        function show() {
-            if (item)
-                return item.show()
-            else
-                return false
-        }
-
-        Connections {
-            target: mainWindow
-            function onInfoUriSignal(uriStr) {
-                if (uriStr)
-                {
-                    if (mainWebView.status == Loader.Null)
-                        mainWebView.sourceComponent = Qt.createComponent("MainWebView.qml")
-
-                    mainWebView.show()
-                    if (mainWebView.item.url != uriStr)
-                        mainWebView.item.url = uriStr
-                }
-            }
-        }
-    }
-
-    MainSortMenu {
-        id: mainSortMenu
     }
 
     MainLikePanel {
@@ -109,10 +57,6 @@ ApplicationWindow {
 
     MainInstallLocationPanel {
         id: mainInstallLocationPanel
-    }
-
-    MainMenu {
-        id: mainMenu
     }
 
     Item {

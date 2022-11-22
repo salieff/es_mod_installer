@@ -79,7 +79,7 @@ Item {
         onClicked: {
             if (model.likemarkscount >=0 && model.dislikemarkscount >= 0) {
                 let operationModel = mainDelegateContainer.ListView.view.model
-                mainWindow.likeBoxSignal(operationModel, model)
+                mainLikePanel.fillData(operationModel, model)
             }
         }
     }

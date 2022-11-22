@@ -49,9 +49,9 @@ Item {
         anchors.centerIn: parent
         width: delegateRectangle.width - delegateRectangle.border.width
         height: delegateRectangle.height - delegateRectangle.border.width
-        radius: delegateRectangle.radius - delegateRectangle.border.width/2
+        radius: delegateRectangle.radius - delegateRectangle.border.width / 2
 
-        border.width: delegateRectangle.border.width/2
+        border.width: delegateRectangle.border.width / 2
         border.color: "#22FFFFFF"
 
         gradient: Gradient {

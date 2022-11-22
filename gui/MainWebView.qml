@@ -3,6 +3,9 @@ import QtWebView 1.15
 import QtQuick.Controls 2.15
 
 Item {
+    visible: false
+    property alias url: internalBrowser.url
+
     ProgressBar {
         id: internalBrowserProgressBar
         visible: internalBrowser.loading
@@ -22,24 +25,19 @@ Item {
         anchors.bottom: parent.bottom
     }
 
-    property alias url: internalBrowser.url
-
     function hide() {
         if (visible) {
             visible = false
-            // stop()
             mainLists.enabled = true
             return true
         }
+
         return false
     }
 
-    function show() {
-        // if (visible)
-        //    return false
-
+    function show(url_for_show) {
+        internalBrowser.url = url_for_show
         mainWindow.hideAllPanels()
-
         mainLists.enabled = false
         visible = true
         mainAppTitle.closeButton.state = "CLOSE"

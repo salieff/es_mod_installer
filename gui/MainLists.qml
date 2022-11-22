@@ -3,74 +3,41 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import QtQuick.Window 2.15
 
+
 Item {
     Layout.fillHeight: true
     Layout.fillWidth: true
 
-    property int lastIndex: 2
-    property BusyIndicator busyIndicator: busyIndicator
-
-    Flickable {
+    SwipeView {
+        id: swipeView
         anchors.fill: parent
+        anchors.margins: 10
+        spacing: 10
+        currentIndex: 2
 
-        flickableDirection: Flickable.HorizontalFlick
-        flickDeceleration: 999999999
-
-        contentWidth: listsLayout.implicitWidth
-        contentX: listsLayout.implicitWidth / 5
-
-        RowLayout {
-            id: listsLayout
-            spacing: 0
-            anchors.centerIn: parent
-            height: parent.height
-
-            MainListView {
-                model: esBrokenModel
-                headerText: qsTr("Broken")
-            }
-
-            MainListView {
-                model: esFavoriteModel
-                headerText: qsTr("Favorite")
-            }
-
-            MainListView {
-                model: esModel
-                headerText: qsTr("All")
-            }
-
-            MainListView {
-                model: esInstalledModel
-                headerText: qsTr("Installed")
-            }
-
-            MainListView {
-                model: esIncompletedModel
-                headerText: qsTr("Incomplete")
-            }
+        MainListView {
+            model: esBrokenModel
+            headerText: qsTr("Broken")
         }
 
-        Behavior on contentX {
-            NumberAnimation {
-                duration: 300
-                easing.type: Easing.OutBack
-            }
+        MainListView {
+            model: esFavoriteModel
+            headerText: qsTr("Favorite")
         }
 
-        onMovementEnded: {
-            lastIndex = Math.round(contentX / mainWindow.width)
-            contentX = mainWindow.width * lastIndex
+        MainListView {
+            model: esModel
+            headerText: qsTr("All")
         }
 
-        onContentXChanged: {
-            let ind2 = Math.round(contentX / mainWindow.width)
-            pageIndicator.currentIndex = ind2
+        MainListView {
+            model: esInstalledModel
+            headerText: qsTr("Installed")
         }
 
-        onContentWidthChanged: {
-            contentX = mainWindow.width * lastIndex
-            pageIndicator.currentIndex = lastIndex
+        MainListView {
+            model: esIncompletedModel
+            headerText: qsTr("Incomplete")
         }
     }
 
@@ -80,8 +47,8 @@ Item {
             horizontalCenter: parent.horizontalCenter
         }
 
-        width: pageIndicator.implicitWidth + 20
-        height: pageIndicator.implicitHeight + 20
+        width: pageIndicator.implicitWidth + mm(1)
+        height: pageIndicator.implicitHeight + mm(1)
         z: 1
         radius: 10
 
@@ -95,8 +62,24 @@ Item {
             id: pageIndicator
             anchors.centerIn: parent
 
-            count: 5
-            currentIndex: 2
+            count: swipeView.count
+            currentIndex: swipeView.currentIndex
+
+            delegate: Rectangle {
+                implicitWidth: mm(1)
+                implicitHeight: mm(1)
+
+                radius: width / 2
+                color: "black"
+
+                opacity: index === pageIndicator.currentIndex ? 0.95 : pressed ? 0.7 : 0.45
+
+                Behavior on opacity {
+                    OpacityAnimator {
+                        duration: 100
+                    }
+                }
+            }
         }
     }
 
@@ -105,13 +88,13 @@ Item {
         anchors.centerIn: parent
         width: 200
         height: 200
-        running: true;
+        running: true
 
         Connections {
             target: esModel
             function onEsIndexReceived() {
-                busyIndicator.running = false;
-                busyIndicator.visible = false;
+                busyIndicator.running = false
+                busyIndicator.visible = false
             }
         }
     }

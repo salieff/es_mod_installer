@@ -31,9 +31,9 @@ Rectangle {
 
             function showHelp(chapter) {
                 if (Qt.platform.os === "android")
-                    mainWindow.infoUriSignal("file:///android_asset/help/index.html" + chapter)
+                    mainWebView.show("file:///android_asset/help/index.html" + chapter)
                 else if (Qt.platform.os === "ios")
-                    mainWindow.infoUriSignal("file:///Applications/ESManager.app/help.html" + chapter)
+                    mainWebView.show("file:///Applications/ESManager.app/help.html" + chapter)
             }
 
             MouseArea {
@@ -62,6 +62,8 @@ Rectangle {
                 function onAppTitleReceived(text) { appTitleText.text = text }
             }
 
+            MainMenu { id: mainMenu }
+
             MouseArea {
                 anchors.fill: parent
                 onPressAndHold: mainMenu.popup()
@@ -79,13 +81,13 @@ Rectangle {
         MMImage {
             id: externalLinkButton
             source: "/icons/external-link.png"
-            visible: mainWebView.status != Loader.Null && mainWebView.item.visible && !mainWebView.item.url.toString().startsWith("file:/")
+            visible: mainWebView.visible && !mainWebView.url.toString().startsWith("file:/")
             mmwidth: 6
             mmheight: 6
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: Qt.openUrlExternally(mainWebView.item.url)
+                onClicked: Qt.openUrlExternally(mainWebView.url)
             }
         }
 

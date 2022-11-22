@@ -98,6 +98,8 @@ Rectangle {
                 }
             }
 
+            MainSortMenu { id: mainSortMenu }
+
             MouseArea {
                 anchors.fill: parent
                 onClicked: mainSortMenu.popup()

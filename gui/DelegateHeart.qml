@@ -3,11 +3,10 @@ import QtQuick.Layouts 1.15
 
 
 MMImage {
-    id: favHeart
     source: model.favorite ? "/icons/fav.png" : "/icons/not_fav.png"
-    mmwidth: 3
-    mmheight: 3
-    Layout.leftMargin: 10
+    mmwidth: 4
+    mmheight: 4
+    Layout.leftMargin: mm(1)
 
     MouseArea {
         anchors.fill: parent

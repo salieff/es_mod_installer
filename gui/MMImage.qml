@@ -1,5 +1,4 @@
 import QtQuick 2.15
-import QtQuick.Window 2.15
 import QtQuick.Layouts 1.15
 
 Image {
@@ -8,8 +7,9 @@ Image {
 
     Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
 
-    sourceSize.width: Screen.pixelDensity * mmwidth
-    sourceSize.height: Screen.pixelDensity * mmheight
+    sourceSize.width: mm(mmwidth)
+    sourceSize.height: mm(mmheight)
+
     Layout.preferredWidth: sourceSize.width
     Layout.preferredHeight: sourceSize.height
 }

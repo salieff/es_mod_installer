@@ -293,40 +293,37 @@ Rectangle {
         }
     }
 
-    Connections {
-        target: mainWindow
-        function onLikeBoxSignal(operationModel, model) {
-            if (!visible)
-            {
-                likeImg.opacity = model.mylikemark === ESModElement.LikeMark ? 1 : 0.3
-                dislikeImg.opacity = model.mylikemark === ESModElement.DislikeMark ? 1 : 0.3
+    function fillData(operationModel, element) {
+        if (!visible)
+        {
+            likeImg.opacity = element.mylikemark === ESModElement.LikeMark ? 1 : 0.3
+            dislikeImg.opacity = element.mylikemark === ESModElement.DislikeMark ? 1 : 0.3
 
-                likeText.text = model.likemarkscount > 0 ? model.likemarkscount : ""
-                dislikeText.text = model.dislikemarkscount > 0 ? model.dislikemarkscount : ""
+            likeText.text = element.likemarkscount > 0 ? element.likemarkscount : ""
+            dislikeText.text = element.dislikemarkscount > 0 ? element.dislikemarkscount : ""
 
-                mainLists.enabled = false
+            mainLists.enabled = false
 
-                let tlen = model.title.length
-                let maxlen = 32
-                if ( tlen <= maxlen)
-                    likeTitle.text = model.title
-                else
-                    likeTitle.text = model.title.substring(0, (maxlen - 3) / 2) + "..." + model.title.substring(tlen - (maxlen - 3) / 2)
+            let tlen = element.title.length
+            let maxlen = 32
+            if ( tlen <= maxlen)
+                likeTitle.text = element.title
+            else
+                likeTitle.text = element.title.substring(0, (maxlen - 3) / 2) + "..." + element.title.substring(tlen - (maxlen - 3) / 2)
 
-                instTotal.text = model.insttotal > 0 ? model.insttotal : ""
-                instActive.text = model.instactive > 0 ? model.instactive : ""
-                instTotalMonth.text = model.insttotalmonth > 0 ? model.insttotalmonth : ""
-                instActiveMonth.text = model.instactivemonth > 0 ? model.instactivemonth : ""
-                instTotalWeek.text = model.insttotalweek > 0 ? model.insttotalweek : ""
-                instActiveWeek.text = model.instactiveweek > 0 ? model.instactiveweek : ""
-                lifeTimeAVG.text = model.lifetimeavg > 0 ? model.lifetimeavg : ""
-                lifeTimeMAX.text = model.lifetimemax > 0 ? model.lifetimemax : ""
+            instTotal.text = element.insttotal > 0 ? element.insttotal : ""
+            instActive.text = element.instactive > 0 ? element.instactive : ""
+            instTotalMonth.text = element.insttotalmonth > 0 ? element.insttotalmonth : ""
+            instActiveMonth.text = element.instactivemonth > 0 ? element.instactivemonth : ""
+            instTotalWeek.text = element.insttotalweek > 0 ? element.insttotalweek : ""
+            instActiveWeek.text = element.instactiveweek > 0 ? element.instactiveweek : ""
+            lifeTimeAVG.text = element.lifetimeavg > 0 ? element.lifetimeavg : ""
+            lifeTimeMAX.text = element.lifetimemax > 0 ? element.lifetimemax : ""
 
-                itemIndex = model.index
-                myLike = model.mylikemark
-                opModel = operationModel
-                show()
-            }
+            itemIndex = element.index
+            myLike = element.mylikemark
+            opModel = operationModel
+            show()
         }
     }
 }

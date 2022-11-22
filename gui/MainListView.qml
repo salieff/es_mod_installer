@@ -6,12 +6,7 @@ ListView {
     property string headerText
     delegate: Delegate {}
 
-    id: modsListView
-    Layout.margins: 10
-    Layout.fillHeight: true
-    Layout.preferredWidth: mainWindow.width - Layout.margins * 2
     spacing: 5
-    // clip: true
     maximumFlickVelocity: 7000
 
     ScrollBar.vertical: EsScrollBar {}
@@ -49,7 +44,6 @@ ListView {
                 GradientStop { position: 0; color: "#FFFFFF" }
                 GradientStop { position: 1; color: "#A0A0A0" }
             }
-
 
             Text {
                 id: hdrText
