@@ -9,9 +9,8 @@
 #include "safadapter.h"
 
 
-AsyncDeleter::AsyncDeleter(QObject *parent, QString stopFolder)
+AsyncDeleter::AsyncDeleter(QObject *parent)
     : QThread(parent)
-    , m_parentStopFolder(stopFolder)
 {
 }
 
@@ -20,11 +19,6 @@ bool AsyncDeleter::deleteFiles(QStringList flist)
     m_localFiles = flist;
     start();
     return true;
-}
-
-void AsyncDeleter::setStopFolder(QString stopFolder)
-{
-    m_parentStopFolder = stopFolder;
 }
 
 void AsyncDeleter::run()
@@ -59,5 +53,5 @@ void AsyncDeleter::run()
     }
 
     for (auto const &path : optimizedPaths)
-        SafAdapter::getCurrentAdapter().DeleteEmptyFoldersRecursively(path, m_parentStopFolder);
+        SafAdapter::getCurrentAdapter().DeleteEmptyFoldersRecursively(path);
 }

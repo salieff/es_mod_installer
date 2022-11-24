@@ -19,7 +19,7 @@ perl -i -pe 's/^\s*#define\s+ESM_VERSION_MINOR\s+\d+\s*/#define ESM_VERSION_MINO
 perl -i -pe 's/^\s*#define\s+ESM_VERSION_BUILD\s+\d+\s*/#define ESM_VERSION_BUILD '"${newBuild}"'\n/g' "${myDir}/version.h"
 
 perl -i -pe 's/android:versionName="[\d\.]+"/android:versionName="'"${newMajor}\.${newMinor}"'"/g' "${myDir}/android/AndroidManifest.xml"
-perl -i -pe 's/android:versionCode="\d+"/android:versionCode="'"${newMajor}${newMinor}"'"/g' "${myDir}/android/AndroidManifest.xml"
+# perl -i -pe 's/android:versionCode="\d+"/android:versionCode="'"${newMajor}${newMinor}"'"/g' "${myDir}/android/AndroidManifest.xml"
 
 perl -i -0pe 's/<key>CFBundleShortVersionString<\/key>\s*\n(\s*)<string>[\d\.]+<\/string>/<key>CFBundleShortVersionString<\/key>\n$1<string>'"${newMajor}\.${newMinor}"'<\/string>/g' "${myDir}/ESInfo.plist"
 perl -i -0pe 's/<key>CFBundleVersion<\/key>\s*\n(\s*)<string>[\d\.]+<\/string>/<key>CFBundleVersion<\/key>\n$1<string>'"${newMajor}\.${newMinor}\.${newBuild}"'<\/string>/g' "${myDir}/ESInfo.plist"

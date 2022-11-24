@@ -38,11 +38,7 @@ void StatisticsManager::deserializeFromJSON(const QJsonArray &reqArr)
 
 QJsonArray StatisticsManager::serializeToJSON()
 {
-    QJsonArray reqArr;
-    foreach (const QString &req, m_requestQueue)
-        reqArr << req;
-
-    return reqArr;
+    return QJsonArray::fromStringList(m_requestQueue);
 }
 
 void StatisticsManager::requestFinished()

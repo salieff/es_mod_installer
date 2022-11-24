@@ -18,40 +18,12 @@
 #include "safadapter.h"
 
 
-ESModModel::ModsInstallLocation ConfiguredLocation(void)
-{
-    QFile f(AsyncJsonWriter::configFileName());
-    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
-        return ESModModel::ModsInstallLocationData;
-
-    QByteArray data = f.readAll();
-    f.close();
-
-    QJsonParseError err;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &err);
-
-    if (doc.isNull())
-        return ESModModel::ModsInstallLocationData;
-
-    if (!doc.isObject())
-        return ESModModel::ModsInstallLocationData;
-
-    QJsonObject obj = doc.object();
-
-    return static_cast<ESModModel::ModsInstallLocation>(obj["mods_install_location"].toInt(ESModModel::ModsInstallLocationData));
-}
-
-
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
     SafAdapter::RequestExternalStorageReadWrite();
-
-    if (ConfiguredLocation() == ESModModel::ModsInstallLocationData)
-        SafAdapter::setCurrentAdapter("Android/data");
-    else
-        SafAdapter::setCurrentAdapter("Android/media");
+    SafAdapter::getCurrentAdapter();
 
     AsyncDownloader::createNetworkManager(&app);
     StatisticsManager::getInstance(&app);

@@ -93,7 +93,7 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
 
     case SizeRole:
         if (element->size == 0)
-            return element->LocalSize();
+            return element->m_localSize;
 
         return element->size;
         break;
@@ -103,7 +103,7 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         QDateTime dt;
 
         if (element->timestamp == 0)
-            dt.setTime_t(element->LocalTimeStamp());
+            dt.setTime_t(element->m_localTimestamp);
         else
             dt.setTime_t(element->timestamp);
 
@@ -234,7 +234,7 @@ void ESModModel::ESModIndexDownloaded()
             QJsonArray arr = obj["packs"].toArray();
             for (int i = 0; i < arr.size(); ++i)
             {
-                ESModElement *el = new ESModElement(ES_MOD_INDEX_SERVER, m_ESModsFolder, this);
+                ESModElement *el = new ESModElement(ES_MOD_INDEX_SERVER, this);
                 if (el->DeserializeFromNetwork(arr[i].toObject()))
                 {
                     el->TryToPickupFrom(local_elements);
@@ -472,7 +472,7 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
     {
         // Backward compatibility for old versions
         f.unsetError();
-        f.setFileName(QDir(m_ESModsFolder).filePath(".esmanager_installed.db"));
+        f.setFileName(".esmanager_installed.db");
         if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
         {
             m_needShowHelp = true;
@@ -502,14 +502,6 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
 
     QJsonObject obj = doc.object();
 
-    m_ModsInstallLocation = static_cast<ModsInstallLocation>(obj["mods_install_location"].toInt(ModsInstallLocationData));
-    emit currentModsInstallLocation(m_ModsInstallLocation);
-
-    if (m_ModsInstallLocation == ModsInstallLocationData)
-        m_ESModsFolder = ANDROID_ES_MODS_FOLDER_DATA;
-    else
-        m_ESModsFolder = ANDROID_ES_MODS_FOLDER_MEDIA;
-
     // FIXME: Can't sort by size or date until headers weren't received
     // m_lastSortMode = (ESModModel::SortMode)obj["sortmode"].toInt();
 
@@ -520,7 +512,7 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
     QJsonArray arr = obj["packs"].toArray();
     for (int i = 0; i < arr.size(); ++i)
     {
-        ESModElement *el = new ESModElement(ES_MOD_INDEX_SERVER, m_ESModsFolder, this);
+        ESModElement *el = new ESModElement(ES_MOD_INDEX_SERVER, this);
         el->DeserializeFromDB(arr[i].toObject());
         l << el;
     }
@@ -545,11 +537,10 @@ void ESModModel::SaveLocalModsDB()
 {
     QJsonArray arr;
     for (int i = 0; i < m_initialElements.size(); ++i)
-        if (!m_initialElements[i]->m_localFilesMap.empty() || m_initialElements[i]->favorite)
+        if (!m_initialElements[i]->m_localFiles.empty() || m_initialElements[i]->favorite)
             arr.push_back(m_initialElements[i]->SerializeToDB());
 
     QJsonObject *obj = new QJsonObject;
-    obj->insert("mods_install_location", (int)m_ModsInstallLocation);
     obj->insert("sortmode", (int)m_lastSortMode);
     obj->insert("helptext", m_helpText);
     obj->insert("packs", arr);
@@ -606,11 +597,11 @@ static bool lessThanBySize0(ESModElement *a, ESModElement *b)
 {
     double sz1 = a->size;
     if (sz1 == 0)
-        sz1 = a->LocalSize();
+        sz1 = a->m_localSize;
 
     double sz2 = b->size;
     if (sz2 == 0)
-        sz2 = b->LocalSize();
+        sz2 = b->m_localSize;
 
     if (sz1 == sz2)
         return lessThanByStatus(a, b);
@@ -622,11 +613,11 @@ static bool lessThanBySize1(ESModElement *a, ESModElement *b)
 {
     double sz1 = a->size;
     if (sz1 == 0)
-        sz1 = a->LocalSize();
+        sz1 = a->m_localSize;
 
     double sz2 = b->size;
     if (sz2 == 0)
-        sz2 = b->LocalSize();
+        sz2 = b->m_localSize;
 
     if (sz1 == sz2)
         return lessThanByStatus(a, b);
@@ -638,11 +629,11 @@ static bool lessThanByDate0(ESModElement *a, ESModElement *b)
 {
     double tm1 = a->timestamp;
     if (tm1 == 0)
-        tm1 = a->LocalTimeStamp();
+        tm1 = a->m_localTimestamp;
 
     double tm2 = b->timestamp;
     if (tm2 == 0)
-        tm2 = b->LocalTimeStamp();
+        tm2 = b->m_localTimestamp;
 
     if (tm1 == tm2)
         return lessThanByStatus(a, b);
@@ -654,11 +645,11 @@ static bool lessThanByDate1(ESModElement *a, ESModElement *b)
 {
     double tm1 = a->timestamp;
     if (tm1 == 0)
-        tm1 = a->LocalTimeStamp();
+        tm1 = a->m_localTimestamp;
 
     double tm2 = b->timestamp;
     if (tm2 == 0)
-        tm2 = b->LocalTimeStamp();
+        tm2 = b->m_localTimestamp;
 
     if (tm1 == tm2)
         return lessThanByStatus(a, b);
@@ -866,7 +857,7 @@ void ESModModel::helpRead(QString str)
 void ESModModel::copyTraceback(bool forLog)
 {
     QFile f;
-    if (!SafAdapter::getAdapter("Android/data").OpenQFile(f, QDir(ANDROID_ES_MODS_FOLDER_DATA).filePath(forLog ? "log.txt" : "traceback.txt"), QIODevice::ReadOnly | QIODevice::Text))
+    if (!SafAdapter::getCurrentAdapter().OpenQFile(f, forLog ? "log.txt" : "traceback.txt", QIODevice::ReadOnly | QIODevice::Text))
         return;
 
     QDateTime modTime = QFileInfo(f).lastModified();
@@ -895,32 +886,4 @@ void ESModModel::copyToClipboard(const QString &txt, const QString &msg)
 {
     QApplication::clipboard()->setText(txt);
     emit balloonText(msg);
-}
-
-void ESModModel::setModsInstallLocation(ModsInstallLocation location)
-{
-    m_ModsInstallLocation = location;
-
-    if (m_ModsInstallLocation == ModsInstallLocationData)
-    {
-        m_ESModsFolder = ANDROID_ES_MODS_FOLDER_DATA;
-        SafAdapter::setCurrentAdapter("Android/data");
-    }
-    else
-    {
-        m_ESModsFolder = ANDROID_ES_MODS_FOLDER_MEDIA;
-        SafAdapter::setCurrentAdapter("Android/media");
-    }
-
-    QTimer::singleShot(100, [this]() {
-        for (ESModElement *el: m_initialElements)
-        {
-            el->SetInstallPath(m_ESModsFolder);
-            el->state = ESModElement::Unknown;
-            el->headersReceived();
-        }
-
-        SaveLocalModsDB();
-        emit currentModsInstallLocation(m_ModsInstallLocation);
-    });
 }

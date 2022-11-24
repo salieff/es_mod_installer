@@ -6,23 +6,21 @@
 #include <QWaitCondition>
 
 #include "minizip/unzip.h"
-#include "modpaths.h"
 
 
 class AsyncUnzipper : public QThread
 {
     Q_OBJECT
 public:
-    explicit AsyncUnzipper(QObject * parent = 0, QString stopFolder = ANDROID_ES_MODS_FOLDER_DATA);
+    explicit AsyncUnzipper(QObject * parent = 0);
 
-    bool unzipList(QStringList ziplist, QString destdir);
+    bool unzipList(QStringList ziplist);
     bool aborted();
     bool failed();
     QString errorString();
     QStringList unpackedFiles();
 
     void setOverwriteFlags(bool ovrw, bool ovrw_always);
-    void setStopFolder(QString stopFolder);
 
 signals:
     void progress(int p);
@@ -41,7 +39,6 @@ private:
     bool checkOverwrite(QString fname);
 
     QStringList m_zipList;
-    QString m_destDir;
     qint64 m_totalSize;
     qint64 m_unpackedSize;
     int m_progress;
@@ -56,8 +53,6 @@ private:
     bool m_alwaysOverwrite;
     QMutex m_overwriteMutex;
     QWaitCondition m_overwriteCondition;
-
-    QString m_parentStopFolder;
 };
 
 #endif // ASYNCUNZIPPER_H

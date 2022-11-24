@@ -49,7 +49,7 @@ AsyncDownloader::~AsyncDownloader()
 {
 }
 
-bool AsyncDownloader::downloadFileList(QString url, QStringList &files, QString destdir, bool headers_only)
+bool AsyncDownloader::downloadFileList(QString url, QStringList &files, bool headers_only)
 {
     m_file.wait();
     m_file.reset();
@@ -57,7 +57,6 @@ bool AsyncDownloader::downloadFileList(QString url, QStringList &files, QString 
     m_headersOnly = headers_only;
     m_url = url;
     m_files = files;
-    m_destDir = destdir;
     m_currFileIndex = -1;
     m_progress = 0;
     m_wasError = false;
@@ -120,7 +119,7 @@ void AsyncDownloader::getHeadersData(double &sz, double &tm)
     tm = m_timestamp;
 }
 
-int AsyncDownloader::resumedProgress(QStringList &files, QString destdir)
+int AsyncDownloader::resumedProgress(QStringList &files)
 {
     int ret = 0;
 
@@ -130,7 +129,7 @@ int AsyncDownloader::resumedProgress(QStringList &files, QString destdir)
     for (int i = 0; i < files.count(); ++i)
     {
         qint64 refSize = 0;
-        qint64 rds = resumeDownloadSize(files[i], destdir, &refSize);
+        qint64 rds = resumeDownloadSize(files[i], &refSize);
         if (rds == RESUME_ALREADY_DONE)
         {
             ret += 100 / files.count();
@@ -185,16 +184,15 @@ void AsyncDownloader::fileWritten()
         }
         */
 
-        m_resumeDownloadSize = resumeDownloadSize(m_files[m_currFileIndex], m_destDir);
+        m_resumeDownloadSize = resumeDownloadSize(m_files[m_currFileIndex]);
         if (m_resumeDownloadSize == RESUME_ALREADY_DONE)
         {
-            m_localFiles << QDir(m_destDir).filePath(m_files[m_currFileIndex]);
+            m_localFiles << m_files[m_currFileIndex];
             fileWritten();
             return;
         }
 
-        if (!m_file.open(m_destDir,
-                         m_files[m_currFileIndex],
+        if (!m_file.open(m_files[m_currFileIndex],
                          QIODevice::WriteOnly | (m_resumeDownloadSize == RESUME_NOT_FOUND ? QIODevice::Truncate : QIODevice::Append)))
         {
             m_wasError = true;
@@ -203,7 +201,7 @@ void AsyncDownloader::fileWritten()
             return;
         }
 
-        m_localFiles << QDir(m_destDir).filePath(m_files[m_currFileIndex]);
+        m_localFiles << m_files[m_currFileIndex];
 
         QNetworkRequest new_req(QUrl(m_url).resolved(QUrl(m_files[m_currFileIndex])));
         if (m_resumeDownloadSize != RESUME_NOT_FOUND)
@@ -369,9 +367,9 @@ QNetworkReply * AsyncDownloader::head(QUrl url)
     return m_networkManager->head(r);
 }
 
-qint64 AsyncDownloader::resumeDownloadSize(QString fname, QString destdir, qint64 *refSize)
+qint64 AsyncDownloader::resumeDownloadSize(QString fname, qint64 *refSize)
 {
-    qint64 sz = SafAdapter::getCurrentAdapter().FileSize(QDir(destdir).filePath(fname)); // If the file does not exist or cannot be fetched, 0 (RESUME_NOT_FOUND) is returned
+    qint64 sz = SafAdapter::getCurrentAdapter().FileSize(fname); // If the file does not exist or cannot be fetched, 0 (RESUME_NOT_FOUND) is returned
     if (sz <= 0)
         return RESUME_NOT_FOUND;
 

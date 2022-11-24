@@ -47,7 +47,7 @@ public:
     };
     Q_ENUM(LikeType)
 
-    ESModElement(QString au = QString(), QString ap = QString(), QObject *parent = NULL, State st = Unknown, int pr = 100);
+    ESModElement(QString url = QString(), QObject *parent = NULL, State state = Unknown, int progress = 100);
 
     void Download(void);
     void Abort(void);
@@ -64,18 +64,10 @@ public:
     bool DeserializeFromNetwork(const QJsonObject &obj);
     bool DeserializeFromAllLikesList(const QJsonObject &obj);
     void DeserializeFromAllStatisticsList(const QJsonObject &obj);
-    void SetInstallPath(QString p);
 
     void TryToPickupFrom(QList<ESModElement *> &list);
 
-    const static bool REPLACE_LOCAL_FILES = true;
-    QStringList LocalFiles(void);
-    void AddToLocalFiles(const QStringList &l, bool replace = false);
-    void AddToLocalFiles(const QString &s, bool replace = false);
     void EraseFromLocalFiles(const QString &ext);
-    void ClearLocalFiles(void);
-
-    std::map<QString, QStringList> m_localFilesMap; // Для каждого SAF root держим свой список, для поддержки переключения Data/Media
 
     int id = -1;
     QString title = "Test sample mod name";
@@ -107,13 +99,9 @@ public:
 
     GuiBlockReason guiblocked = ByUnknown;
 
-    std::map<QString, double> m_localSizesMap;
-    std::map<QString, double> m_localTimestampsMap;
-
-    double LocalSize(void);
-    double LocalTimeStamp(void);
-    void SetLocalSize(double s);
-    void SetLocalTimeStamp(double t);
+    QStringList m_localFiles;
+    double m_localSize = 0;
+    double m_localTimestamp = 0;
 
     int m_modelIndex = -1;
     std::vector<int> m_keywordFilterCounter;
@@ -151,14 +139,13 @@ private:
     bool idEquals(ESModElement *el);
 
     QString removeOldLocalFilePrefixes(QString filePath);
-    void addLocalFilesForSafRoot(const QString &safRoot, const QJsonValue jvr);
+    void addLocalFilesWithoutOldPrefixes(const QJsonValue jvr);
 
     AsyncDownloader m_asyncDownloader;
     AsyncUnzipper m_asyncUnzipper;
     AsyncDeleter m_asyncDeleter;
 
     QString m_uri;
-    QString m_path;
 
     int m_failedDownloadsCount = 0;
 };

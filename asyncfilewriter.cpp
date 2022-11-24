@@ -20,14 +20,14 @@ AsyncFileWriter::~AsyncFileWriter()
 
 }
 
-bool AsyncFileWriter::open(QString &destdir, QString &fname, QIODevice::OpenMode mode)
+bool AsyncFileWriter::open(QString &fname, QIODevice::OpenMode mode)
 {
     reset();
 
-    if (!SafAdapter::getCurrentAdapter().CreateQFile(m_file, QDir(destdir).filePath(fname), mode, SafAdapter::CREATE_FOLDERS))
+    if (!SafAdapter::getCurrentAdapter().CreateQFile(m_file, fname, mode, SafAdapter::CREATE_FOLDERS))
     {
         m_wasError = true;
-        m_errorString = tr("Can't create file ") + QDir(destdir).filePath(fname) + " : " + m_file.errorString();
+        m_errorString = tr("Can't create file ") + fname + " : " + m_file.errorString();
         return false;
     }
 

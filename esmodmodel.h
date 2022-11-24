@@ -6,7 +6,6 @@
 
 #include "esmodelement.h"
 #include "asyncjsonwriter.h"
-#include "modpaths.h"
 
 
 class ESModModel : public QAbstractListModel
@@ -56,12 +55,6 @@ public:
     };
     Q_ENUM(SortMode)
 
-    enum ModsInstallLocation {
-        ModsInstallLocationData  = 0,
-        ModsInstallLocationMedia = 1
-    };
-    Q_ENUM(ModsInstallLocation)
-
     ESModModel(QObject *parent = 0);
     virtual ~ESModModel();
 
@@ -77,7 +70,6 @@ signals:
     void tracebackText(QString text);
     void balloonText(QString text);
     void showMeHelp(QString chapter);
-    void currentModsInstallLocation(ModsInstallLocation location);
 
 public slots:
     void ESModIndexDownloaded();
@@ -106,8 +98,6 @@ public slots:
     void copyTraceback(bool forLog = false);
     void copyToClipboard(const QString &txt, const QString &msg);
 
-    void setModsInstallLocation(ModsInstallLocation location);
-
 private slots:
     void showDefferedHelp();
 
@@ -128,9 +118,7 @@ private:
     SortMode m_lastSortMode = AsServer;
     QString m_helpText;
 
-    QString m_ESModsFolder = ANDROID_ES_MODS_FOLDER_DATA;
     bool m_needShowHelp = false;
-    ModsInstallLocation m_ModsInstallLocation = ModsInstallLocationData;
 };
 
 #endif // ESMODMODEL_H

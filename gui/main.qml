@@ -29,7 +29,6 @@ ApplicationWindow {
 
         MainLists {
             id: mainLists
-            LocationGear { id: locationGear; visible: true } // Экспериментальная фича
         }
 
         MainSortSearchBox {
@@ -53,10 +52,6 @@ ApplicationWindow {
 
     MainLikePanel {
         id: mainLikePanel
-    }
-
-    MainInstallLocationPanel {
-        id: mainInstallLocationPanel
     }
 
     Item {
@@ -86,7 +81,7 @@ ApplicationWindow {
     }
 
     function hideAllPanels() {
-        if (mainInfoPanel.hide() || mainWebView.hide() || mainLikePanel.hide() || mainTracebackPanel.hide() || mainInstallLocationPanel.hide() || mainButtonSelector.activeFocus == false)
+        if (mainInfoPanel.hide() || mainWebView.hide() || mainLikePanel.hide() || mainTracebackPanel.hide() || mainButtonSelector.activeFocus == false)
         {
             mainAppTitle.closeButton.state = "NORMAL"
             mainButtonSelector.forceActiveFocus()

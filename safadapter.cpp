@@ -13,7 +13,7 @@
 #include "safaccessdialog.h"
 
 
-QString SafAdapter::m_currentAdapterRootSafPath = "Android/data";
+QString SafAdapter::m_currentAdapterRootSafPath = SafAdapter::EverlastingSummerDataFilesPath;
 std::map<QString, SafAdapter> SafAdapter::m_adaptersMap;
 QMutex SafAdapter::m_adapterMutex;
 
@@ -125,7 +125,7 @@ bool SafAdapter::CreateFolder(const QString &parentFolder, const QString &subFol
                 "createFolder",
                 "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Z",
                 QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(parentFolder).object<jstring>(),
+                QAndroidJniObject::fromString(FixStartingSlash(parentFolder)).object<jstring>(),
                 QAndroidJniObject::fromString(subFolder).object<jstring>()
                 ) != JNI_FALSE;
 }
@@ -173,7 +173,7 @@ int SafAdapter::OpenFile(const QString &parentFolder, const QString &fileName, c
                 "openFile",
                 "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I",
                 QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(parentFolder).object<jstring>(),
+                QAndroidJniObject::fromString(FixStartingSlash(parentFolder)).object<jstring>(),
                 QAndroidJniObject::fromString(fileName).object<jstring>(),
                 QAndroidJniObject::fromString(mode).object<jstring>()
                 );
@@ -208,7 +208,7 @@ int SafAdapter::CreateFile(const QString &parentFolder, const QString &fileName,
                 "createFile",
                 "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I",
                 QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(parentFolder).object<jstring>(),
+                QAndroidJniObject::fromString(FixStartingSlash(parentFolder)).object<jstring>(),
                 QAndroidJniObject::fromString(fileName).object<jstring>(),
                 QAndroidJniObject::fromString(mode).object<jstring>()
                 );
@@ -274,7 +274,7 @@ int SafAdapter::FolderSize(const QString &folderPath)
                 "folderSize",
                 "(Landroid/content/Context;Ljava/lang/String;)I",
                 QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(folderPath).object<jstring>()
+                QAndroidJniObject::fromString(FixStartingSlash(folderPath)).object<jstring>()
                 );
 }
 
@@ -287,7 +287,7 @@ bool SafAdapter::DeleteFile(const QString &fileName)
                 "deleteFile",
                 "(Landroid/content/Context;Ljava/lang/String;)Z",
                 QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(fileName).object<jstring>()
+                QAndroidJniObject::fromString(FixStartingSlash(fileName)).object<jstring>()
                 ) != JNI_FALSE;
 }
 
@@ -337,7 +337,7 @@ int64_t SafAdapter::FileSize(const QString &fileName)
                 "fileSize",
                 "(Landroid/content/Context;Ljava/lang/String;)J",
                 QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(fileName).object<jstring>()
+                QAndroidJniObject::fromString(FixStartingSlash(fileName)).object<jstring>()
                 );
 }
 
@@ -348,5 +348,10 @@ bool SafAdapter::CanUseNativeAPI(void)
 
 QString SafAdapter::ConvertToNativePath(const QString &path)
 {
-    return "/sdcard/" + m_rootSafPath + path;
+    return "/sdcard/" + m_rootSafPath + FixStartingSlash(path);
+}
+
+QString SafAdapter::FixStartingSlash(const QString &path)
+{
+    return path.startsWith("/") ? path : "/" + path;
 }

@@ -3,12 +3,11 @@
 
 #include "asyncunzipper.h"
 #include "safadapter.h"
-#include "modpaths.h"
 
 
 #define UNPACK_BUFFER_SIZE (16*1024)
 
-AsyncUnzipper::AsyncUnzipper(QObject *parent, QString stopFolder)
+AsyncUnzipper::AsyncUnzipper(QObject *parent)
     : QThread(parent),
       m_totalSize(0),
       m_unpackedSize(0),
@@ -16,19 +15,17 @@ AsyncUnzipper::AsyncUnzipper(QObject *parent, QString stopFolder)
       m_abortFlag(false),
       m_failedFlag(false),
       m_canOverwrite(false),
-      m_alwaysOverwrite(false),
-      m_parentStopFolder(stopFolder)
+      m_alwaysOverwrite(false)
 {
 }
 
-bool AsyncUnzipper::unzipList(QStringList ziplist, QString destdir)
+bool AsyncUnzipper::unzipList(QStringList ziplist)
 {
     m_totalSize = 0;
     m_unpackedSize = 0;
     m_progress = 0;
     m_unpackedFiles.clear();
     m_zipList = ziplist;
-    m_destDir = destdir;
     m_abortFlag = false;
     m_failedFlag = false;
     m_errorString.clear();
@@ -82,11 +79,6 @@ void AsyncUnzipper::setOverwriteFlags(bool ovrw, bool ovrw_always)
     m_overwriteMutex.unlock();
 }
 
-void AsyncUnzipper::setStopFolder(QString stopFolder)
-{
-    m_parentStopFolder = stopFolder;
-}
-
 void AsyncUnzipper::run()
 {
     if (!calculateTotalSize())
@@ -110,7 +102,7 @@ void AsyncUnzipper::run()
             break;
         }
 
-        SafAdapter::getCurrentAdapter().DeleteEmptyFoldersRecursively(QFileInfo(zipFile).dir().path(), m_parentStopFolder);
+        SafAdapter::getCurrentAdapter().DeleteEmptyFoldersRecursively(QFileInfo(zipFile).dir().path());
 
         if (aborted())
             break;
@@ -173,7 +165,7 @@ bool AsyncUnzipper::unpackZip(QString zipFile, bool calcSizeOnly)
                 return false;
             }
 
-            if (!saveCurrentUnpFile(ufd, QDir(m_destDir).filePath(fname)))
+            if (!saveCurrentUnpFile(ufd, fname))
                 return false;
 
             if (unzCloseCurrentFile(ufd) != UNZ_OK)

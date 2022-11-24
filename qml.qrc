@@ -42,15 +42,11 @@
         <file>gui/MainLists.qml</file>
         <file>icons/saf_access_horiz.png</file>
         <file>icons/saf_access_vert.png</file>
-        <file>gui/MainInstallLocationPanel.qml</file>
-        <file>icons/gear.png</file>
-        <file>icons/gear_beta.png</file>
         <file>icons/external-link.png</file>
         <file>icons/not_fav.png</file>
         <file>icons/fav.png</file>
         <file>gui/DelegateHeart.qml</file>
         <file>gui/DelegateTitleText.qml</file>
         <file>gui/EsScrollBar.qml</file>
-        <file>gui/LocationGear.qml</file>
     </qresource>
 </RCC>

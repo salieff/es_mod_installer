@@ -17,12 +17,11 @@
     #define MY_PLATFORM "android"
 #endif
 
-ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, int pr)
+ESModElement::ESModElement(QString url, QObject *parent, State state, int progress)
     : QObject(parent),
-      state(st),
-      progress(pr),
-      m_uri(au),
-      m_path(ap)
+      state(state),
+      progress(progress),
+      m_uri(url)
 {
     connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
     connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
@@ -33,12 +32,6 @@ ESModElement::ESModElement(QString au, QString ap, QObject *parent, State st, in
     connect(&m_asyncUnzipper, SIGNAL(overwriteRequest(QString)), this, SLOT(unzipperOverwriteRequest(QString)), Qt::QueuedConnection);
 
     connect(&m_asyncDeleter, SIGNAL(finished()), this, SLOT(filesDeleted()), Qt::QueuedConnection);
-
-    if (m_path != ANDROID_ES_MODS_FOLDER_DATA)
-    {
-        m_asyncUnzipper.setStopFolder(m_path);
-        m_asyncDeleter.setStopFolder(m_path);
-    }
 }
 
 void ESModElement::Download(void)
@@ -64,7 +57,7 @@ void ESModElement::subDownload(void)
 
     connect(this, SIGNAL(abortProcessing()), &m_asyncDownloader, SLOT(abort()));
 
-    if (m_asyncDownloader.downloadFileList(m_uri, files, m_path))
+    if (m_asyncDownloader.downloadFileList(m_uri, files))
         changeState(Downloading, progress == 100 ? -1 : progress);
 }
 
@@ -79,20 +72,14 @@ void ESModElement::Update(void)
     blockGui(ByUpdate);
     m_asyncDeleter.wait();
 
-    m_asyncDeleter.deleteFiles(LocalFiles());
+    m_asyncDeleter.deleteFiles(m_localFiles);
 }
 
 void ESModElement::Delete(void)
 {
     blockGui(ByDelete);
-
-    QStringList allFiles = LocalFiles();
-
-    for(const QString &srvFile : files)
-        allFiles << QDir(m_path).filePath(srvFile);
-
     m_asyncDeleter.wait();
-    m_asyncDeleter.deleteFiles(allFiles);
+    m_asyncDeleter.deleteFiles(m_localFiles + files);
 }
 
 void ESModElement::SendLike(LikeType l)
@@ -131,7 +118,7 @@ void ESModElement::RequestHeaders()
     m_asyncDownloader.wait();
     m_asyncUnzipper.wait();
 
-    m_asyncDownloader.downloadFileList(m_uri, files, QString(), true);
+    m_asyncDownloader.downloadFileList(m_uri, files, true);
 }
 
 QString ESModElement::errorString()
@@ -152,7 +139,7 @@ void ESModElement::headersReceived()
 
     if (m_asyncDownloader.aborted() || m_asyncDownloader.failed())
     {
-        if (LocalFiles().isEmpty())
+        if (m_localFiles.isEmpty())
             changeState(Failed);
         else
             changeState(Installed);
@@ -162,17 +149,17 @@ void ESModElement::headersReceived()
 
     m_asyncDownloader.getHeadersData(size, timestamp);
 
-    int resumedProgress = m_asyncDownloader.resumedProgress(files, m_path);
+    int resumedProgress = m_asyncDownloader.resumedProgress(files);
     if (resumedProgress == 0)
         resumedProgress = -1;
 
-    if (LocalFiles().isEmpty())
+    if (m_localFiles.isEmpty())
     {
         changeState(Available, resumedProgress);
     }
     else
     {
-        if (timestamp > LocalTimeStamp())
+        if (timestamp > m_localTimestamp)
             changeState(InstalledHasUpdate);
         else
             changeState(InstalledAvailable);
@@ -183,7 +170,7 @@ void ESModElement::zipListUnpacked()
 {
     disconnect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()));
 
-    AddToLocalFiles(m_asyncUnzipper.unpackedFiles());
+    m_localFiles << m_asyncUnzipper.unpackedFiles();
 
     if (state != Unpacking || m_asyncUnzipper.aborted() || m_asyncUnzipper.failed())
     {
@@ -191,15 +178,15 @@ void ESModElement::zipListUnpacked()
             blockGui(ByUnknown); // Without press any button
 
         m_asyncDeleter.wait();
-        m_asyncDeleter.deleteFiles(LocalFiles());
+        m_asyncDeleter.deleteFiles(m_localFiles);
 
         return;
     }
 
     EraseFromLocalFiles(".zip");
 
-    SetLocalTimeStamp(timestamp);
-    SetLocalSize(size);
+    m_localTimestamp = timestamp;
+    m_localSize = size;
 
     emit saveMe();
     sendStatistics();
@@ -218,7 +205,7 @@ void ESModElement::unpackProgress(int p)
 void ESModElement::filesDownloaded()
 {
     disconnect(this, SIGNAL(abortProcessing()), &m_asyncDownloader, SLOT(abort()));
-    AddToLocalFiles(m_asyncDownloader.downloadedFiles(), REPLACE_LOCAL_FILES);
+    m_localFiles = m_asyncDownloader.downloadedFiles();
 
     if (state != Downloading || m_asyncDownloader.aborted() || m_asyncDownloader.failed())
     {
@@ -226,9 +213,9 @@ void ESModElement::filesDownloaded()
         {
             // blockGui(ByUnknown); // Without press any button
 
-            ClearLocalFiles();
-            SetLocalSize(0);
-            SetLocalTimeStamp(0);
+            m_localFiles.clear();
+            m_localSize = 0;
+            m_localTimestamp = 0;
             emit saveMe();
 
             if (m_failedDownloadsCount < 3 && !m_asyncDownloader.failedByDisk())
@@ -245,7 +232,7 @@ void ESModElement::filesDownloaded()
         if (m_asyncDownloader.aborted())
         {
             m_asyncDeleter.wait();
-            m_asyncDeleter.deleteFiles(LocalFiles());
+            m_asyncDeleter.deleteFiles(m_localFiles);
         }
 
         return;
@@ -254,11 +241,11 @@ void ESModElement::filesDownloaded()
     QStringList zipList;
     for (const QString &zipFile : files)
         if (zipFile.endsWith(".zip", Qt::CaseInsensitive))
-            zipList << QDir(m_path).filePath(zipFile);
+            zipList << zipFile;
 
     connect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()), Qt::QueuedConnection);
 
-    if (m_asyncUnzipper.unzipList(zipList, m_path))
+    if (m_asyncUnzipper.unzipList(zipList))
         changeState(Unpacking);
     else
         changeState(Failed);
@@ -277,9 +264,9 @@ void ESModElement::downloadProgress(int p)
 
 void ESModElement::filesDeleted()
 {
-    ClearLocalFiles();
-    SetLocalSize(0);
-    SetLocalTimeStamp(0);
+    m_localFiles.clear();
+    m_localSize = 0;
+    m_localTimestamp = 0;
 
     emit saveMe();
 
@@ -406,31 +393,15 @@ void ESModElement::myLikePosted()
 
 QJsonObject ESModElement::SerializeToDB()
 {
-    QJsonObject files_obj;
-    for (const auto &pair : m_localFilesMap)
-        files_obj[pair.first] = QJsonArray::fromStringList(pair.second);
-
-    QJsonObject sizes_obj;
-    for (const auto &pair : m_localSizesMap)
-        sizes_obj[pair.first] = pair.second;
-
-    QJsonObject tmstamps_obj;
-    for (const auto &pair : m_localTimestampsMap)
-        tmstamps_obj[pair.first] = pair.second;
-
-    QJsonArray langs_arr;
-    foreach (const QString &lang, langs)
-        langs_arr << lang;
-
     QJsonObject obj;
     obj["id"] = id;
     obj["title"] = title;
-    obj["langs"] = langs_arr;
+    obj["langs"] = QJsonArray::fromStringList(langs);
     obj["status"] = status;
     obj["infouri"] = infouri;
-    obj["files"] = files_obj;
-    obj["size"] = sizes_obj;
-    obj["timestamp"] = tmstamps_obj;
+    obj["files"] = QJsonArray::fromStringList(m_localFiles);
+    obj["size"] = m_localSize;
+    obj["timestamp"] = m_localTimestamp;
     obj["favorite"] = favorite;
 
     return obj;
@@ -441,23 +412,31 @@ QString ESModElement::removeOldLocalFilePrefixes(QString filePath)
     QString localFile(filePath);
 
     localFile.remove(QRegularExpression("^\\/sdcard\\/Android\\/data"));
-    localFile.remove(QRegularExpression("^Android\\/data"));
-    localFile.remove(QRegularExpression("^data"));
+    localFile.remove(QRegularExpression("^\\/?Android\\/data"));
+    localFile.remove(QRegularExpression("^\\/?data"));
+
+    localFile.remove(QRegularExpression("^\\/?Android\\/data\\/su.sovietgames.everlasting_summer\\/files"));
+    localFile.remove(QRegularExpression("^\\/?data\\/su.sovietgames.everlasting_summer\\/files"));
+    localFile.remove(QRegularExpression("^\\/?su.sovietgames.everlasting_summer\\/files"));
 
     localFile.remove(QRegularExpression("^\\/sdcard\\/Android\\/media"));
-    localFile.remove(QRegularExpression("^Android\\/media"));
-    localFile.remove(QRegularExpression("^media"));
+    localFile.remove(QRegularExpression("^\\/?Android\\/media"));
+    localFile.remove(QRegularExpression("^\\/?media"));
+
+    localFile.remove(QRegularExpression("^\\/?Android\\/media\\/su.sovietgames.everlasting_summer"));
+    localFile.remove(QRegularExpression("^\\/?media\\/su.sovietgames.everlasting_summer"));
+    localFile.remove(QRegularExpression("^\\/?su.sovietgames.everlasting_summer"));
 
     return localFile;
 }
 
-void ESModElement::addLocalFilesForSafRoot(const QString &safRoot, const QJsonValue jvr)
+void ESModElement::addLocalFilesWithoutOldPrefixes(const QJsonValue jvr)
 {
     if (!jvr.isArray())
         return;
 
     for (const auto &file_element : jvr.toArray())
-        m_localFilesMap[safRoot] << removeOldLocalFilePrefixes(file_element.toString());
+        m_localFiles << removeOldLocalFilePrefixes(file_element.toString());
 }
 
 void ESModElement::DeserializeFromDB(const QJsonObject &obj)
@@ -468,40 +447,43 @@ void ESModElement::DeserializeFromDB(const QJsonObject &obj)
     infouri = obj["infouri"].toString();
     favorite = obj["favorite"].toBool();
 
-    m_localSizesMap.clear();
+    m_localSize = 0;
     if (obj["size"].isObject())
     {
         auto szObj = obj["size"].toObject();
         for (QJsonObject::iterator it = szObj.begin(); it != szObj.end(); ++it)
-            m_localSizesMap[it.key()] = it.value().toDouble();
+            if (it.key().contains("Android/data"))
+                m_localSize = it.value().toDouble();
     }
     else
     {
-        m_localSizesMap[SafAdapter::getCurrentAdapterRoot()] = obj["size"].toDouble();
+        m_localSize = obj["size"].toDouble();
     }
 
-    m_localTimestampsMap.clear();
+    m_localTimestamp = 0;
     if (obj["timestamp"].isObject())
     {
         auto tmObj = obj["timestamp"].toObject();
         for (QJsonObject::iterator it = tmObj.begin(); it != tmObj.end(); ++it)
-            m_localTimestampsMap[it.key()] = it.value().toDouble();
+            if (it.key().contains("Android/data"))
+                m_localTimestamp = it.value().toDouble();
     }
     else
     {
-        m_localTimestampsMap[SafAdapter::getCurrentAdapterRoot()] = obj["timestamp"].toDouble();
+        m_localTimestamp = obj["timestamp"].toDouble();
     }
 
-    m_localFilesMap.clear();
+    m_localFiles.clear();
     if (obj["files"].isObject())
     {
         auto fileObj = obj["files"].toObject();
         for (QJsonObject::iterator it = fileObj.begin(); it != fileObj.end(); ++it)
-            addLocalFilesForSafRoot(it.key(), it.value());
+            if (it.key().contains("Android/data"))
+                addLocalFilesWithoutOldPrefixes(it.value());
     }
     else // Backward compatibility
     {
-        addLocalFilesForSafRoot(SafAdapter::getCurrentAdapterRoot(), obj["files"]);
+        addLocalFilesWithoutOldPrefixes(obj["files"]);
     }
 
     QJsonArray langs_arr = obj["langs"].toArray();
@@ -512,16 +494,16 @@ void ESModElement::DeserializeFromDB(const QJsonObject &obj)
 
 bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
 {
-    bool myPlatforFound = false;
+    bool myPlatformFound = false;
     QJsonArray platf_arr = obj["platforms"].toArray();
     for (int i = 0; i < platf_arr.size(); ++i)
         if (QString::compare(platf_arr[i].toString().trimmed(), MY_PLATFORM, Qt::CaseInsensitive) == 0)
         {
-            myPlatforFound = true;
+            myPlatformFound = true;
             break;
         }
 
-    if (!myPlatforFound)
+    if (!myPlatformFound)
         return false;
 
     id = obj["idmod"].toInt(-1);
@@ -571,13 +553,6 @@ void ESModElement::DeserializeFromAllStatisticsList(const QJsonObject &obj)
     lifetimemax = obj["lifetime_max"].toInt();
 }
 
-void ESModElement::SetInstallPath(QString p)
-{
-    m_path = p;
-    m_asyncUnzipper.setStopFolder(p);
-    m_asyncDeleter.setStopFolder(p);
-}
-
 void ESModElement::TryToPickupFrom(QList<ESModElement *> &list)
 {
     auto it = std::find_if(list.begin(), list.end(), [this](ESModElement *el){ return idEquals(el); });
@@ -587,9 +562,9 @@ void ESModElement::TryToPickupFrom(QList<ESModElement *> &list)
     if ((*it)->id != -1)
         id = (*it)->id;
 
-    m_localFilesMap = (*it)->m_localFilesMap;
-    m_localSizesMap = (*it)->m_localSizesMap;
-    m_localTimestampsMap = (*it)->m_localTimestampsMap;
+    m_localFiles = (*it)->m_localFiles;
+    m_localSize = (*it)->m_localSize;
+    m_localTimestamp = (*it)->m_localTimestamp;
     favorite = (*it)->favorite;
     delete (*it);
     list.erase(it);
@@ -636,11 +611,11 @@ void ESModElement::sendLikesRequests()
 
 void ESModElement::sendStatistics(bool inst)
 {
-    QString statReq = QString("%1?operation=statistics&id=%2&udid=%3&platform=%4&state=%5")\
-            .arg(STATS_CGI_URL)\
-            .arg(id)\
-            .arg(AsyncDownloader::getDeviceUDID())\
-            .arg(MY_PLATFORM)\
+    QString statReq = QString("%1?operation=statistics&id=%2&udid=%3&platform=%4&state=%5")
+            .arg(STATS_CGI_URL)
+            .arg(id)
+            .arg(AsyncDownloader::getDeviceUDID())
+            .arg(MY_PLATFORM)
             .arg(inst ? "installed" : "deleted");
 
     StatisticsManager::getInstance()->addRequest(statReq);
@@ -660,103 +635,10 @@ bool ESModElement::idEquals(ESModElement *el)
     return (myTitle == title2);
 }
 
-QStringList ESModElement::LocalFiles(void)
-{
-    const auto it = m_localFilesMap.find(SafAdapter::getCurrentAdapterRoot());
-    if (it == m_localFilesMap.end())
-        return QStringList();
-
-    if (it->second.empty())
-    {
-        m_localFilesMap.erase(it);
-        return QStringList();
-    }
-
-    return it->second;
-}
-
-void ESModElement::AddToLocalFiles(const QStringList &l, bool replace)
-{
-    if (l.isEmpty())
-        return;
-
-    if (replace)
-        m_localFilesMap[SafAdapter::getCurrentAdapterRoot()] = l;
-    else
-        m_localFilesMap[SafAdapter::getCurrentAdapterRoot()] << l;
-}
-
-void ESModElement::AddToLocalFiles(const QString &s, bool replace)
-{
-    if (s.isEmpty())
-        return;
-
-    if (replace)
-        m_localFilesMap[SafAdapter::getCurrentAdapterRoot()] = QStringList(s);
-    else
-        m_localFilesMap[SafAdapter::getCurrentAdapterRoot()] << s;
-}
-
 void ESModElement::EraseFromLocalFiles(const QString &ext)
 {
-    const auto it = m_localFilesMap.find(SafAdapter::getCurrentAdapterRoot());
-    if (it == m_localFilesMap.end())
-        return;
-
-    if (it->second.empty())
-        return;
-
-    it->second.erase(std::remove_if(it->second.begin(),
-                                    it->second.end(),
-                                    [&ext](const QString &s){ return s.endsWith(ext, Qt::CaseInsensitive); }),
-                     it->second.end());
-}
-
-void ESModElement::ClearLocalFiles(void)
-{
-    const auto it = m_localFilesMap.find(SafAdapter::getCurrentAdapterRoot());
-    if (it == m_localFilesMap.end())
-        return;
-
-    it->second.clear();
-}
-
-double ESModElement::LocalSize(void)
-{
-    const auto it = m_localSizesMap.find(SafAdapter::getCurrentAdapterRoot());
-    if (it == m_localSizesMap.end())
-        return 0;
-
-    if (it->second == 0)
-    {
-        m_localSizesMap.erase(it);
-        return 0;
-    }
-
-    return it->second;
-}
-
-double ESModElement::LocalTimeStamp(void)
-{
-    const auto it = m_localTimestampsMap.find(SafAdapter::getCurrentAdapterRoot());
-    if (it == m_localTimestampsMap.end())
-        return 0;
-
-    if (it->second == 0)
-    {
-        m_localTimestampsMap.erase(it);
-        return 0;
-    }
-
-    return it->second;
-}
-
-void ESModElement::SetLocalSize(double s)
-{
-    m_localSizesMap[SafAdapter::getCurrentAdapterRoot()] = s;
-}
-
-void ESModElement::SetLocalTimeStamp(double t)
-{
-    m_localTimestampsMap[SafAdapter::getCurrentAdapterRoot()] = t;
+    m_localFiles.erase(std::remove_if(m_localFiles.begin(),
+                                      m_localFiles.end(),
+                                      [&ext](const QString &s){ return s.endsWith(ext, Qt::CaseInsensitive); }),
+                       m_localFiles.end());
 }

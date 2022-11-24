@@ -26,7 +26,7 @@ public:
 
     bool CreateFolder(const QString &parentFolder, const QString &subFolder);
     bool CreateFoldersRecursively(const QString &foldersPath);
-    bool DeleteEmptyFoldersRecursively(const QString &foldersPath, const QString &stopRootPath);
+    bool DeleteEmptyFoldersRecursively(const QString &foldersPath, const QString &stopRootPath = "");
     bool FolderExists(const QString &folderPath);
     bool FolderEmpty(const QString &folderPath);
     bool DeleteFolder(const QString &folderPath);
@@ -44,13 +44,14 @@ public:
     static const bool CREATE_FOLDERS = true;
     static zlib_filefunc_def MiniZipFileAPI;
 
-    SafAdapter(const QString &rootSafPath);
+    SafAdapter(const QString &rootSafPath = EverlastingSummerDataFilesPath);
 
 private:
     QString m_rootSafPath;
     QAndroidJniObject m_javaSafAdapter;
     int RootUriPermissionsRequestCode = QRandomGenerator::global()->generate();
 
+    constexpr static const char *EverlastingSummerDataFilesPath = "Android/data/su.sovietgames.everlasting_summer/files";
     static const int MinimalSdkVersionForSaf = 29; // Android 10
     static QString m_currentAdapterRootSafPath;
     static QMutex m_adapterMutex;
@@ -62,6 +63,7 @@ private:
 
     bool CanUseNativeAPI(void);
     QString ConvertToNativePath(const QString &path);
+    QString FixStartingSlash(const QString &path);
 
     static SafAdapter & getAdapterForRoot(const QString &root);
 };

@@ -21,7 +21,7 @@ public:
     explicit AsyncDownloader(QObject *parent = 0);
     virtual ~AsyncDownloader();
 
-    bool downloadFileList(QString url, QStringList &files, QString destdir, bool headers_only = false);
+    bool downloadFileList(QString url, QStringList &files, bool headers_only = false);
     bool wait(unsigned long t = ULONG_MAX);
     bool aborted();
     bool failed();
@@ -29,7 +29,7 @@ public:
     QString errorString();
     QStringList downloadedFiles();
     void getHeadersData(double &sz, double &tm);
-    int resumedProgress(QStringList &files, QString destdir);
+    int resumedProgress(QStringList &files);
 
     static void createNetworkManager(QObject *parent = NULL);
     static QString getDeviceUDID();
@@ -60,12 +60,11 @@ private slots:
 
 private:
     bool checkOverwrite(QString fname);
-    qint64 resumeDownloadSize(QString fname, QString destdir, qint64 *refSize = NULL);
+    qint64 resumeDownloadSize(QString fname, qint64 *refSize = NULL);
 
     bool m_headersOnly;
     QString m_url;
     QStringList m_files;
-    QString m_destDir;
     int m_currFileIndex;
     int m_progress;
     bool m_wasError;
