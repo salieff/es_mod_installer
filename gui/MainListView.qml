@@ -23,7 +23,7 @@ ListView {
         NumberAnimation { property: "scale"; from: 1.0; to: 0; duration: 400 }
     }
 
-    displaced: Transition {
+    removeDisplaced: Transition {
         NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutBounce }
     }
 

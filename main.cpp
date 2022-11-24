@@ -22,13 +22,13 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    QtWebView::initialize();
+
     SafAdapter::RequestExternalStorageReadWrite();
     SafAdapter::getCurrentAdapter();
 
     AsyncDownloader::createNetworkManager(&app);
     StatisticsManager::getInstance(&app);
-
-    QtWebView::initialize();
 
     qmlRegisterType<ESModModel>("org.salieff.esmodinstaller", 1, 0, "ESModModel");
     qmlRegisterType<ESModElement>("org.salieff.esmodinstaller", 1, 0, "ESModElement");
