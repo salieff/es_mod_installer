@@ -45,9 +45,37 @@ ApplicationWindow {
         id: mainTracebackPanel
     }
 
-    MainWebView {
+    Loader {
         id: mainWebView
         anchors.bottom: parent.bottom
+
+        function isVisible() {
+            if (item)
+                return item.visible
+            else
+                return false
+        }
+
+        function getUrl() {
+            if (item)
+                return item.url
+            else
+                return ""
+        }
+
+        function hide() {
+            if (!item)
+                source = "MainWebView.qml"
+
+            return item.hide()
+        }
+
+        function show(url_for_show) {
+            if (!item)
+                source = "MainWebView.qml"
+
+            return item.show(url_for_show)
+        }
     }
 
     MainLikePanel {

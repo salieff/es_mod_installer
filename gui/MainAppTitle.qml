@@ -81,13 +81,13 @@ Rectangle {
         MMImage {
             id: externalLinkButton
             source: "/icons/external-link.png"
-            visible: mainWebView.visible && !mainWebView.url.toString().startsWith("file:/")
+            visible: mainWebView.isVisible() && !mainWebView.getUrl().toString().startsWith("file:/")
             mmwidth: 6
             mmheight: 6
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: Qt.openUrlExternally(mainWebView.url)
+                onClicked: Qt.openUrlExternally(mainWebView.getUrl())
             }
         }
 
