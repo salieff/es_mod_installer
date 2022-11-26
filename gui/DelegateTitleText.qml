@@ -21,7 +21,7 @@ Item {
             // spacer item
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Rectangle { anchors.fill: parent; color: "#ffaaaa" } // to visualize the spacer
+            // Rectangle { anchors.fill: parent; color: "#ffaaaa" } // to visualize the spacer
         }
 
         Text {
@@ -54,7 +54,7 @@ Item {
             // spacer item
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Rectangle { anchors.fill: parent; color: "#ffaaaa" } // to visualize the spacer
+            // Rectangle { anchors.fill: parent; color: "#ffaaaa" } // to visualize the spacer
         }
     }
 }

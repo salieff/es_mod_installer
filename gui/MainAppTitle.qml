@@ -81,7 +81,7 @@ Rectangle {
         MMImage {
             id: externalLinkButton
             source: "/icons/external-link.png"
-            visible: mainWebView.isVisible() && !mainWebView.getUrl().toString().startsWith("file:/")
+            visible: mainWebView.visible && !mainWebView.getUrl().toString().startsWith("file:/")
             mmwidth: 6
             mmheight: 6
 
