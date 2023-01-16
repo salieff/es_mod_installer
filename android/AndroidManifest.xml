@@ -9,7 +9,7 @@
     <!-- %%INSERT_FEATURES -->
 
     <supports-screens android:largeScreens="true" android:normalScreens="true" android:anyDensity="true" android:smallScreens="true"/>
-    <application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="ES Mod Installer" android:extractNativeLibs="true" android:icon="@drawable/icon" android:usesCleartextTraffic="true">
+    <application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="ES Mod Installer" android:extractNativeLibs="true" android:icon="@mipmap/icon" android:usesCleartextTraffic="true">
         <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density" android:name="org.qtproject.qt5.android.bindings.QtActivity" android:label="ES Mod Installer" android:screenOrientation="unspecified" android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -46,7 +46,7 @@
                  are done populating your window with content. -->
             <!-- meta-data android:name="android.app.splash_screen_drawable_portrait" android:resource="@drawable/logo_portrait" / -->
             <!-- meta-data android:name="android.app.splash_screen_drawable_landscape" android:resource="@drawable/logo_landscape" / -->
-            <meta-data android:name="android.app.splash_screen_drawable" android:resource="@drawable/logo"/>
+            <meta-data android:name="android.app.splash_screen_drawable" android:resource="@mipmap/logo"/>
             <!-- meta-data android:name="android.app.splash_screen_sticky" android:value="true"/ -->
             <!-- Splash screen -->
             <!-- Background running -->
