@@ -553,9 +553,10 @@ void ESModElement::DeserializeFromAllStatisticsList(const QJsonObject &obj)
     lifetimemax = obj["lifetime_max"].toInt();
 }
 
-void ESModElement::TryToPickupFrom(QList<ESModElement *> &list)
+void ESModElement::TryToPickupFrom(QList<ESModElement *> &list, bool strict)
 {
-    auto it = std::find_if(list.begin(), list.end(), [this](ESModElement *el){ return idEquals(el); });
+    auto it = std::find_if(list.begin(), list.end(), [this, strict](ESModElement *el){ return idEquals(el, strict); });
+
     if (it == list.end())
         return;
 
@@ -621,10 +622,13 @@ void ESModElement::sendStatistics(bool inst)
     StatisticsManager::getInstance()->addRequest(statReq);
 }
 
-bool ESModElement::idEquals(ESModElement *el)
+bool ESModElement::idEquals(ESModElement *el, bool strict)
 {
     if (id != -1 && id == el->id)
         return true;
+
+    if (strict)
+        return false;
 
     QString myTitle = this->title;
     myTitle = myTitle.remove(QRegularExpression("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegularExpression("\\[.*\\]")).remove(QRegularExpression("\\{.*\\}")).simplified();

@@ -237,7 +237,7 @@ void ESModModel::ESModIndexDownloaded()
                 ESModElement *el = new ESModElement(ES_MOD_INDEX_SERVER, this);
                 if (el->DeserializeFromNetwork(arr[i].toObject()))
                 {
-                    el->TryToPickupFrom(local_elements);
+                    el->TryToPickupFrom(local_elements, true);
                     addModElement(el);
                 }
                 else
@@ -247,6 +247,13 @@ void ESModModel::ESModIndexDownloaded()
             }
         }
     }
+
+    /* Сомнительный функционал
+    // Если остались установленные моды, не сопоставленные с индексом, попробуем найти их
+    // по совпадению titles: TryToPickupFrom(strict = false)
+    for (auto &el : m_initialElements)
+        el->TryToPickupFrom(local_elements);
+    */
 
     // Пусть последние добавленные будут сверху
     std::reverse(m_initialElements.begin(), m_initialElements.end());

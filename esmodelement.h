@@ -65,7 +65,7 @@ public:
     bool DeserializeFromAllLikesList(const QJsonObject &obj);
     void DeserializeFromAllStatisticsList(const QJsonObject &obj);
 
-    void TryToPickupFrom(QList<ESModElement *> &list);
+    void TryToPickupFrom(QList<ESModElement *> &list, bool strict = false);
 
     void EraseFromLocalFiles(const QString &ext);
 
@@ -136,7 +136,7 @@ private:
     void sendLikesRequests();
     void sendStatistics(bool inst = true);
 
-    bool idEquals(ESModElement *el);
+    bool idEquals(ESModElement *el, bool strict = false);
 
     QString removeOldLocalFilePrefixes(QString filePath);
     void addLocalFilesWithoutOldPrefixes(const QJsonValue jvr);
