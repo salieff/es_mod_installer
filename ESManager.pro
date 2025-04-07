@@ -31,11 +31,11 @@ SOURCES += main.cpp \
     asyncdownloader.cpp \
     asyncdeleter.cpp \
     asyncjsonwriter.cpp \
-    asyncfilewriter.cpp \
     statisticsmanager.cpp \
     esinstalledmodmodel.cpp \
     safadapter.cpp \
-    safioapi.cpp
+    safioapi.cpp \
+    admcontroller.cpp
 
 RESOURCES += qml.qrc
 
@@ -67,11 +67,11 @@ HEADERS += \
     asyncdownloader.h \
     asyncdeleter.h \
     asyncjsonwriter.h \
-    asyncfilewriter.h \
     statisticsmanager.h \
     esinstalledmodmodel.h \
     version.h \
-    safadapter.h
+    safadapter.h \
+    admcontroller.h
 
 DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 USE_FILE32API
 

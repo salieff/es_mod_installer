@@ -16,6 +16,7 @@
 #include "asyncdownloader.h"
 #include "statisticsmanager.h"
 #include "safadapter.h"
+#include "admcontroller.h"
 
 
 int main(int argc, char *argv[])
@@ -26,6 +27,10 @@ int main(int argc, char *argv[])
 
     SafAdapter::RequestExternalStorageReadWrite();
     SafAdapter::getCurrentAdapter();
+
+    qRegisterMetaType<ADMController::Status>();
+    qRegisterMetaType<ADMController::Reason>();
+    ADMController::Initialize();
 
     AsyncDownloader::createNetworkManager(&app);
     StatisticsManager::getInstance(&app);

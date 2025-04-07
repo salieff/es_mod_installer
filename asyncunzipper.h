@@ -14,7 +14,7 @@ class AsyncUnzipper : public QThread
 public:
     explicit AsyncUnzipper(QObject * parent = 0);
 
-    bool unzipList(QStringList ziplist);
+    bool unzip(QString zipfile);
     bool aborted();
     bool failed();
     QString errorString();
@@ -33,12 +33,11 @@ protected:
     virtual void run();
 
 private:
-    bool calculateTotalSize();
-    bool unpackZip(QString zipFile, bool calcSizeOnly = false);
+    bool unpackZip(bool calcSizeOnly = UNPACK_ZIP);
     bool saveCurrentUnpFile(unzFile ufd, QString fname);
     bool checkOverwrite(QString fname);
 
-    QStringList m_zipList;
+    QString m_zipFile;
     qint64 m_totalSize;
     qint64 m_unpackedSize;
     int m_progress;
@@ -53,6 +52,9 @@ private:
     bool m_alwaysOverwrite;
     QMutex m_overwriteMutex;
     QWaitCondition m_overwriteCondition;
+
+    constexpr static bool CALC_SIZE_ONLY = true;
+    constexpr static bool UNPACK_ZIP = false;
 };
 
 #endif // ASYNCUNZIPPER_H

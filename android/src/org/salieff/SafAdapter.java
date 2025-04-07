@@ -108,7 +108,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            // e.printStackTrace();
         }
 
         return -1;
@@ -144,7 +144,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            // e.printStackTrace();
         }
 
         return false;
@@ -167,7 +167,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            // e.printStackTrace();
             retValue = -1;
         }
         finally
