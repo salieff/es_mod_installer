@@ -425,6 +425,11 @@ void ESModModel::ToggleFavorite(int ind)
     m_elements[ind]->ToggleFavorite();
 }
 
+const QStringList & ESModModel::LocalFiles(int ind) const
+{
+    return m_elements[ind]->m_localFiles;
+}
+
 void ESModModel::elementChanged()
 {
     ESModElement *el = dynamic_cast<ESModElement *>(sender());

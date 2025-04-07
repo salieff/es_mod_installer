@@ -62,6 +62,8 @@ public:
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
 
+    const QStringList & LocalFiles(int ind) const;
+
 signals:
     void appTitleReceived(const QString &text);
     void appHelpReceived(const QString &text, bool fromServer = true);

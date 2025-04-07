@@ -32,9 +32,19 @@ REMAP_SOURCE_SLOT(ToggleFavorite)
 #undef REMAP_SOURCE_SLOT2
 
 
+const QStringList &ESInstalledModModel::SrcLocalFiles(int sind) const
+{
+    ESModModel *smdl = static_cast<ESModModel *>(sourceModel());
+    return smdl->LocalFiles(sind);
+}
+
 bool ESInstalledModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
     QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);
+
+    if (!SrcLocalFiles(ind.row()).empty())
+        return !inverseFilter;
+
     int st = sourceModel()->data(ind, ESModModel::StateRole).toInt();
 
     switch (st) {

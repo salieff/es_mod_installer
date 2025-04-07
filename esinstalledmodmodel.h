@@ -12,6 +12,7 @@ public:
         setSourceModel(sModel);
     }
 
+    const QStringList & SrcLocalFiles(int ind) const;
 
 protected:
     virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
