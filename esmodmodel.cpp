@@ -17,6 +17,7 @@
 #include "esmodmodel.h"
 #include "statisticsmanager.h"
 #include "safadapter.h"
+#include "asyncdownloader.h"
 
 #define ES_MOD_INDEX_SERVER "http://51.250.97.106/"
 #define ES_MOD_INDEX_NAME "project2.json"
@@ -80,8 +81,8 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         return element->infouri;
         break;
 
-    case FilesRole:
-        return element->files.join("\n");
+    case ZipFileRole:
+        return element->zipFile;
         break;
 
     case StateRole:
@@ -178,7 +179,7 @@ QHash<int, QByteArray> ESModModel::roleNames() const
     roles[StatusRole] = "status";
     roles[LangsRole] = "langs";
     roles[InfoUriRole] = "infouri";
-    roles[FilesRole] = "files";
+    roles[ZipFileRole] = "zipfile";
     roles[StateRole] = "modstate";
     roles[ProgressRole] = "progress";
     roles[SizeRole] = "modsize";

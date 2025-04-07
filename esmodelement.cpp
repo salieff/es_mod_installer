@@ -6,7 +6,8 @@
 
 #include "esmodelement.h"
 #include "statisticsmanager.h"
-#include "safadapter.h"
+#include "asyncdownloader.h"
+
 
 #if defined(Q_OS_IOS)
     #define MY_PLATFORM "ios"
@@ -17,19 +18,19 @@
     #define MY_PLATFORM "android"
 #endif
 
+
 ESModElement::ESModElement(QString url, QObject *parent, State state, int progress)
     : QObject(parent),
       state(state),
       progress(progress),
       m_uri(url)
 {
-    connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
-    connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
-    connect(&m_asyncDownloader, SIGNAL(headersReady()), this, SLOT(headersReceived()));
+    connect(&m_admController, &ADMController::DownloadProgress, this, &ESModElement::downloadProgress, Qt::QueuedConnection);
+    connect(&m_admController, &ADMController::DownloadComplete, this, &ESModElement::filesDownloaded, Qt::QueuedConnection);
 
-    connect(&m_asyncUnzipper, SIGNAL(finished()), this, SLOT(zipListUnpacked()), Qt::QueuedConnection);
-    connect(&m_asyncUnzipper, SIGNAL(progress(int)), this, SLOT(unpackProgress(int)), Qt::QueuedConnection);
-    connect(&m_asyncUnzipper, SIGNAL(overwriteRequest(QString)), this, SLOT(unzipperOverwriteRequest(QString)), Qt::QueuedConnection);
+    connect(&m_asyncUnzipper, &AsyncUnzipper::finished, this, &ESModElement::zipListUnpacked, Qt::QueuedConnection);
+    connect(&m_asyncUnzipper, &AsyncUnzipper::progress, this, &ESModElement::unpackProgress, Qt::QueuedConnection);
+    connect(&m_asyncUnzipper, &AsyncUnzipper::overwriteRequest, this, &ESModElement::unzipperOverwriteRequest, Qt::QueuedConnection);
 
     connect(&m_asyncDeleter, &AsyncDeleter::progress, this, &ESModElement::deletionProgress, Qt::QueuedConnection);
     connect(&m_asyncDeleter, &AsyncDeleter::finished, this, &ESModElement::filesDeleted, Qt::QueuedConnection);
@@ -37,42 +38,41 @@ ESModElement::ESModElement(QString url, QObject *parent, State state, int progre
 
 void ESModElement::Download(void)
 {
-    m_failedDownloadsCount = 0;
-
     if (state != Available && state != InstalledHasUpdate && state != Failed)
         return;
 
-    if (files.empty() || m_uri.isEmpty())
+    if (zipFile.isEmpty() || m_uri.isEmpty())
         return;
 
     blockGui(ByDownload);
 
-    subDownload();
-}
-
-void ESModElement::subDownload(void)
-{
-    // Make shure previous async operations already done
-    m_asyncDownloader.wait();
     m_asyncUnzipper.wait();
 
-    connect(this, SIGNAL(abortProcessing()), &m_asyncDownloader, SLOT(abort()));
-
-    if (m_asyncDownloader.downloadFileList(m_uri, files))
-        changeState(Downloading, progress == 100 ? -1 : progress);
+    if (m_admController.download(m_uri, zipFile, title, status))
+        changeState(Downloading);
+    else
+        changeState(Failed);
 }
 
 void ESModElement::Abort(void)
 {
     blockGui(ByAbort);
-    emit abortProcessing();
+
+    if (state == Downloading)
+    {
+        m_admController.remove();
+        changeState(Available);
+    }
+    else
+    {
+        emit abortProcessing();
+    }
 }
 
 void ESModElement::Update(void)
 {
     blockGui(ByUpdate);
     m_asyncDeleter.wait();
-
     m_asyncDeleter.deleteFiles(m_localFiles);
 }
 
@@ -80,7 +80,7 @@ void ESModElement::Delete(void)
 {
     blockGui(ByDelete);
     m_asyncDeleter.wait();
-    m_asyncDeleter.deleteFiles(m_localFiles + files);
+    m_asyncDeleter.deleteFiles(m_localFiles);
 }
 
 void ESModElement::SendLike(LikeType l)
@@ -109,23 +109,23 @@ void ESModElement::ToggleFavorite(void)
 
 void ESModElement::RequestHeaders()
 {
-    if (files.empty() || m_uri.isEmpty())
+    if (zipFile.isEmpty() || m_uri.isEmpty())
     {
         changeState(Installed);
         return;
     }
 
-    // Make shure previous async operations already done
-    m_asyncDownloader.wait();
-    m_asyncUnzipper.wait();
+    QNetworkReply *headersReply = AsyncDownloader::head(m_uri, zipFile);
+    connect(headersReply, &QNetworkReply::finished, this, &ESModElement::headersReceived);
 
-    m_asyncDownloader.downloadFileList(m_uri, files, true);
+    if (m_admController.sync(m_uri, zipFile))
+        changeState(Downloading);
 }
 
 QString ESModElement::errorString()
 {
-    if (m_asyncDownloader.failed() || m_asyncDownloader.aborted())
-        return m_asyncDownloader.errorString();
+    if (!m_downloadErrorString.isNull())
+        return m_downloadErrorString;
 
     if (m_asyncUnzipper.failed() || m_asyncUnzipper.aborted())
         return m_asyncUnzipper.errorString();
@@ -135,41 +135,47 @@ QString ESModElement::errorString()
 
 void ESModElement::headersReceived()
 {
-    if (state != Unknown)
-        return;
+    QNetworkReply *headersReply = dynamic_cast<QNetworkReply *>(sender());
+    headersReply->deleteLater();
 
-    if (m_asyncDownloader.aborted() || m_asyncDownloader.failed())
+    if (headersReply->error() != QNetworkReply::NoError)
     {
-        if (m_localFiles.isEmpty())
-            changeState(Failed);
-        else
-            changeState(Installed);
+        m_downloadErrorString = headersReply->errorString();
 
-        return;
-    }
-
-    m_asyncDownloader.getHeadersData(size, timestamp);
-
-    int resumedProgress = m_asyncDownloader.resumedProgress(files);
-    if (resumedProgress == 0)
-        resumedProgress = -1;
-
-    if (m_localFiles.isEmpty())
-    {
-        changeState(Available, resumedProgress);
+        if (state == Unknown)
+        {
+            if (m_localFiles.isEmpty())
+                changeState(Failed);
+            else
+                changeState(Installed);
+        }
     }
     else
     {
-        if (timestamp > m_localTimestamp)
-            changeState(InstalledHasUpdate);
-        else
-            changeState(InstalledAvailable);
+        size = headersReply->header(QNetworkRequest::ContentLengthHeader).toDouble();
+        timestamp = headersReply->header(QNetworkRequest::LastModifiedHeader).toDateTime().toTime_t();
+
+        if (state == Unknown)
+        {
+            if (m_localFiles.isEmpty())
+            {
+                changeState(Available);
+            }
+            else
+            {
+                if (timestamp > m_localTimestamp)
+                    changeState(InstalledHasUpdate);
+                else
+                    changeState(InstalledAvailable);
+            }
+        }
     }
 }
 
 void ESModElement::zipListUnpacked()
 {
     disconnect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()));
+    m_admController.remove();
 
     m_localFiles << m_asyncUnzipper.unpackedFiles();
 
@@ -183,8 +189,6 @@ void ESModElement::zipListUnpacked()
 
         return;
     }
-
-    EraseFromLocalFiles(".zip");
 
     m_localTimestamp = timestamp;
     m_localSize = size;
@@ -212,64 +216,55 @@ void ESModElement::deletionProgress(int p)
     emit stateChanged();
 }
 
-void ESModElement::filesDownloaded()
+void ESModElement::filesDownloaded(qint64 adm_id, ADMController::Status adm_status, ADMController::Reason adm_reason)
 {
-    disconnect(this, SIGNAL(abortProcessing()), &m_asyncDownloader, SLOT(abort()));
-    m_localFiles = m_asyncDownloader.downloadedFiles();
-
-    if (state != Downloading || m_asyncDownloader.aborted() || m_asyncDownloader.failed())
+    if (state != Downloading || adm_status == ADMController::STATUS_FAILED)
     {
-        if (m_asyncDownloader.failed())
-        {
-            // blockGui(ByUnknown); // Without press any button
+        // blockGui(ByUnknown); // Without press any button
+        m_admController.remove();
+        m_downloadErrorString = QString("%1%2 %3 %4")
+                                    .arg(m_uri)
+                                    .arg(zipFile)
+                                    .arg(ADMController::StatusString(adm_status))
+                                    .arg(ADMController::ReasonString(adm_reason));
 
-            m_localFiles.clear();
-            m_localSize = 0;
-            m_localTimestamp = 0;
-            emit saveMe();
+        m_localFiles.clear();
+        m_localSize = 0;
+        m_localTimestamp = 0;
+        emit saveMe();
 
-            if (m_failedDownloadsCount < 3 && !m_asyncDownloader.failedByDisk())
-            {
-                ++m_failedDownloadsCount;
-                QTimer::singleShot(3000, this, SLOT(subDownload()));
-            }
-            else
-            {
-                changeState(Failed, progress);
-            }
-        }
-
-        if (m_asyncDownloader.aborted())
-        {
-            m_asyncDeleter.wait();
-            m_asyncDeleter.deleteFiles(m_localFiles);
-        }
+        changeState(Failed);
 
         return;
     }
 
-    QStringList zipList;
-    for (const QString &zipFile : files)
-        if (zipFile.endsWith(".zip", Qt::CaseInsensitive))
-            zipList << zipFile;
+    if (adm_status != ADMController::STATUS_SUCCESSFUL)
+        return;
+
+    m_downloadErrorString.clear();
 
     connect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()), Qt::QueuedConnection);
 
-    if (m_asyncUnzipper.unzipList(zipList))
+    if (m_asyncUnzipper.unzip(QString("%1%2").arg(ADMController::URIScheme).arg(adm_id)))
         changeState(Unpacking);
     else
         changeState(Failed);
 }
 
-void ESModElement::downloadProgress(int p)
+void ESModElement::downloadProgress(qint64, qint64 downloaded, qint64 totalSize)
 {
+    if (state != Downloading || downloaded < 0 || totalSize < 0)
+        return;
+
+    if (size <= 0 && totalSize > 0)
+        size = totalSize;
+
+    int p = (totalSize == 0) ? 0 : downloaded * 100 / totalSize;
     if (progress == p)
         return;
 
     progress = p;
     emit stateChanged();
-
-    m_failedDownloadsCount = 0;
 }
 
 void ESModElement::filesDeleted()
@@ -283,10 +278,6 @@ void ESModElement::filesDeleted()
     switch(state)
     {
     case Downloading :
-        if (m_asyncDownloader.aborted())
-            changeState(Available);
-        if (m_asyncDownloader.failed())
-            changeState(Failed);
         break;
 
     case Unpacking :
@@ -523,9 +514,20 @@ bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
     infouri = obj[QString("infouri_") + MY_PLATFORM].toString().trimmed();
 
     QJsonArray files_arr = obj[QString("files_") + MY_PLATFORM].toArray();
-    for (int i = 0; i < files_arr.size(); ++i)
-        files << files_arr[i].toString().trimmed();
 
+    if (files_arr.empty())
+    {
+        QMessageBox::critical(NULL, title, tr("There are no archives in the mod!"));
+        return false;
+    }
+
+    if (files_arr.size() > 1)
+    {
+        QMessageBox::critical(NULL, title, tr("There are %1 archives in the mod but only first will be processed!").arg(files_arr.size()));
+        return false;
+    }
+
+    zipFile = files_arr[0].toString().trimmed();
     return true;
 }
 
@@ -647,12 +649,4 @@ bool ESModElement::idEquals(ESModElement *el, bool strict)
     title2 = title2.remove(QRegularExpression("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegularExpression("\\[.*\\]")).remove(QRegularExpression("\\{.*\\}")).simplified();
 
     return (myTitle == title2);
-}
-
-void ESModElement::EraseFromLocalFiles(const QString &ext)
-{
-    m_localFiles.erase(std::remove_if(m_localFiles.begin(),
-                                      m_localFiles.end(),
-                                      [&ext](const QString &s){ return s.endsWith(ext, Qt::CaseInsensitive); }),
-                       m_localFiles.end());
 }
