@@ -16,6 +16,7 @@
 
 #include "asyncdownloader.h"
 #include "safadapter.h"
+#include "downloadservice.h"
 
 #define ES_USER_AGENT "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 5 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.99 Mobile Safari/537.36"
 #define RESUME_NOT_FOUND 0
@@ -173,6 +174,9 @@ void AsyncDownloader::fileWritten()
     }
     else
     {
+        long dret = DownloadService::StartDownload(m_url + m_files[m_currFileIndex]);
+        QMessageBox::information(NULL, m_url + m_files[m_currFileIndex], QString("dret = %1").arg(dret));
+
         // TODO: Overwrite request or resume broken download?
         /*
         if (!checkOverwrite(QDir(m_destDir).filePath(m_files[m_currFileIndex])))

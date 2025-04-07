@@ -16,6 +16,7 @@
 #include "asyncdownloader.h"
 #include "statisticsmanager.h"
 #include "safadapter.h"
+#include "downloadservice.h"
 
 
 int main(int argc, char *argv[])
@@ -26,6 +27,8 @@ int main(int argc, char *argv[])
 
     SafAdapter::RequestExternalStorageReadWrite();
     SafAdapter::getCurrentAdapter();
+
+    DownloadService::RegisterJNINativeMethods();
 
     AsyncDownloader::createNetworkManager(&app);
     StatisticsManager::getInstance(&app);
