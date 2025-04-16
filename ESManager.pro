@@ -1,6 +1,10 @@
 TEMPLATE = app
 
-QT += qml quick widgets network quickcontrols2
+QT += qml quick widgets network webview quickcontrols2
+
+android {
+    QT += androidextras
+}
 
 SOURCES += main.cpp \
     esmodelement.cpp \

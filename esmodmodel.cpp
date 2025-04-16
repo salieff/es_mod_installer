@@ -18,8 +18,9 @@
 #include "statisticsmanager.h"
 #include "safadapter.h"
 
-#define ES_MOD_INDEX_SERVER "http://191.ru/es/"
+#define ES_MOD_INDEX_SERVER "http://51.250.97.106/"
 #define ES_MOD_INDEX_NAME "project2.json"
+#define ES_MOD_FILE_SERVER "http://storage.yandexcloud.net/es-mods/mods/"
 
 
 ESModModel::ESModModel(QObject *parent)
@@ -234,7 +235,7 @@ void ESModModel::ESModIndexDownloaded()
             QJsonArray arr = obj["packs"].toArray();
             for (int i = 0; i < arr.size(); ++i)
             {
-                ESModElement *el = new ESModElement(ES_MOD_INDEX_SERVER, this);
+                ESModElement *el = new ESModElement(ES_MOD_FILE_SERVER, this);
                 if (el->DeserializeFromNetwork(arr[i].toObject()))
                 {
                     el->TryToPickupFrom(local_elements, true);
@@ -524,7 +525,7 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
     QJsonArray arr = obj["packs"].toArray();
     for (int i = 0; i < arr.size(); ++i)
     {
-        ESModElement *el = new ESModElement(ES_MOD_INDEX_SERVER, this);
+        ESModElement *el = new ESModElement(ES_MOD_FILE_SERVER, this);
         el->DeserializeFromDB(arr[i].toObject());
         l << el;
     }

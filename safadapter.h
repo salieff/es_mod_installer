@@ -51,7 +51,7 @@ private:
     QAndroidJniObject m_javaSafAdapter;
     int RootUriPermissionsRequestCode = QRandomGenerator::global()->generate();
 
-    constexpr static const char *EverlastingSummerDataFilesPath = "Android/data/su.sovietgames.everlasting_summer/files";
+    constexpr static const char *EverlastingSummerDataFilesPath = "Android/media/su.sovietgames.everlasting_summer/mods";
     static const int MinimalSdkVersionForSaf = 29; // Android 10
     static QString m_currentAdapterRootSafPath;
     static QMutex m_adapterMutex;
