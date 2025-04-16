@@ -9,7 +9,7 @@
 #include "asyncunzipper.h"
 #include "asyncdeleter.h"
 
-#define LIKES_CGI_URL "http://879167-dreamtale3.tmweb.ru/cgi-bin/ratingsystem/rating_web.py"
+#define LIKES_CGI_URL "http://51.250.97.106/cgi-bin/ratingsystem/rating_web.py"
 #define STATS_CGI_URL LIKES_CGI_URL
 
 class ESModElement : public QObject
@@ -114,6 +114,7 @@ private slots:
     void downloadProgress(int p);
     void zipListUnpacked();
     void unpackProgress(int p);
+    void deletionProgress(int p);
     void filesDeleted();
     void unzipperOverwriteRequest(QString fname);
     void allLikesReceived();

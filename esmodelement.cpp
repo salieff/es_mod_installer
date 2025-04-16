@@ -1,4 +1,4 @@
-﻿#include <QDir>
+#include <QDir>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QMessageBox>
@@ -31,7 +31,8 @@ ESModElement::ESModElement(QString url, QObject *parent, State state, int progre
     connect(&m_asyncUnzipper, SIGNAL(progress(int)), this, SLOT(unpackProgress(int)), Qt::QueuedConnection);
     connect(&m_asyncUnzipper, SIGNAL(overwriteRequest(QString)), this, SLOT(unzipperOverwriteRequest(QString)), Qt::QueuedConnection);
 
-    connect(&m_asyncDeleter, SIGNAL(finished()), this, SLOT(filesDeleted()), Qt::QueuedConnection);
+    connect(&m_asyncDeleter, &AsyncDeleter::progress, this, &ESModElement::deletionProgress, Qt::QueuedConnection);
+    connect(&m_asyncDeleter, &AsyncDeleter::finished, this, &ESModElement::filesDeleted, Qt::QueuedConnection);
 }
 
 void ESModElement::Download(void)
@@ -194,6 +195,15 @@ void ESModElement::zipListUnpacked()
 }
 
 void ESModElement::unpackProgress(int p)
+{
+    if (progress == p)
+        return;
+
+    progress = p;
+    emit stateChanged();
+}
+
+void ESModElement::deletionProgress(int p)
 {
     if (progress == p)
         return;

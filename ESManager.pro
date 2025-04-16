@@ -1,6 +1,10 @@
 TEMPLATE = app
 
-QT += qml quick widgets network quickcontrols2
+QT += qml quick widgets network webview quickcontrols2
+
+android {
+    QT += androidextras
+}
 
 SOURCES += main.cpp \
     esmodelement.cpp \
@@ -84,7 +88,7 @@ DISTFILES += \
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
-ANDROID_TARGET_SDK_VERSION = 30
+ANDROID_TARGET_SDK_VERSION = 34
 
 FORMS += \
     safaccessdialog.ui

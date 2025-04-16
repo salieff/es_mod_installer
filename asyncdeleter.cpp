@@ -23,6 +23,7 @@ bool AsyncDeleter::deleteFiles(QStringList flist)
 
 void AsyncDeleter::run()
 {
+    int deletedItemsCount = 0;
     std::set<QString> localPaths;
 
     for (const auto &fname: m_localFiles)
@@ -35,6 +36,9 @@ void AsyncDeleter::run()
         }
 
         localPaths.insert(QFileInfo(fname).dir().path());
+
+        ++deletedItemsCount;
+        emit progress(100 - deletedItemsCount * 50 / m_localFiles.size());
     }
 
     std::vector<QString> optimizedPaths;
@@ -45,13 +49,19 @@ void AsyncDeleter::run()
         if (std::find_if(
                     localPaths.begin(),
                     localPaths.end(),
-                    [&path](const QString &localPath){ return localPath.length() > path.length() && localPath.startsWith(path); }
+                    [&path](const QString &localPath){ return localPath.length() > path.length() && localPath.startsWith(path + "/"); }
                     ) != localPaths.end())
             continue;
 
         optimizedPaths.push_back(path);
     }
 
+    deletedItemsCount = 0;
     for (auto const &path : optimizedPaths)
+    {
         SafAdapter::getCurrentAdapter().DeleteEmptyFoldersRecursively(path);
+
+        ++deletedItemsCount;
+        emit progress(50 - deletedItemsCount * 50 / optimizedPaths.size());
+    }
 }
