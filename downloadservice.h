@@ -9,9 +9,10 @@ class DownloadService
 {
 public:
     static long StartDownload(const QString &url);
-    static void DownloadComplete(JNIEnv *env, jobject thiz, jlong id);
+    static void DownloadComplete(JNIEnv *env, jobject thiz, jlong id, jint status, jint reason);
     static void RegisterJNINativeMethods();
     static void RegisterReceiver();
+    static void SyncDownloads();
 };
 
 #endif // DOWNLOADSERVICE_H

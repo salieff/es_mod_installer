@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
     SafAdapter::getCurrentAdapter();
 
     DownloadService::RegisterJNINativeMethods();
+    DownloadService::SyncDownloads();
 
     AsyncDownloader::createNetworkManager(&app);
     StatisticsManager::getInstance(&app);

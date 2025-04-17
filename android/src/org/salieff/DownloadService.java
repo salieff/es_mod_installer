@@ -32,7 +32,23 @@ public class DownloadService
                 public void onReceive(Context context, Intent intent)
                 {
                     long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-                    DownloadComplete(id);
+
+                    DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+                    Cursor cursor = downloadManager.query(new DownloadManager.Query().setFilterById(id));
+
+                    int statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                    int reasonIndex = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
+
+                    int status = -1;
+                    int reason = -1;
+
+                    if (cursor.moveToFirst())
+                    {
+                        status = cursor.getInt(statusIndex);
+                        reason = cursor.getInt(reasonIndex);
+                    }
+
+                    DownloadComplete(id, status, reason);
                 }
             };
 
@@ -69,31 +85,41 @@ public class DownloadService
                 {
                     DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
                     Cursor cursor = downloadManager.query(new DownloadManager.Query());
+
+                    int idIndex = cursor.getColumnIndex(DownloadManager.COLUMN_ID);
                     int localUriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI);
                     int downloadBytesIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
                     int totalBytesIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
+                    int statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                    int reasonIndex = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
 
-                    for (Uri u : uris)
+                    if (!cursor.moveToFirst())
+                        return;
+
+                    do
                     {
-                        Log.d("DownloadService::downloadProgressObserver::onChange", u.toString());
-
-                        if (!cursor.moveToFirst())
+                        String localUri = cursor.getString(localUriIndex);
+                        if (!uris.contains(Uri.parse(localUri)))
                             continue;
 
-                        do
-                        {
-                            if (!cursor.getString(localUriIndex).equals(u.toString()))
-                                continue;
+                        long id = cursor.getInt(idIndex);
 
-                            int cur = cursor.getInt(downloadBytesIndex);
-                            int total = cursor.getInt(totalBytesIndex);
+                        Log.d("DownloadService::downloadProgressObserver::onChange", String.format("id=%d localUri=%s", id, localUri));
 
-                            if (total <= 0)
-                                break;
+                        long cur = cursor.getInt(downloadBytesIndex);
+                        long total = cursor.getInt(totalBytesIndex);
+                        int status = cursor.getInt(statusIndex);
+                        int reason = cursor.getInt(reasonIndex);
 
-                            Log.d("DownloadService::downloadProgressObserver::onChange", String.format("Downloaded %d, Total %d %f%%", cur, total, cur * 100.0 / total));
-                        } while(cursor.moveToNext());
-                    }
+                        Log.d("DownloadService::downloadProgressObserver::onChange", String.format("Status %d, Reason %d", status, reason));
+                        Log.d("DownloadService::downloadProgressObserver::onChange", String.format("Downloaded %d, Total %d %f%%",
+                                cur, total, total > 0 ? cur * 100.0 / total : 0));
+
+                        if (status == DownloadManager.STATUS_FAILED)
+                            DownloadComplete(id, status, reason);
+
+                        // TODO: Send download progress event
+                    } while(cursor.moveToNext());
                 }
             };
         }
@@ -127,7 +153,61 @@ public class DownloadService
         return downloadId;
     }
 
-    private static native void DownloadComplete(long id);
+    public static void SyncDownloads(Context context)
+    {
+        DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        Cursor cursor = downloadManager.query(new DownloadManager.Query());
+
+        Log.d("DownloadService::SyncDownloads", String.format("%d records", cursor.getCount()));
+
+        int idIndex = cursor.getColumnIndex(DownloadManager.COLUMN_ID);
+        int titleIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TITLE);
+        int descriptionIndex = cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION);
+        int uriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_URI);
+        int localUriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI);
+        int downloadedIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
+        int sizeIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
+        int statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+        int reasonIndex = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
+        int timestampIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LAST_MODIFIED_TIMESTAMP);
+        int mediaTypeIndex = cursor.getColumnIndex(DownloadManager.COLUMN_MEDIA_TYPE);
+        int mediaProviderUriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_MEDIAPROVIDER_URI);
+
+        Log.d("", "ID TITLE DESCRIPTION URI LOCAL_URI DOWNLOADED SIZE STATUS REASON TIMESTAMP TYPE MEDIAPROVIDER_URI");
+
+        if (!cursor.moveToFirst())
+            return;
+
+        do
+        {
+            long id = cursor.getInt(idIndex);
+            String title = cursor.getString(titleIndex);
+            String description = cursor.getString(descriptionIndex);
+            String uri = cursor.getString(uriIndex);
+            String localUri = cursor.getString(localUriIndex);
+            long downloaded = cursor.getLong(downloadedIndex);
+            long size = cursor.getLong(sizeIndex);
+            int status = cursor.getInt(statusIndex);
+            int reason = cursor.getInt(reasonIndex);
+            long timestamp = cursor.getLong(timestampIndex);
+            String mediaType = cursor.getString(mediaTypeIndex);
+            String mediaProviderUri = cursor.getString(mediaProviderUriIndex);
+
+            Log.d("", String.format("%d %s %s %s %s %d %d %d %d %d %s %s",
+                id, title, description, uri, localUri, downloaded, size, status, reason, timestamp, mediaType, mediaProviderUri));
+
+            // TODO: Send download progress event
+
+            if (status != DownloadManager.STATUS_FAILED && status != DownloadManager.STATUS_SUCCESSFUL)
+                RegisterObserver(context, localUri);
+            else
+                DownloadComplete(id, status, reason);
+
+            RegisterReceiver(context);
+        } while(cursor.moveToNext());
+    }
+
+    private static native void DownloadComplete(long id, int status, int reason);
 
     private static BroadcastReceiver downloadEventsReceiver = null;
     private static ContentObserver downloadProgressObserver = null;

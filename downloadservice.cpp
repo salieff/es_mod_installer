@@ -15,18 +15,18 @@ long DownloadService::StartDownload(const QString &url)
                                                       QAndroidJniObject::fromString(url).object<jstring>());
 }
 
-void DownloadService::DownloadComplete(JNIEnv *env, jobject thiz, jlong id)
+void DownloadService::DownloadComplete(JNIEnv *env, jobject thiz, jlong id, jint status, jint reason)
 {
     Q_UNUSED(env)
     Q_UNUSED(thiz)
 
     // QMessageBox::information(NULL, "Download complete", QString("Id = %1").arg(id));
-    __android_log_write(ANDROID_LOG_DEBUG, "DownloadService", QString("Download complete Id = %1").arg(id).toLocal8Bit().constData());
+    __android_log_write(ANDROID_LOG_DEBUG, "DownloadService", QString("Download complete Id = %1 Status = %2 Reason = %3").arg(id).arg(status).arg(reason).toLocal8Bit().constData());
 }
 
 void DownloadService::RegisterJNINativeMethods()
 {
-    JNINativeMethod methods[] {{"DownloadComplete", "(J)V", reinterpret_cast<void *>(DownloadService::DownloadComplete)}};
+    JNINativeMethod methods[] {{"DownloadComplete", "(JII)V", reinterpret_cast<void *>(DownloadService::DownloadComplete)}};
     QAndroidJniObject javaClass("org/salieff/DownloadService");
 
     QAndroidJniEnvironment env;
@@ -40,6 +40,14 @@ void DownloadService::RegisterReceiver()
 {
     QAndroidJniObject::callStaticMethod<void>("org/salieff/DownloadService",
                                               "RegisterReceiver",
+                                              "(Landroid/content/Context;)V",
+                                              QtAndroid::androidContext().object());
+}
+
+void DownloadService::SyncDownloads()
+{
+    QAndroidJniObject::callStaticMethod<void>("org/salieff/DownloadService",
+                                              "SyncDownloads",
                                               "(Landroid/content/Context;)V",
                                               QtAndroid::androidContext().object());
 }
