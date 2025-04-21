@@ -117,7 +117,7 @@ public class ADMController
         m_downloadId = -1;
     }
 
-    public static int open(Context context, long id)
+    public static int Open(Context context, long id)
     {
         return openHelper((DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE), id);
     }
@@ -137,14 +137,14 @@ public class ADMController
         return -1;
     }
 
-    public static void remove(Context context, long id)
+    public static void Remove(Context context, long id)
     {
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         downloadManager.remove(id);
     }
 
-    private static native void DownloadComplete(long cppThisPpointer, long id, int status, int reason);
-    private static native void DownloadProgress(long cppThisPpointer, long id, long downloaded, long totalSize);
+    private static native void DownloadComplete(long cppThisPointer, long id, int status, int reason);
+    private static native void DownloadProgress(long cppThisPointer, long id, long downloaded, long totalSize);
 
     private void CreateAndRegisterReceiver()
     {
