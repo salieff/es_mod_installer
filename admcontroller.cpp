@@ -1,12 +1,14 @@
 #include <QtAndroid>
 #include <QAndroidJniEnvironment>
+
 #include "admcontroller.h"
+
 
 ADMController::ADMController(QObject *parent)
     : QObject{parent}
 {
     m_javaADMController = QAndroidJniObject(
-        "org/salieff/SafAdapter",
+        "org/salieff/ADMController",
         "(Landroid/content/Context;J)V",
         QtAndroid::androidContext().object(), reinterpret_cast<jlong>(this)
         );
@@ -26,7 +28,7 @@ void ADMController::Initialize()
     env->DeleteLocalRef(objectClass);
 }
 
-int ADMController::Open(int64_t id)
+int ADMController::Open(qint64 id)
 {
     return QAndroidJniObject::callStaticMethod<jint>(
         "org/salieff/ADMController",
@@ -36,7 +38,7 @@ int ADMController::Open(int64_t id)
         );
 }
 
-void ADMController::Remove(int64_t id)
+void ADMController::Remove(qint64 id)
 {
     QAndroidJniObject::callStaticMethod<void>(
         "org/salieff/ADMController",
@@ -44,6 +46,52 @@ void ADMController::Remove(int64_t id)
         "(Landroid/content/Context;J)V",
         QtAndroid::androidContext().object(), id
         );
+}
+
+QString ADMController::StatusString(Status status)
+{
+#define CASE_STATUS(arg) case STATUS_##arg: return #arg;
+    switch (status) {
+        CASE_STATUS(UNDEFINED)
+        CASE_STATUS(PENDING)
+        CASE_STATUS(RUNNING)
+        CASE_STATUS(PAUSED)
+        CASE_STATUS(SUCCESSFUL)
+        CASE_STATUS(FAILED)
+
+    default:
+        break;
+    }
+#undef CASE_STATUS
+
+    return "Unknown status";
+}
+
+QString ADMController::ReasonString(Reason reason)
+{
+#define CASE_REASON(arg) case arg: return #arg;
+    switch (reason) {
+        CASE_REASON(REASON_UNDEFINED)
+        CASE_REASON(PAUSED_WAITING_TO_RETRY)
+        CASE_REASON(PAUSED_WAITING_FOR_NETWORK)
+        CASE_REASON(PAUSED_QUEUED_FOR_WIFI)
+        CASE_REASON(PAUSED_UNKNOWN)
+        CASE_REASON(ERROR_UNKNOWN)
+        CASE_REASON(ERROR_FILE_ERROR)
+        CASE_REASON(ERROR_UNHANDLED_HTTP_CODE)
+        CASE_REASON(ERROR_HTTP_DATA_ERROR)
+        CASE_REASON(ERROR_TOO_MANY_REDIRECTS)
+        CASE_REASON(ERROR_INSUFFICIENT_SPACE)
+        CASE_REASON(ERROR_DEVICE_NOT_FOUND)
+        CASE_REASON(ERROR_CANNOT_RESUME)
+        CASE_REASON(ERROR_FILE_ALREADY_EXISTS)
+
+    default:
+        break;
+    }
+#undef CASE_REASON
+
+    return "Unknown reason";
 }
 
 bool ADMController::sync(QString serverUrl, QString filePath)
@@ -84,7 +132,7 @@ void ADMController::DownloadCompleteDispatcher(JNIEnv *env, jobject thiz, jlong 
     Q_UNUSED(thiz)
 
     ADMController *object = reinterpret_cast<ADMController *>(cppThisPointer);
-    emit object->DownloadComplete(id, status, reason);
+    emit object->DownloadComplete(id, static_cast<ADMController::Status>(status), static_cast<ADMController::Reason>(reason));
 }
 
 void ADMController::DownloadProgressDispatcher(JNIEnv *env, jobject thiz, jlong cppThisPointer, jlong id, jlong downloaded, jlong totalSize)

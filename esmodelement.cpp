@@ -6,7 +6,6 @@
 
 #include "esmodelement.h"
 #include "statisticsmanager.h"
-#include "safadapter.h"
 
 #if defined(Q_OS_IOS)
     #define MY_PLATFORM "ios"
@@ -23,9 +22,14 @@ ESModElement::ESModElement(QString url, QObject *parent, State state, int progre
       progress(progress),
       m_uri(url)
 {
-    connect(&m_asyncDownloader, SIGNAL(progress(int)), this, SLOT(downloadProgress(int)));
-    connect(&m_asyncDownloader, SIGNAL(finished()), this, SLOT(filesDownloaded()));
-    connect(&m_asyncDownloader, SIGNAL(headersReady()), this, SLOT(headersReceived()));
+    connect(&m_admController, SIGNAL(DownloadProgress(qint64,qint64,qint64)),
+            this, SLOT(downloadProgress(qint64,qint64,qint64)),
+            Qt::QueuedConnection);
+    connect(&m_admController, SIGNAL(DownloadComplete(qint64,ADMController::Status,ADMController::Reason)),
+            this, SLOT(filesDownloaded(qint64,ADMController::Status,ADMController::Reason)),
+            Qt::QueuedConnection);
+
+    connect(&m_asyncHeadersReceiver, SIGNAL(headersReady()), this, SLOT(headersReceived()));
 
     connect(&m_asyncUnzipper, SIGNAL(finished()), this, SLOT(zipListUnpacked()), Qt::QueuedConnection);
     connect(&m_asyncUnzipper, SIGNAL(progress(int)), this, SLOT(unpackProgress(int)), Qt::QueuedConnection);
@@ -36,8 +40,6 @@ ESModElement::ESModElement(QString url, QObject *parent, State state, int progre
 
 void ESModElement::Download(void)
 {
-    m_failedDownloadsCount = 0;
-
     if (state != Available && state != InstalledHasUpdate && state != Failed)
         return;
 
@@ -46,32 +48,33 @@ void ESModElement::Download(void)
 
     blockGui(ByDownload);
 
-    subDownload();
-}
-
-void ESModElement::subDownload(void)
-{
-    // Make shure previous async operations already done
-    m_asyncDownloader.wait();
     m_asyncUnzipper.wait();
 
-    connect(this, SIGNAL(abortProcessing()), &m_asyncDownloader, SLOT(abort()));
-
-    if (m_asyncDownloader.downloadFileList(m_uri, files))
-        changeState(Downloading, progress == 100 ? -1 : progress);
+    if (m_admController.download(m_uri, files[0], title, m_uri + files[0]))
+        changeState(Downloading);
+    else
+        changeState(Failed);
 }
 
 void ESModElement::Abort(void)
 {
     blockGui(ByAbort);
-    emit abortProcessing();
+
+    if (state == Downloading)
+    {
+        m_admController.remove();
+        changeState(Available);
+    }
+    else
+    {
+        emit abortProcessing();
+    }
 }
 
 void ESModElement::Update(void)
 {
     blockGui(ByUpdate);
     m_asyncDeleter.wait();
-
     m_asyncDeleter.deleteFiles(m_localFiles);
 }
 
@@ -115,16 +118,22 @@ void ESModElement::RequestHeaders()
     }
 
     // Make shure previous async operations already done
-    m_asyncDownloader.wait();
+    m_asyncHeadersReceiver.wait();
     m_asyncUnzipper.wait();
 
-    m_asyncDownloader.downloadFileList(m_uri, files, true);
+    m_asyncHeadersReceiver.downloadFileList(m_uri, files, true);
+
+    if (m_admController.sync(m_uri, files[0]))
+        changeState(Downloading);
 }
 
 QString ESModElement::errorString()
 {
-    if (m_asyncDownloader.failed() || m_asyncDownloader.aborted())
-        return m_asyncDownloader.errorString();
+    if (!m_downloadErrorString.isNull())
+        return m_downloadErrorString;
+
+    if (m_asyncHeadersReceiver.failed() || m_asyncHeadersReceiver.aborted())
+        return m_asyncHeadersReceiver.errorString();
 
     if (m_asyncUnzipper.failed() || m_asyncUnzipper.aborted())
         return m_asyncUnzipper.errorString();
@@ -134,35 +143,34 @@ QString ESModElement::errorString()
 
 void ESModElement::headersReceived()
 {
-    if (state != Unknown)
-        return;
-
-    if (m_asyncDownloader.aborted() || m_asyncDownloader.failed())
+    if (m_asyncHeadersReceiver.aborted() || m_asyncHeadersReceiver.failed())
     {
-        if (m_localFiles.isEmpty())
-            changeState(Failed);
-        else
-            changeState(Installed);
-
-        return;
-    }
-
-    m_asyncDownloader.getHeadersData(size, timestamp);
-
-    int resumedProgress = m_asyncDownloader.resumedProgress(files);
-    if (resumedProgress == 0)
-        resumedProgress = -1;
-
-    if (m_localFiles.isEmpty())
-    {
-        changeState(Available, resumedProgress);
+        if (state == Unknown)
+        {
+            if (m_localFiles.isEmpty())
+                changeState(Failed);
+            else
+                changeState(Installed);
+        }
     }
     else
     {
-        if (timestamp > m_localTimestamp)
-            changeState(InstalledHasUpdate);
-        else
-            changeState(InstalledAvailable);
+        m_asyncHeadersReceiver.getHeadersData(size, timestamp);
+
+        if (state == Unknown)
+        {
+            if (m_localFiles.isEmpty())
+            {
+                changeState(Available);
+            }
+            else
+            {
+                if (timestamp > m_localTimestamp)
+                    changeState(InstalledHasUpdate);
+                else
+                    changeState(InstalledAvailable);
+            }
+        }
     }
 }
 
@@ -202,41 +210,37 @@ void ESModElement::unpackProgress(int p)
     emit stateChanged();
 }
 
-void ESModElement::filesDownloaded()
+void ESModElement::filesDownloaded(qint64 adm_id, ADMController::Status adm_status, ADMController::Reason adm_reason)
 {
-    disconnect(this, SIGNAL(abortProcessing()), &m_asyncDownloader, SLOT(abort()));
-    m_localFiles = m_asyncDownloader.downloadedFiles();
-
-    if (state != Downloading || m_asyncDownloader.aborted() || m_asyncDownloader.failed())
+    if (state != Downloading || adm_status == ADMController::STATUS_FAILED)
     {
-        if (m_asyncDownloader.failed())
-        {
-            // blockGui(ByUnknown); // Without press any button
+        // blockGui(ByUnknown); // Without press any button
+        m_admController.remove();
+        m_downloadErrorString = QString("%1%2 %3 %4")
+                                    .arg(m_uri)
+                                    .arg(files[0])
+                                    .arg(ADMController::StatusString(adm_status))
+                                    .arg(ADMController::ReasonString(adm_reason));
 
-            m_localFiles.clear();
-            m_localSize = 0;
-            m_localTimestamp = 0;
-            emit saveMe();
+        m_localFiles.clear();
+        m_localSize = 0;
+        m_localTimestamp = 0;
+        emit saveMe();
 
-            if (m_failedDownloadsCount < 3 && !m_asyncDownloader.failedByDisk())
-            {
-                ++m_failedDownloadsCount;
-                QTimer::singleShot(3000, this, SLOT(subDownload()));
-            }
-            else
-            {
-                changeState(Failed, progress);
-            }
-        }
-
-        if (m_asyncDownloader.aborted())
-        {
-            m_asyncDeleter.wait();
-            m_asyncDeleter.deleteFiles(m_localFiles);
-        }
+        changeState(Failed);
 
         return;
     }
+
+    if (adm_status != ADMController::STATUS_SUCCESSFUL)
+        return;
+
+    m_downloadErrorString.clear();
+
+    Q_UNUSED(adm_id) // TODO: The unzipper should to know how to open file by ADM id
+    m_admController.remove();
+    changeState(InstalledAvailable);
+    return;
 
     QStringList zipList;
     for (const QString &zipFile : files)
@@ -251,15 +255,20 @@ void ESModElement::filesDownloaded()
         changeState(Failed);
 }
 
-void ESModElement::downloadProgress(int p)
+void ESModElement::downloadProgress(qint64, qint64 downloaded, qint64 totalSize)
 {
+    if (state != Downloading || downloaded < 0 || totalSize < 0)
+        return;
+
+    if (size <= 0 && totalSize > 0)
+        size = totalSize;
+
+    int p = (totalSize == 0) ? 0 : downloaded * 100 / totalSize;
     if (progress == p)
         return;
 
     progress = p;
     emit stateChanged();
-
-    m_failedDownloadsCount = 0;
 }
 
 void ESModElement::filesDeleted()
@@ -273,10 +282,6 @@ void ESModElement::filesDeleted()
     switch(state)
     {
     case Downloading :
-        if (m_asyncDownloader.aborted())
-            changeState(Available);
-        if (m_asyncDownloader.failed())
-            changeState(Failed);
         break;
 
     case Unpacking :
@@ -515,6 +520,12 @@ bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
     QJsonArray files_arr = obj[QString("files_") + MY_PLATFORM].toArray();
     for (int i = 0; i < files_arr.size(); ++i)
         files << files_arr[i].toString().trimmed();
+
+    if (files.empty())
+        QMessageBox::critical(NULL, title, tr("There are no archives in the mod!").arg(files.size()));
+
+    if (files.size() > 1)
+        QMessageBox::critical(NULL, title, tr("There are %1 archives in the mod but only first will be processed!").arg(files.size()));
 
     return true;
 }

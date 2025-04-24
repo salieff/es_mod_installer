@@ -5,6 +5,7 @@
 #include <QStringList>
 #include <QJsonObject>
 
+#include "admcontroller.h"
 #include "asyncdownloader.h"
 #include "asyncunzipper.h"
 #include "asyncdeleter.h"
@@ -110,8 +111,8 @@ public slots:
     void headersReceived();
 
 private slots:
-    void filesDownloaded();
-    void downloadProgress(int p);
+    void filesDownloaded(qint64 adm_id, ADMController::Status adm_status, ADMController::Reason adm_reason);
+    void downloadProgress(qint64, qint64 downloaded, qint64 totalSize);
     void zipListUnpacked();
     void unpackProgress(int p);
     void filesDeleted();
@@ -119,7 +120,6 @@ private slots:
     void allLikesReceived();
     void myLikeReceived();
     void myLikePosted();
-    void subDownload();
 
 signals:
     void stateChanged();
@@ -141,13 +141,14 @@ private:
     QString removeOldLocalFilePrefixes(QString filePath);
     void addLocalFilesWithoutOldPrefixes(const QJsonValue jvr);
 
-    AsyncDownloader m_asyncDownloader;
+    ADMController m_admController;
+    QString m_downloadErrorString;
+
+    AsyncDownloader m_asyncHeadersReceiver;
     AsyncUnzipper m_asyncUnzipper;
     AsyncDeleter m_asyncDeleter;
 
     QString m_uri;
-
-    int m_failedDownloadsCount = 0;
 };
 
 #endif // ESMODELEMENT_H

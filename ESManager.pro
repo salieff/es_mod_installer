@@ -36,7 +36,7 @@ SOURCES += main.cpp \
     esinstalledmodmodel.cpp \
     safadapter.cpp \
     safioapi.cpp \
-    downloadservice.cpp
+    admcontroller.cpp
 
 RESOURCES += qml.qrc
 
@@ -73,7 +73,7 @@ HEADERS += \
     esinstalledmodmodel.h \
     version.h \
     safadapter.h \
-    downloadservice.h
+    admcontroller.h
 
 DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 USE_FILE32API
 

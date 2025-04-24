@@ -10,6 +10,7 @@ ApplicationWindow {
     height: 900
     title: qsTr("ES Manager")
     visible: true
+    visibility: Window.FullScreen
 
     function mm(i) {
         return Screen.pixelDensity * i

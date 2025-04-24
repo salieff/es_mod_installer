@@ -98,7 +98,7 @@ void SafAdapter::RequestRootUriPermissions(void)
         return;
 
     SafAccessDialog safAccessDialog;
-    safAccessDialog.showMaximized();
+    safAccessDialog.showFullScreen();
     safAccessDialog.adjustImage();
     safAccessDialog.exec();
 
