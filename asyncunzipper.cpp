@@ -3,6 +3,7 @@
 
 #include "asyncunzipper.h"
 #include "safadapter.h"
+#include "admcontroller.h"
 
 
 #define UNPACK_BUFFER_SIZE (16*1024)
@@ -94,15 +95,6 @@ void AsyncUnzipper::run()
             m_failedFlag = true;
             break;
         }
-
-        if (!SafAdapter::getCurrentAdapter().DeleteFile(zipFile))
-        {
-            m_failedFlag = true;
-            m_errorString = tr("Can't delete zipfile ") + zipFile;
-            break;
-        }
-
-        SafAdapter::getCurrentAdapter().DeleteEmptyFoldersRecursively(QFileInfo(zipFile).dir().path());
 
         if (aborted())
             break;

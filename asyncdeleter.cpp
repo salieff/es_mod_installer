@@ -45,7 +45,7 @@ void AsyncDeleter::run()
         if (std::find_if(
                     localPaths.begin(),
                     localPaths.end(),
-                    [&path](const QString &localPath){ return localPath.length() > path.length() && localPath.startsWith(path); }
+                    [&path](const QString &localPath){ return localPath.length() > path.length() && localPath.startsWith(path + "/"); }
                     ) != localPaths.end())
             continue;
 

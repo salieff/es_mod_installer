@@ -1,4 +1,5 @@
 #include "safadapter.h"
+#include "admcontroller.h"
 
 #include <QFileInfo>
 #include <QDir>
@@ -6,26 +7,36 @@
 
 static voidpf minizip_saf_open(voidpf, const char *filename, int mode)
 {
+    int fd = -1;    
     const char* mode_fopen = NULL;
-    int fd = -1;
-
-    QString fullDir = QFileInfo(filename).dir().path();
-    QString fullFname = QFileInfo(filename).fileName();
 
     if ((mode & ZLIB_FILEFUNC_MODE_READWRITEFILTER) == ZLIB_FILEFUNC_MODE_READ)
-    {
         mode_fopen = "rb";
-        fd = SafAdapter::getCurrentAdapter().OpenFile(fullDir, fullFname, "r");
-    }
     else if (mode & ZLIB_FILEFUNC_MODE_EXISTING)
-    {
         mode_fopen = "r+b";
-        fd = SafAdapter::getCurrentAdapter().OpenFile(fullDir, fullFname, "rw");
-    }
     else if (mode & ZLIB_FILEFUNC_MODE_CREATE)
-    {
         mode_fopen = "wb";
-        fd = SafAdapter::getCurrentAdapter().CreateFile(fullDir, fullFname, "wt");
+
+    auto schemeLen = strlen(ADMController::URIScheme);
+    if (strncmp(filename, ADMController::URIScheme, schemeLen) == 0)
+    {
+        errno = 0;
+        qint64 admId = strtoll(filename + schemeLen, nullptr, 10);
+
+        if (errno == 0)
+            fd = ADMController::Open(admId);
+    }
+    else
+    {
+        QString fullDir = QFileInfo(filename).dir().path();
+        QString fullFname = QFileInfo(filename).fileName();
+
+        if ((mode & ZLIB_FILEFUNC_MODE_READWRITEFILTER) == ZLIB_FILEFUNC_MODE_READ)
+            fd = SafAdapter::getCurrentAdapter().OpenFile(fullDir, fullFname, "r");
+        else if (mode & ZLIB_FILEFUNC_MODE_EXISTING)
+            fd = SafAdapter::getCurrentAdapter().OpenFile(fullDir, fullFname, "rw");
+        else if (mode & ZLIB_FILEFUNC_MODE_CREATE)
+            fd = SafAdapter::getCurrentAdapter().CreateFile(fullDir, fullFname, "wt");
     }
 
     if ((fd >= 0) && (filename!=NULL) && (mode_fopen != NULL))

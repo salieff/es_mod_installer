@@ -177,6 +177,7 @@ void ESModElement::headersReceived()
 void ESModElement::zipListUnpacked()
 {
     disconnect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()));
+    m_admController.remove();
 
     m_localFiles << m_asyncUnzipper.unpackedFiles();
 
@@ -237,15 +238,7 @@ void ESModElement::filesDownloaded(qint64 adm_id, ADMController::Status adm_stat
 
     m_downloadErrorString.clear();
 
-    Q_UNUSED(adm_id) // TODO: The unzipper should to know how to open file by ADM id
-    m_admController.remove();
-    changeState(InstalledAvailable);
-    return;
-
-    QStringList zipList;
-    for (const QString &zipFile : files)
-        if (zipFile.endsWith(".zip", Qt::CaseInsensitive))
-            zipList << zipFile;
+    QStringList zipList{QString("%1%2").arg(ADMController::URIScheme).arg(adm_id)};
 
     connect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()), Qt::QueuedConnection);
 

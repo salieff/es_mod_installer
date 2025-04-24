@@ -47,6 +47,8 @@ public:
     static QString StatusString(Status status);
     static QString ReasonString(Reason reason);
 
+    constexpr static const char *URIScheme = "AndroidDownloadManager://";
+
 signals:
     void DownloadComplete(qint64 id, ADMController::Status status, ADMController::Reason reason);
     void DownloadProgress(qint64 id, qint64 downloaded, qint64 totalSize);
