@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import java.util.Collection;
 import java.util.Collections;
+import android.os.Build;
 
 
 class ADMReceiver extends BroadcastReceiver
@@ -34,7 +35,10 @@ class ADMReceiver extends BroadcastReceiver
     public void register(long id)
     {
         m_admId = id;
-        m_context.registerReceiver(this, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            m_context.registerReceiver(this, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED);
+        else
+            m_context.registerReceiver(this, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
 
     public void unregister()
@@ -192,6 +196,10 @@ public class ADMController
     private ADMReceiver m_downloadEventsReceiver = null;
     private ADMObserver m_downloadProgressObserver = null;
 
+
+    public ADMController()
+    {
+    }
 
     public ADMController(Context context, long cppThisPointer)
     {
