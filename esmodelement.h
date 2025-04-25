@@ -6,7 +6,6 @@
 #include <QJsonObject>
 
 #include "admcontroller.h"
-#include "asyncdownloader.h"
 #include "asyncunzipper.h"
 #include "asyncdeleter.h"
 
@@ -67,8 +66,6 @@ public:
     void DeserializeFromAllStatisticsList(const QJsonObject &obj);
 
     void TryToPickupFrom(QList<ESModElement *> &list, bool strict = false);
-
-    void EraseFromLocalFiles(const QString &ext);
 
     int id = -1;
     QString title = "Test sample mod name";
@@ -144,7 +141,6 @@ private:
     ADMController m_admController;
     QString m_downloadErrorString;
 
-    AsyncDownloader m_asyncHeadersReceiver;
     AsyncUnzipper m_asyncUnzipper;
     AsyncDeleter m_asyncDeleter;
 

@@ -17,6 +17,7 @@
 #include "esmodmodel.h"
 #include "statisticsmanager.h"
 #include "safadapter.h"
+#include "asyncdownloader.h"
 
 #define ES_MOD_INDEX_SERVER "http://51.250.97.106/"
 #define ES_MOD_INDEX_NAME "project2.json"

@@ -6,6 +6,8 @@
 
 #include "esmodelement.h"
 #include "statisticsmanager.h"
+#include "asyncdownloader.h"
+
 
 #if defined(Q_OS_IOS)
     #define MY_PLATFORM "ios"
@@ -16,26 +18,21 @@
     #define MY_PLATFORM "android"
 #endif
 
+
 ESModElement::ESModElement(QString url, QObject *parent, State state, int progress)
     : QObject(parent),
       state(state),
       progress(progress),
       m_uri(url)
 {
-    connect(&m_admController, SIGNAL(DownloadProgress(qint64,qint64,qint64)),
-            this, SLOT(downloadProgress(qint64,qint64,qint64)),
-            Qt::QueuedConnection);
-    connect(&m_admController, SIGNAL(DownloadComplete(qint64,ADMController::Status,ADMController::Reason)),
-            this, SLOT(filesDownloaded(qint64,ADMController::Status,ADMController::Reason)),
-            Qt::QueuedConnection);
+    connect(&m_admController, &ADMController::DownloadProgress, this, &ESModElement::downloadProgress, Qt::QueuedConnection);
+    connect(&m_admController, &ADMController::DownloadComplete, this, &ESModElement::filesDownloaded, Qt::QueuedConnection);
 
-    connect(&m_asyncHeadersReceiver, SIGNAL(headersReady()), this, SLOT(headersReceived()));
+    connect(&m_asyncUnzipper, &AsyncUnzipper::finished, this, &ESModElement::zipListUnpacked, Qt::QueuedConnection);
+    connect(&m_asyncUnzipper, &AsyncUnzipper::progress, this, &ESModElement::unpackProgress, Qt::QueuedConnection);
+    connect(&m_asyncUnzipper, &AsyncUnzipper::overwriteRequest, this, &ESModElement::unzipperOverwriteRequest, Qt::QueuedConnection);
 
-    connect(&m_asyncUnzipper, SIGNAL(finished()), this, SLOT(zipListUnpacked()), Qt::QueuedConnection);
-    connect(&m_asyncUnzipper, SIGNAL(progress(int)), this, SLOT(unpackProgress(int)), Qt::QueuedConnection);
-    connect(&m_asyncUnzipper, SIGNAL(overwriteRequest(QString)), this, SLOT(unzipperOverwriteRequest(QString)), Qt::QueuedConnection);
-
-    connect(&m_asyncDeleter, SIGNAL(finished()), this, SLOT(filesDeleted()), Qt::QueuedConnection);
+    connect(&m_asyncDeleter, &AsyncDeleter::finished, this, &ESModElement::filesDeleted, Qt::QueuedConnection);
 }
 
 void ESModElement::Download(void)
@@ -50,7 +47,7 @@ void ESModElement::Download(void)
 
     m_asyncUnzipper.wait();
 
-    if (m_admController.download(m_uri, files[0], title, m_uri + files[0]))
+    if (m_admController.download(m_uri, files[0], title, status))
         changeState(Downloading);
     else
         changeState(Failed);
@@ -117,11 +114,8 @@ void ESModElement::RequestHeaders()
         return;
     }
 
-    // Make shure previous async operations already done
-    m_asyncHeadersReceiver.wait();
-    m_asyncUnzipper.wait();
-
-    m_asyncHeadersReceiver.downloadFileList(m_uri, files, true);
+    QNetworkReply *headersReply = AsyncDownloader::head(m_uri, files[0]);
+    connect(headersReply, &QNetworkReply::finished, this, &ESModElement::headersReceived);
 
     if (m_admController.sync(m_uri, files[0]))
         changeState(Downloading);
@@ -132,9 +126,6 @@ QString ESModElement::errorString()
     if (!m_downloadErrorString.isNull())
         return m_downloadErrorString;
 
-    if (m_asyncHeadersReceiver.failed() || m_asyncHeadersReceiver.aborted())
-        return m_asyncHeadersReceiver.errorString();
-
     if (m_asyncUnzipper.failed() || m_asyncUnzipper.aborted())
         return m_asyncUnzipper.errorString();
 
@@ -143,8 +134,13 @@ QString ESModElement::errorString()
 
 void ESModElement::headersReceived()
 {
-    if (m_asyncHeadersReceiver.aborted() || m_asyncHeadersReceiver.failed())
+    QNetworkReply *headersReply = dynamic_cast<QNetworkReply *>(sender());
+    headersReply->deleteLater();
+
+    if (headersReply->error() != QNetworkReply::NoError)
     {
+        m_downloadErrorString = headersReply->errorString();
+
         if (state == Unknown)
         {
             if (m_localFiles.isEmpty())
@@ -155,7 +151,8 @@ void ESModElement::headersReceived()
     }
     else
     {
-        m_asyncHeadersReceiver.getHeadersData(size, timestamp);
+        size = headersReply->header(QNetworkRequest::ContentLengthHeader).toDouble();
+        timestamp = headersReply->header(QNetworkRequest::LastModifiedHeader).toDateTime().toTime_t();
 
         if (state == Unknown)
         {
@@ -191,8 +188,6 @@ void ESModElement::zipListUnpacked()
 
         return;
     }
-
-    EraseFromLocalFiles(".zip");
 
     m_localTimestamp = timestamp;
     m_localSize = size;
@@ -641,12 +636,4 @@ bool ESModElement::idEquals(ESModElement *el, bool strict)
     title2 = title2.remove(QRegularExpression("\\(\\b(?:Ru|Eng|Spa|,)\\b\\)")).remove(QRegularExpression("\\[.*\\]")).remove(QRegularExpression("\\{.*\\}")).simplified();
 
     return (myTitle == title2);
-}
-
-void ESModElement::EraseFromLocalFiles(const QString &ext)
-{
-    m_localFiles.erase(std::remove_if(m_localFiles.begin(),
-                                      m_localFiles.end(),
-                                      [&ext](const QString &s){ return s.endsWith(ext, Qt::CaseInsensitive); }),
-                       m_localFiles.end());
 }
