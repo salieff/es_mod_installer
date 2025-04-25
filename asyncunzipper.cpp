@@ -3,7 +3,6 @@
 
 #include "asyncunzipper.h"
 #include "safadapter.h"
-#include "admcontroller.h"
 
 
 #define UNPACK_BUFFER_SIZE (16*1024)
@@ -20,13 +19,13 @@ AsyncUnzipper::AsyncUnzipper(QObject *parent)
 {
 }
 
-bool AsyncUnzipper::unzipList(QStringList ziplist)
+bool AsyncUnzipper::unzip(QString zipfile)
 {
     m_totalSize = 0;
     m_unpackedSize = 0;
     m_progress = 0;
     m_unpackedFiles.clear();
-    m_zipList = ziplist;
+    m_zipFile = zipfile;
     m_abortFlag = false;
     m_failedFlag = false;
     m_errorString.clear();
@@ -82,47 +81,28 @@ void AsyncUnzipper::setOverwriteFlags(bool ovrw, bool ovrw_always)
 
 void AsyncUnzipper::run()
 {
-    if (!calculateTotalSize())
+    if (!unpackZip(CALC_SIZE_ONLY))
     {
         m_failedFlag = true;
         return;
     }
 
-    for (const QString &zipFile: m_zipList)
-    {
-        if (!unpackZip(zipFile))
-        {
-            m_failedFlag = true;
-            break;
-        }
-
-        if (aborted())
-            break;
-    }
+    if (!unpackZip())
+        m_failedFlag = true;
 }
 
-bool AsyncUnzipper::calculateTotalSize()
+bool AsyncUnzipper::unpackZip(bool calcSizeOnly)
 {
-    m_totalSize = 0;
-    foreach (const QString &zipFile, m_zipList)
-        if (!unpackZip(zipFile, true))
-            return false;
-
-    return true;
-}
-
-bool AsyncUnzipper::unpackZip(QString zipFile, bool calcSizeOnly)
-{
-    unzFile ufd = unzOpen2(zipFile.toLocal8Bit(), &SafAdapter::MiniZipFileAPI);
+    unzFile ufd = unzOpen2(m_zipFile.toLocal8Bit(), &SafAdapter::MiniZipFileAPI);
     if (ufd == NULL)
     {
-        m_errorString = tr("Can't open zip file ") + zipFile;
+        m_errorString = tr("Can't open zip file ") + m_zipFile;
         return false;
     }
 
     if (unzGoToFirstFile(ufd) != UNZ_OK)
     {
-        m_errorString = tr("Can't go to fist entry in zip file ") + zipFile;
+        m_errorString = tr("Can't go to fist entry in zip file ") + m_zipFile;
         return false;
     }
 
@@ -132,7 +112,7 @@ bool AsyncUnzipper::unpackZip(QString zipFile, bool calcSizeOnly)
         char fnameBuff[1025];
         if (unzGetCurrentFileInfo(ufd, &finfo, fnameBuff, sizeof(fnameBuff) - 1, NULL, 0, NULL, 0) != UNZ_OK)
         {
-            m_errorString = tr("Can't get current entry info in zip file ") + zipFile;
+            m_errorString = tr("Can't get current entry info in zip file ") + m_zipFile;
             return false;
         }
 
@@ -153,7 +133,7 @@ bool AsyncUnzipper::unpackZip(QString zipFile, bool calcSizeOnly)
         {
             if (unzOpenCurrentFile(ufd) != UNZ_OK)
             {
-                m_errorString = tr("Can't open current entry ") + fname + tr(" in zip file ") + zipFile;
+                m_errorString = tr("Can't open current entry ") + fname + tr(" in zip file ") + m_zipFile;
                 return false;
             }
 
@@ -162,7 +142,7 @@ bool AsyncUnzipper::unpackZip(QString zipFile, bool calcSizeOnly)
 
             if (unzCloseCurrentFile(ufd) != UNZ_OK)
             {
-                m_errorString = tr("Can't close current entry ") + fname + tr(" in zip file ") + zipFile;
+                m_errorString = tr("Can't close current entry ") + fname + tr(" in zip file ") + m_zipFile;
                 return false;
             }
         }
@@ -173,7 +153,7 @@ bool AsyncUnzipper::unpackZip(QString zipFile, bool calcSizeOnly)
 
     if (unzClose(ufd) != UNZ_OK)
     {
-        m_errorString = tr("Can't close zip file ") + zipFile;
+        m_errorString = tr("Can't close zip file ") + m_zipFile;
         return false;
     }
 

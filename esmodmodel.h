@@ -18,7 +18,7 @@ public:
         StatusRole,
         LangsRole,
         InfoUriRole,
-        FilesRole,
+        ZipFileRole,
         StateRole,
         ProgressRole,
         SizeRole,

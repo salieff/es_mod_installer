@@ -31,7 +31,6 @@ SOURCES += main.cpp \
     asyncdownloader.cpp \
     asyncdeleter.cpp \
     asyncjsonwriter.cpp \
-    asyncfilewriter.cpp \
     statisticsmanager.cpp \
     esinstalledmodmodel.cpp \
     safadapter.cpp \
@@ -68,7 +67,6 @@ HEADERS += \
     asyncdownloader.h \
     asyncdeleter.h \
     asyncjsonwriter.h \
-    asyncfilewriter.h \
     statisticsmanager.h \
     esinstalledmodmodel.h \
     version.h \

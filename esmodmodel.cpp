@@ -81,8 +81,8 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         return element->infouri;
         break;
 
-    case FilesRole:
-        return element->files.join("\n");
+    case ZipFileRole:
+        return element->zipFile;
         break;
 
     case StateRole:
@@ -179,7 +179,7 @@ QHash<int, QByteArray> ESModModel::roleNames() const
     roles[StatusRole] = "status";
     roles[LangsRole] = "langs";
     roles[InfoUriRole] = "infouri";
-    roles[FilesRole] = "files";
+    roles[ZipFileRole] = "zipfile";
     roles[StateRole] = "modstate";
     roles[ProgressRole] = "progress";
     roles[SizeRole] = "modsize";

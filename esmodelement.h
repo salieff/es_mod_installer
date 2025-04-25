@@ -72,7 +72,7 @@ public:
     QStringList langs = QStringList() << "Ru" << "En" <<"Spa";
     QString status = "окончен";
     QString infouri;
-    QStringList files;
+    QString zipFile;
 
     State state;
     int progress;

@@ -40,14 +40,14 @@ void ESModElement::Download(void)
     if (state != Available && state != InstalledHasUpdate && state != Failed)
         return;
 
-    if (files.empty() || m_uri.isEmpty())
+    if (zipFile.isEmpty() || m_uri.isEmpty())
         return;
 
     blockGui(ByDownload);
 
     m_asyncUnzipper.wait();
 
-    if (m_admController.download(m_uri, files[0], title, status))
+    if (m_admController.download(m_uri, zipFile, title, status))
         changeState(Downloading);
     else
         changeState(Failed);
@@ -79,7 +79,7 @@ void ESModElement::Delete(void)
 {
     blockGui(ByDelete);
     m_asyncDeleter.wait();
-    m_asyncDeleter.deleteFiles(m_localFiles + files);
+    m_asyncDeleter.deleteFiles(m_localFiles);
 }
 
 void ESModElement::SendLike(LikeType l)
@@ -108,16 +108,16 @@ void ESModElement::ToggleFavorite(void)
 
 void ESModElement::RequestHeaders()
 {
-    if (files.empty() || m_uri.isEmpty())
+    if (zipFile.isEmpty() || m_uri.isEmpty())
     {
         changeState(Installed);
         return;
     }
 
-    QNetworkReply *headersReply = AsyncDownloader::head(m_uri, files[0]);
+    QNetworkReply *headersReply = AsyncDownloader::head(m_uri, zipFile);
     connect(headersReply, &QNetworkReply::finished, this, &ESModElement::headersReceived);
 
-    if (m_admController.sync(m_uri, files[0]))
+    if (m_admController.sync(m_uri, zipFile))
         changeState(Downloading);
 }
 
@@ -214,7 +214,7 @@ void ESModElement::filesDownloaded(qint64 adm_id, ADMController::Status adm_stat
         m_admController.remove();
         m_downloadErrorString = QString("%1%2 %3 %4")
                                     .arg(m_uri)
-                                    .arg(files[0])
+                                    .arg(zipFile)
                                     .arg(ADMController::StatusString(adm_status))
                                     .arg(ADMController::ReasonString(adm_reason));
 
@@ -233,11 +233,9 @@ void ESModElement::filesDownloaded(qint64 adm_id, ADMController::Status adm_stat
 
     m_downloadErrorString.clear();
 
-    QStringList zipList{QString("%1%2").arg(ADMController::URIScheme).arg(adm_id)};
-
     connect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()), Qt::QueuedConnection);
 
-    if (m_asyncUnzipper.unzipList(zipList))
+    if (m_asyncUnzipper.unzip(QString("%1%2").arg(ADMController::URIScheme).arg(adm_id)))
         changeState(Unpacking);
     else
         changeState(Failed);
@@ -506,15 +504,20 @@ bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
     infouri = obj[QString("infouri_") + MY_PLATFORM].toString().trimmed();
 
     QJsonArray files_arr = obj[QString("files_") + MY_PLATFORM].toArray();
-    for (int i = 0; i < files_arr.size(); ++i)
-        files << files_arr[i].toString().trimmed();
 
-    if (files.empty())
-        QMessageBox::critical(NULL, title, tr("There are no archives in the mod!").arg(files.size()));
+    if (files_arr.empty())
+    {
+        QMessageBox::critical(NULL, title, tr("There are no archives in the mod!"));
+        return false;
+    }
 
-    if (files.size() > 1)
-        QMessageBox::critical(NULL, title, tr("There are %1 archives in the mod but only first will be processed!").arg(files.size()));
+    if (files_arr.size() > 1)
+    {
+        QMessageBox::critical(NULL, title, tr("There are %1 archives in the mod but only first will be processed!").arg(files_arr.size()));
+        return false;
+    }
 
+    zipFile = files_arr[0].toString().trimmed();
     return true;
 }
 
