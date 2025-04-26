@@ -11,6 +11,9 @@ public:
     explicit AsyncDeleter(QObject *parent = NULL);
     bool deleteFiles(QStringList flist);
 
+signals:
+    void progress(int p);
+
 protected:
     virtual void run();
 

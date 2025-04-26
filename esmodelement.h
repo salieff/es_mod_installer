@@ -112,6 +112,7 @@ private slots:
     void downloadProgress(qint64, qint64 downloaded, qint64 totalSize);
     void zipListUnpacked();
     void unpackProgress(int p);
+    void deletionProgress(int p);
     void filesDeleted();
     void unzipperOverwriteRequest(QString fname);
     void allLikesReceived();

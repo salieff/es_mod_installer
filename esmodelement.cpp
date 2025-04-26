@@ -32,6 +32,7 @@ ESModElement::ESModElement(QString url, QObject *parent, State state, int progre
     connect(&m_asyncUnzipper, &AsyncUnzipper::progress, this, &ESModElement::unpackProgress, Qt::QueuedConnection);
     connect(&m_asyncUnzipper, &AsyncUnzipper::overwriteRequest, this, &ESModElement::unzipperOverwriteRequest, Qt::QueuedConnection);
 
+    connect(&m_asyncDeleter, &AsyncDeleter::progress, this, &ESModElement::deletionProgress, Qt::QueuedConnection);
     connect(&m_asyncDeleter, &AsyncDeleter::finished, this, &ESModElement::filesDeleted, Qt::QueuedConnection);
 }
 
@@ -198,6 +199,15 @@ void ESModElement::zipListUnpacked()
 }
 
 void ESModElement::unpackProgress(int p)
+{
+    if (progress == p)
+        return;
+
+    progress = p;
+    emit stateChanged();
+}
+
+void ESModElement::deletionProgress(int p)
 {
     if (progress == p)
         return;
