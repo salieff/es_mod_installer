@@ -1,6 +1,6 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Window 2.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Window
 
 
 ScrollBar {
@@ -8,8 +8,8 @@ ScrollBar {
     minimumSize: 0.07
 
     contentItem: Rectangle {
-        implicitWidth: Screen.pixelDensity * 2
-        implicitHeight: 100
+        implicitWidth: mm(2)
+        implicitHeight: mm(10)
         radius: width / 2
         color: modListScrollBar.pressed ? "black" : "darkslategrey"
         opacity: modListScrollBar.active ? 0.75 : 0

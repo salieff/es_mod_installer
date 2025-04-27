@@ -1,7 +1,7 @@
 #ifndef ADMCONTROLLER_H
 #define ADMCONTROLLER_H
 
-#include <QAndroidJniObject>
+#include <QJniObject>
 #include <QObject>
 
 
@@ -63,7 +63,7 @@ private:
     static void DownloadCompleteDispatcher(JNIEnv *env, jobject thiz, jlong cppThisPointer, jlong id, jint status, jint reason);
     static void DownloadProgressDispatcher(JNIEnv *env, jobject thiz, jlong cppThisPointer, jlong id, jlong downloaded, jlong totalSize);
 
-    QAndroidJniObject m_javaADMController;
+    QJniObject m_javaADMController;
 };
 
 #endif // ADMCONTROLLER_H

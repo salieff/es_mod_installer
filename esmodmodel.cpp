@@ -10,10 +10,7 @@
 #include <QClipboard>
 #include <QProcessEnvironment>
 #include <QTimer>
-#include <QAndroidJniObject>
-#include <QtAndroid>
 
-#include "version.h"
 #include "esmodmodel.h"
 #include "statisticsmanager.h"
 #include "safadapter.h"
@@ -30,7 +27,7 @@ ESModModel::ESModModel(QObject *parent)
 {
     QNetworkReply *rep = AsyncDownloader::get(ES_MOD_INDEX_SERVER, ES_MOD_INDEX_NAME);
     connect(rep, SIGNAL(finished()), this, SLOT(ESModIndexDownloaded()));
-    connect(rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(ESModIndexError(QNetworkReply::NetworkError)));
+    connect(rep, &QNetworkReply::errorOccurred, this, &ESModModel::ESModIndexError);
 
     connect(StatisticsManager::getInstance(), SIGNAL(saveMe()), this, SLOT(SaveLocalModsDB()));
 }
@@ -105,9 +102,9 @@ QVariant ESModModel::data(const QModelIndex & index, int role) const
         QDateTime dt;
 
         if (element->timestamp == 0)
-            dt.setTime_t(element->m_localTimestamp);
+            dt.setSecsSinceEpoch(element->m_localTimestamp);
         else
-            dt.setTime_t(element->timestamp);
+            dt.setSecsSinceEpoch(element->timestamp);
 
         return dt.toString("yyyy.MM.dd");
     }
@@ -819,7 +816,7 @@ void ESModModel::filterByKeywords(QString str)
         return;
     }
 
-    QStringList strList = str.trimmed().split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+    QStringList strList = str.trimmed().split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
     QStringList::iterator sit = strList.begin();
     while (sit != strList.end())
     {

@@ -1,7 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
-import QtQuick.Window 2.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Window
 
 
 ApplicationWindow {
@@ -10,7 +10,6 @@ ApplicationWindow {
     height: 900
     title: qsTr("ES Manager")
     visible: true
-    // visibility: Window.FullScreen
 
     function mm(i) {
         return Screen.pixelDensity * i
@@ -58,7 +57,7 @@ ApplicationWindow {
         id: mainButtonSelector
         anchors.fill: parent
         focus: true
-        Keys.onPressed: {
+        Keys.onPressed: (event)=> {
             switch(event.key)
             {
             case Qt.Key_Menu :

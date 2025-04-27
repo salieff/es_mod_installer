@@ -1,5 +1,6 @@
-import QtQuick 2.15
-import QtQuick.Controls 1.4
+import QtQuick
+import QtQuick.Controls
+
 
 Menu {
     title: qsTr("Main Menu")

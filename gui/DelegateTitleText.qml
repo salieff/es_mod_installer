@@ -1,5 +1,5 @@
-import QtQuick 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Layouts
 
 
 Item {
@@ -45,8 +45,8 @@ Item {
                         textLine.color = "white"
                 }
 
-                onClicked: outRect.clicked(mouse)
-                onPressAndHold: outRect.pressAndHold(mouse)
+                onClicked: (mouse)=> { outRect.clicked(mouse); }
+                onPressAndHold: (mouse)=> { outRect.pressAndHold(mouse); }
             }
         }
 

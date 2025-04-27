@@ -24,7 +24,7 @@ void StatisticsManager::destroyInstance()
 
 void StatisticsManager::addRequest(const QString &reqStr)
 {
-    m_requestQueue << QString("%1&time=%2").arg(reqStr).arg(QDateTime::currentMSecsSinceEpoch() / 1000);
+    m_requestQueue << QString("%1&time=%2").arg(reqStr).arg(QDateTime::currentSecsSinceEpoch());
     QNetworkReply *statRep = AsyncDownloader::get(reqStr);
     connect(statRep, SIGNAL(finished()), this, SLOT(requestFinished()));
 }

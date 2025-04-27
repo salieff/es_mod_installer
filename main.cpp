@@ -6,10 +6,6 @@
 #include <QMessageBox>
 
 #include <QtWebView>
-#include <QtAndroid>
-#include <QAndroidJniEnvironment>
-#include <QAndroidIntent>
-#include <QAndroidJniObject>
 
 #include "esmodmodel.h"
 #include "esinstalledmodmodel.h"

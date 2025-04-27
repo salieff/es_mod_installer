@@ -1,5 +1,6 @@
 #include <QFileInfo>
 #include <QDir>
+#include <QRegularExpression>
 
 #include "asyncunzipper.h"
 #include "safadapter.h"
@@ -123,7 +124,7 @@ bool AsyncUnzipper::unpackZip(bool calcSizeOnly)
         if (fname.endsWith("/"))
             continue;
 
-        fname.remove(QRegExp("^/*")); // To avoid absolute paths
+        fname.remove(QRegularExpression("^/*")); // To avoid absolute paths
 
         if (calcSizeOnly)
         {

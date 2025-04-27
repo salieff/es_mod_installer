@@ -153,7 +153,7 @@ void ESModElement::headersReceived()
     else
     {
         size = headersReply->header(QNetworkRequest::ContentLengthHeader).toDouble();
-        timestamp = headersReply->header(QNetworkRequest::LastModifiedHeader).toDateTime().toTime_t();
+        timestamp = headersReply->header(QNetworkRequest::LastModifiedHeader).toDateTime().toSecsSinceEpoch();
 
         if (state == Unknown)
         {

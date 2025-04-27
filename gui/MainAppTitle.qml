@@ -1,14 +1,15 @@
-import QtQuick 2.15
-import QtQuick.Layouts 1.15
-import QtQml 2.15
+import QtQuick
+import QtQuick.Layouts
+import QtQml
+
 
 Rectangle {
     property alias closeButton: mailCloseButton
 
     Layout.topMargin: -radius
     Layout.fillWidth: true
-    Layout.preferredHeight: appTitleLayout.implicitHeight + 20 + radius
-    radius: 10
+    Layout.preferredHeight: appTitleLayout.implicitHeight + mm(2) + radius
+    radius: mm(1)
 
     gradient: Gradient {
         GradientStop { position: 0; color: "#FFFFFF" }
@@ -17,11 +18,11 @@ Rectangle {
 
     RowLayout {
         id: appTitleLayout
-        width: parent.width - 20
+        width: parent.width - mm(2)
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
-        anchors.topMargin: parent.radius + 10
-        spacing: 10
+        anchors.topMargin: parent.radius + mm(1)
+        spacing: mm(1)
 
         MMImage {
             id: helpButton

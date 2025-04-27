@@ -1,5 +1,6 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick
+import QtQuick.Controls
+
 
 Rectangle {
     height: parent.height - mainAppTitle.height
@@ -7,9 +8,9 @@ Rectangle {
         bottom: parent.bottom
         left: parent.left
         right: parent.right
-        margins: 5
+        margins: mm(0.5)
     }
-    radius: 10
+    radius: mm(1)
     opacity: 0
     visible: false
     clip: true
@@ -60,7 +61,7 @@ Rectangle {
         id: infoPanelFlickable
 
         anchors.fill: parent;
-        anchors.margins: 10
+        anchors.margins: mm(1)
         contentHeight: infoText.implicitHeight
         maximumFlickVelocity: 7000
 

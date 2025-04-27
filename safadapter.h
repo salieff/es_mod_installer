@@ -3,7 +3,7 @@
 
 #include <QString>
 #include <QFile>
-#include <QAndroidJniObject>
+#include <QJniObject>
 #include <QRandomGenerator>
 #include <QMutex>
 
@@ -48,7 +48,7 @@ public:
 
 private:
     QString m_rootSafPath;
-    QAndroidJniObject m_javaSafAdapter;
+    QJniObject m_javaSafAdapter;
     int RootUriPermissionsRequestCode = QRandomGenerator::global()->generate();
 
     constexpr static const char *EverlastingSummerDataFilesPath = "Android/media/su.sovietgames.everlasting_summer/mods";
@@ -61,7 +61,8 @@ private:
     int FolderSize(const QString &folderPath);
     bool CreateOrOpenQFile(QFile &qf, const QString &filePath, QIODevice::OpenMode mode, int (SafAdapter::*java_func)(const QString &parentFolder, const QString &fileName, const QString &mode), bool createFolders);
 
-    bool CanUseNativeAPI(void);
+    static bool CanUseNativeAPI(void);
+
     QString ConvertToNativePath(const QString &path);
     QString FixStartingSlash(const QString &path);
 

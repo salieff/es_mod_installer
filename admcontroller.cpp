@@ -1,5 +1,5 @@
-#include <QtAndroid>
-#include <QAndroidJniEnvironment>
+#include <QCoreApplication>
+#include <QJniEnvironment>
 
 #include "admcontroller.h"
 
@@ -7,10 +7,10 @@
 ADMController::ADMController(QObject *parent)
     : QObject{parent}
 {
-    m_javaADMController = QAndroidJniObject(
+    m_javaADMController = QJniObject(
         "org/salieff/ADMController",
         "(Landroid/content/Context;J)V",
-        QtAndroid::androidContext().object(), reinterpret_cast<jlong>(this)
+        QNativeInterface::QAndroidApplication::context().object(), reinterpret_cast<jlong>(this)
         );
 }
 
@@ -20,8 +20,8 @@ void ADMController::Initialize()
         {"DownloadComplete", "(JJII)V", reinterpret_cast<void *>(ADMController::DownloadCompleteDispatcher)},
         {"DownloadProgress", "(JJJJ)V", reinterpret_cast<void *>(ADMController::DownloadProgressDispatcher)}
     };
-    QAndroidJniObject javaClass("org/salieff/ADMController");
-    QAndroidJniEnvironment env;
+    QJniObject javaClass("org/salieff/ADMController");
+    QJniEnvironment env;
 
     jclass objectClass = env->GetObjectClass(javaClass.object<jobject>());
     env->RegisterNatives(objectClass, methods, sizeof(methods) / sizeof(methods[0]));
@@ -30,21 +30,21 @@ void ADMController::Initialize()
 
 int ADMController::Open(qint64 id)
 {
-    return QAndroidJniObject::callStaticMethod<jint>(
+    return QJniObject::callStaticMethod<jint>(
         "org/salieff/ADMController",
         "Open",
         "(Landroid/content/Context;J)I",
-        QtAndroid::androidContext().object(), id
+        QNativeInterface::QAndroidApplication::context().object(), id
         );
 }
 
 void ADMController::Remove(qint64 id)
 {
-    QAndroidJniObject::callStaticMethod<void>(
+    QJniObject::callStaticMethod<void>(
         "org/salieff/ADMController",
         "Remove",
         "(Landroid/content/Context;J)V",
-        QtAndroid::androidContext().object(), id
+        QNativeInterface::QAndroidApplication::context().object(), id
         );
 }
 
@@ -99,8 +99,8 @@ bool ADMController::sync(QString serverUrl, QString filePath)
     return m_javaADMController.callMethod<jboolean>(
                "sync",
                "(Ljava/lang/String;Ljava/lang/String;)Z",
-               QAndroidJniObject::fromString(serverUrl).object<jstring>(),
-               QAndroidJniObject::fromString(filePath).object<jstring>()
+               QJniObject::fromString(serverUrl).object<jstring>(),
+               QJniObject::fromString(filePath).object<jstring>()
                ) != JNI_FALSE;
 }
 
@@ -109,10 +109,10 @@ bool ADMController::download(QString serverUrl, QString filePath, QString title,
     return m_javaADMController.callMethod<jboolean>(
                "download",
                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z",
-               QAndroidJniObject::fromString(serverUrl).object<jstring>(),
-               QAndroidJniObject::fromString(filePath).object<jstring>(),
-               QAndroidJniObject::fromString(title).object<jstring>(),
-               QAndroidJniObject::fromString(descripton).object<jstring>()
+               QJniObject::fromString(serverUrl).object<jstring>(),
+               QJniObject::fromString(filePath).object<jstring>(),
+               QJniObject::fromString(title).object<jstring>(),
+               QJniObject::fromString(descripton).object<jstring>()
                ) != JNI_FALSE;
 }
 

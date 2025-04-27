@@ -1,14 +1,15 @@
-import QtQuick 2.15
-import QtQuick.Layouts 1.15
-import QtQuick.Window 2.15
-import QtQuick.Controls 2.15
-import org.salieff.esmodinstaller 1.0
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Window
+import QtQuick.Controls
+import org.salieff.esmodinstaller
+
 
 Rectangle {
     Layout.fillWidth: true
     Layout.bottomMargin: -radius
-    Layout.preferredHeight: sortSearchLayout.implicitHeight + 20 + radius
-    radius: 10
+    Layout.preferredHeight: sortSearchLayout.implicitHeight + mm(2) + radius
+    radius: mm(1)
     gradient: Gradient {
         GradientStop { position: 0; color: "#F0F0F0" }
         GradientStop { position: 1; color: "#909090" }
@@ -16,16 +17,16 @@ Rectangle {
 
     RowLayout {
         id: sortSearchLayout
-        width: parent.width - 20
+        width: parent.width - mm(2)
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: parent.radius + 10
-        spacing: 10
+        anchors.bottomMargin: parent.radius + mm(1)
+        spacing: mm(1)
 
         Rectangle {
-            width: Screen.pixelDensity * 7
-            height: Screen.pixelDensity * 7
-            radius: 10
+            width: mm(7)
+            height: mm(7)
+            radius: mm(1)
             gradient: Gradient {
                 GradientStop { position: 0; color: "#FFFFFF" }
                 GradientStop { position: 1; color: "#A0A0A0" }
@@ -109,7 +110,8 @@ Rectangle {
         TextField {
             id: searchText
             Layout.fillWidth: true
-            font.pointSize: 25
+            Layout.preferredHeight: mm(6)
+            font.pointSize: 18
             placeholderText: qsTr("Name filter")
 
             onAccepted: {

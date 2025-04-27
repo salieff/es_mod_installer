@@ -1,5 +1,5 @@
-import QtQuick 2.15
-import org.salieff.esmodinstaller 1.0
+import QtQuick
+import org.salieff.esmodinstaller
 
 
 Item {

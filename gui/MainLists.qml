@@ -1,7 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Layouts 1.15
-import QtQuick.Controls 2.15
-import QtQuick.Window 2.15
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Window
 
 
 Item {
@@ -11,8 +11,8 @@ Item {
     SwipeView {
         id: swipeView
         anchors.fill: parent
-        anchors.margins: 10
-        spacing: 10
+        anchors.margins: mm(1)
+        spacing: mm(1)
         currentIndex: 2
 
         MainListView {
@@ -50,7 +50,7 @@ Item {
         width: pageIndicator.implicitWidth + mm(1)
         height: pageIndicator.implicitHeight + mm(1)
         z: 1
-        radius: 10
+        radius: mm(1)
 
         gradient: Gradient {
             GradientStop { position: 0; color: "#FFFFFF" }
@@ -61,6 +61,8 @@ Item {
         PageIndicator {
             id: pageIndicator
             anchors.centerIn: parent
+            spacing: mm(0.5)
+            padding: mm(0.5)
 
             count: swipeView.count
             currentIndex: swipeView.currentIndex
@@ -86,8 +88,8 @@ Item {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        width: 200
-        height: 200
+        width: mm(20)
+        height: mm(20)
         running: true
 
         Connections {

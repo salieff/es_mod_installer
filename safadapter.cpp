@@ -1,4 +1,5 @@
-#include <QtAndroid>
+#include <QCoreApplication>
+#include <QtCore/private/qandroidextras_p.h>
 #include <QFileInfo>
 #include <QDir>
 #include <QMessageBox>
@@ -64,21 +65,24 @@ SafAdapter::SafAdapter(const QString &rootSafPath) : m_rootSafPath(rootSafPath)
         return;
     }
 
-    m_javaSafAdapter = QAndroidJniObject("org/salieff/SafAdapter",
-                                         "(Ljava/lang/String;)V",
-                                         QAndroidJniObject::fromString(m_rootSafPath).object<jstring>());
+    m_javaSafAdapter = QJniObject("org/salieff/SafAdapter",
+                                  "(Ljava/lang/String;)V",
+                                  QJniObject::fromString(m_rootSafPath).object<jstring>());
 }
 
 void SafAdapter::RequestExternalStorageReadWrite(void)
 {
-    if(QtAndroid::checkPermission("android.permission.READ_EXTERNAL_STORAGE") != QtAndroid::PermissionResult::Granted ||
-       QtAndroid::checkPermission("android.permission.WRITE_EXTERNAL_STORAGE") != QtAndroid::PermissionResult::Granted)
-    {
-        QtAndroid::requestPermissionsSync(QStringList({
-            "android.permission.READ_EXTERNAL_STORAGE",
-            "android.permission.WRITE_EXTERNAL_STORAGE"
-        }));
-    }
+    if (QtAndroidPrivate::checkPermission(QStringLiteral("android.permission.READ_EXTERNAL_STORAGE")).result() != QtAndroidPrivate::PermissionResult::Authorized)
+        if (QtAndroidPrivate::requestPermission(QStringLiteral("android.permission.READ_EXTERNAL_STORAGE")).result() != QtAndroidPrivate::PermissionResult::Authorized)
+            if (CanUseNativeAPI())
+                QMessageBox::warning(nullptr, QObject::tr("Permission is necessary"),
+                                     QObject::tr("This application isn't able to work without a storage read permission"));
+
+    if (QtAndroidPrivate::checkPermission(QStringLiteral("android.permission.WRITE_EXTERNAL_STORAGE")).result() != QtAndroidPrivate::PermissionResult::Authorized)
+        if (QtAndroidPrivate::requestPermission(QStringLiteral("android.permission.WRITE_EXTERNAL_STORAGE")).result() != QtAndroidPrivate::PermissionResult::Authorized)
+            if (CanUseNativeAPI())
+                QMessageBox::warning(nullptr, QObject::tr("Permission is necessary"),
+                                     QObject::tr("This application isn't able to work without a storage write permission"));
 }
 
 // Private
@@ -86,7 +90,7 @@ bool SafAdapter::CheckRootUriPermissions(void)
 {
     return m_javaSafAdapter.callMethod<jboolean>("rootUriPermissionGranted",
                                                  "(Landroid/content/Context;)Z",
-                                                 QtAndroid::androidContext().object()) != JNI_FALSE;
+                                                 QNativeInterface::QAndroidApplication::context().object()) != JNI_FALSE;
 }
 
 void SafAdapter::RequestRootUriPermissions(void)
@@ -98,6 +102,7 @@ void SafAdapter::RequestRootUriPermissions(void)
         return;
 
     SafAccessDialog safAccessDialog;
+    safAccessDialog.adjustSize();
     safAccessDialog.showMaximized();
     safAccessDialog.adjustImage();
     safAccessDialog.exec();
@@ -105,13 +110,13 @@ void SafAdapter::RequestRootUriPermissions(void)
     auto intent = m_javaSafAdapter.callObjectMethod("intentForRootUriPermissionRequest",
                                                     "()Landroid/content/Intent;");
 
-    QtAndroid::startActivity(intent, RootUriPermissionsRequestCode, [this](int receiverRequestCode, int resultCode, const QAndroidJniObject &intent) {
+    QtAndroidPrivate::startActivity(intent, RootUriPermissionsRequestCode, [this](int receiverRequestCode, int resultCode, const QJniObject &intent) {
         if (receiverRequestCode != RootUriPermissionsRequestCode || resultCode != -1)
             return;
 
         m_javaSafAdapter.callMethod<void>("takeRootUriPermission",
                                           "(Landroid/content/Context;Landroid/content/Intent;)V",
-                                          QtAndroid::androidContext().object(),
+                                          QNativeInterface::QAndroidApplication::context().object(),
                                           intent.object());
     });
 }
@@ -124,9 +129,9 @@ bool SafAdapter::CreateFolder(const QString &parentFolder, const QString &subFol
     return m_javaSafAdapter.callMethod<jboolean>(
                 "createFolder",
                 "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)Z",
-                QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(FixStartingSlash(parentFolder)).object<jstring>(),
-                QAndroidJniObject::fromString(subFolder).object<jstring>()
+                QNativeInterface::QAndroidApplication::context().object(),
+                QJniObject::fromString(FixStartingSlash(parentFolder)).object<jstring>(),
+                QJniObject::fromString(subFolder).object<jstring>()
                 ) != JNI_FALSE;
 }
 
@@ -172,10 +177,10 @@ int SafAdapter::OpenFile(const QString &parentFolder, const QString &fileName, c
     return m_javaSafAdapter.callMethod<jint>(
                 "openFile",
                 "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I",
-                QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(FixStartingSlash(parentFolder)).object<jstring>(),
-                QAndroidJniObject::fromString(fileName).object<jstring>(),
-                QAndroidJniObject::fromString(mode).object<jstring>()
+                QNativeInterface::QAndroidApplication::context().object(),
+                QJniObject::fromString(FixStartingSlash(parentFolder)).object<jstring>(),
+                QJniObject::fromString(fileName).object<jstring>(),
+                QJniObject::fromString(mode).object<jstring>()
                 );
 }
 
@@ -207,10 +212,10 @@ int SafAdapter::CreateFile(const QString &parentFolder, const QString &fileName,
     return m_javaSafAdapter.callMethod<jint>(
                 "createFile",
                 "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I",
-                QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(FixStartingSlash(parentFolder)).object<jstring>(),
-                QAndroidJniObject::fromString(fileName).object<jstring>(),
-                QAndroidJniObject::fromString(mode).object<jstring>()
+                QNativeInterface::QAndroidApplication::context().object(),
+                QJniObject::fromString(FixStartingSlash(parentFolder)).object<jstring>(),
+                QJniObject::fromString(fileName).object<jstring>(),
+                QJniObject::fromString(mode).object<jstring>()
                 );
 }
 
@@ -273,8 +278,8 @@ int SafAdapter::FolderSize(const QString &folderPath)
     return m_javaSafAdapter.callMethod<jint>(
                 "folderSize",
                 "(Landroid/content/Context;Ljava/lang/String;)I",
-                QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(FixStartingSlash(folderPath)).object<jstring>()
+                QNativeInterface::QAndroidApplication::context().object(),
+                QJniObject::fromString(FixStartingSlash(folderPath)).object<jstring>()
                 );
 }
 
@@ -286,8 +291,8 @@ bool SafAdapter::DeleteFile(const QString &fileName)
     return m_javaSafAdapter.callMethod<jboolean>(
                 "deleteFile",
                 "(Landroid/content/Context;Ljava/lang/String;)Z",
-                QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(FixStartingSlash(fileName)).object<jstring>()
+                QNativeInterface::QAndroidApplication::context().object(),
+                QJniObject::fromString(FixStartingSlash(fileName)).object<jstring>()
                 ) != JNI_FALSE;
 }
 
@@ -336,14 +341,14 @@ int64_t SafAdapter::FileSize(const QString &fileName)
     return m_javaSafAdapter.callMethod<jlong>(
                 "fileSize",
                 "(Landroid/content/Context;Ljava/lang/String;)J",
-                QtAndroid::androidContext().object(),
-                QAndroidJniObject::fromString(FixStartingSlash(fileName)).object<jstring>()
+                QNativeInterface::QAndroidApplication::context().object(),
+                QJniObject::fromString(FixStartingSlash(fileName)).object<jstring>()
                 );
 }
 
 bool SafAdapter::CanUseNativeAPI(void)
 {
-    return QtAndroid::androidSdkVersion() < MinimalSdkVersionForSaf;
+    return QNativeInterface::QAndroidApplication::sdkVersion() < MinimalSdkVersionForSaf;
 }
 
 QString SafAdapter::ConvertToNativePath(const QString &path)

@@ -1,12 +1,13 @@
-import QtQuick 2.15
-import QtQuick.Layouts 1.15
-import org.salieff.esmodinstaller 1.0
+import QtQuick
+import QtQuick.Layouts
+import org.salieff.esmodinstaller
+
 
 Rectangle {
-    width: likeRectLayout.implicitWidth + 40
-    height: likeRectLayout.implicitHeight + 40
+    width: likeRectLayout.implicitWidth + mm(4)
+    height: likeRectLayout.implicitHeight + mm(4)
     anchors.centerIn: parent
-    radius: 10
+    radius: mm(1)
     color: "#f0ffffff"
     opacity: 0
     visible: false
@@ -45,7 +46,7 @@ Rectangle {
     ColumnLayout {
         id: likeRectLayout
         anchors.centerIn: parent
-        spacing: 20
+        spacing: mm(1)
 
         Text {
             id: likeTitle
@@ -58,8 +59,8 @@ Rectangle {
 
         GridLayout {
             Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-            columnSpacing: 20
-            rowSpacing: 20
+            columnSpacing: mm(1)
+            rowSpacing: mm(1)
             columns: 2
 
             MMImage {
@@ -148,7 +149,7 @@ Rectangle {
 
         RowLayout {
             Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-            spacing: 40
+            spacing: mm(2)
 
             // Installation statistics block
             GridLayout {

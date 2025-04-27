@@ -1,12 +1,13 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+
 
 ListView {
     property string headerText
     delegate: Delegate {}
 
-    spacing: 5
+    spacing: mm(0.3)
     maximumFlickVelocity: 7000
 
     ScrollBar.vertical: EsScrollBar {}
@@ -14,7 +15,7 @@ ListView {
     header: Item {
         // Empty placeholder
         width: parent.width
-        height: hdrRect.height + 10
+        height: hdrRect.height + mm(1)
         anchors.horizontalCenter: parent.horizontalCenter
     }
 
@@ -30,16 +31,16 @@ ListView {
     Item {
         z: 2
         width: parent.width
-        height: hdrRect.height + 10
+        height: hdrRect.height + mm(1)
         anchors.horizontalCenter: parent.horizontalCenter
         opacity: 0.75
 
         Rectangle {
             id: hdrRect
-            width: hdrText.contentWidth + 20
-            height: hdrText.contentHeight + 20
+            width: hdrText.contentWidth + mm(1)
+            height: hdrText.contentHeight + mm(1)
             anchors.horizontalCenter: parent.horizontalCenter
-            radius: 10
+            radius: mm(1)
             gradient: Gradient {
                 GradientStop { position: 0; color: "#FFFFFF" }
                 GradientStop { position: 1; color: "#A0A0A0" }

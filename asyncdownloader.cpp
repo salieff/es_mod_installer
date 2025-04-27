@@ -1,5 +1,5 @@
-#include <QAndroidJniObject>
-#include <QtAndroid>
+#include <QJniObject>
+#include <QCoreApplication>
 
 #include "asyncdownloader.h"
 
@@ -20,9 +20,10 @@ QString AsyncDownloader::getDeviceUDID()
 {
     if (m_myUDID.isEmpty())
     {
-        QAndroidJniObject myID = QAndroidJniObject::fromString("android_id");
-        QAndroidJniObject contentR = QtAndroid::androidContext().callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
-        QAndroidJniObject result = QAndroidJniObject::callStaticObjectMethod("android/provider/Settings$Secure", "getString", "(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;",contentR.object(), myID.object<jstring>());
+        QJniObject myID = QJniObject::fromString("android_id");
+        QJniObject context = QNativeInterface::QAndroidApplication::context();
+        QJniObject contentR = context.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
+        QJniObject result = QJniObject::callStaticObjectMethod("android/provider/Settings$Secure", "getString", "(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;",contentR.object(), myID.object<jstring>());
 
         m_myUDID = result.toString();
     }

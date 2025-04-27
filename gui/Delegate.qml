@@ -1,5 +1,5 @@
-import QtQuick 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Layouts
 
 
 Rectangle {
@@ -9,8 +9,8 @@ Rectangle {
 
     height: mainLayout.implicitHeight + margin * 2
     width: ListView.view.width
-    radius: 15
-    border.width: 2
+    radius: mm(1.5)
+    border.width: mm(0.2)
     border.color: "#22000000"
     color: "darkslategrey"
 
