@@ -3,7 +3,6 @@
 #include <QFileInfo>
 
 #include <set>
-#include <algorithm>
 
 #include "asyncdeleter.h"
 #include "safadapter.h"
@@ -23,45 +22,27 @@ bool AsyncDeleter::deleteFiles(QStringList flist)
 
 void AsyncDeleter::run()
 {
-    int deletedItemsCount = 0;
     std::set<QString> localPaths;
 
-    for (const auto &fname: m_localFiles)
+    for (const auto &fname: qAsConst(m_localFiles))
     {
-        SafAdapter::getCurrentAdapter().DeleteFile(fname);
-        if (fname.endsWith(".rpy", Qt::CaseInsensitive))
+        auto foldersList = QFileInfo(fname).dir().path().split('/', Qt::SkipEmptyParts);
+
+        if (foldersList.empty())
         {
-            SafAdapter::getCurrentAdapter().DeleteFile(fname + "c");
-            SafAdapter::getCurrentAdapter().DeleteFile(fname + "C");
+            SafAdapter::getCurrentAdapter().DeleteFile(fname);
+            if (fname.endsWith(".rpy", Qt::CaseInsensitive))
+            {
+                SafAdapter::getCurrentAdapter().DeleteFile(fname + "c");
+                SafAdapter::getCurrentAdapter().DeleteFile(fname + "C");
+            }
         }
-
-        localPaths.insert(QFileInfo(fname).dir().path());
-
-        ++deletedItemsCount;
-        emit progress(100 - deletedItemsCount * 50 / m_localFiles.size());
+        else
+        {
+            localPaths.insert(foldersList.front());
+        }
     }
-
-    std::vector<QString> optimizedPaths;
 
     for (auto const &path : localPaths)
-    {
-        // Если в localPaths есть более длинный путь, поглощающий текущий, то не добавляем текущий в optimizedPaths
-        if (std::find_if(
-                    localPaths.begin(),
-                    localPaths.end(),
-                    [&path](const QString &localPath){ return localPath.length() > path.length() && localPath.startsWith(path + "/"); }
-                    ) != localPaths.end())
-            continue;
-
-        optimizedPaths.push_back(path);
-    }
-
-    deletedItemsCount = 0;
-    for (auto const &path : optimizedPaths)
-    {
-        SafAdapter::getCurrentAdapter().DeleteEmptyFoldersRecursively(path);
-
-        ++deletedItemsCount;
-        emit progress(50 - deletedItemsCount * 50 / optimizedPaths.size());
-    }
+        SafAdapter::getCurrentAdapter().DeleteFolder(path);
 }

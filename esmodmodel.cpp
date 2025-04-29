@@ -40,6 +40,12 @@ ESModModel::~ESModModel()
     SaveLocalModsDB();
     m_JsonWriter.close();
     m_JsonWriter.wait();
+
+    for (const auto &elptr : qAsConst(m_initialElements))
+        delete elptr;
+
+    m_initialElements.clear();
+    m_elements.clear();
 }
 
 void ESModModel::addModElement(ESModElement *element)
@@ -260,7 +266,7 @@ void ESModModel::ESModIndexDownloaded()
     // Пусть последние добавленные будут сверху
     std::reverse(m_initialElements.begin(), m_initialElements.end());
 
-    for(const auto &el: local_elements)
+    for(const auto &el: qAsConst(local_elements))
         addModElement(el);
 
     sortList(m_lastSortMode);
@@ -467,6 +473,8 @@ void ESModModel::elementNeedRemove()
     m_elements.removeAt(el->m_modelIndex);
     ReindexElements();
     endRemoveRows();
+
+    // el не требует удаления, он уже сам себе выставил deleteLater()
 }
 
 void ESModModel::requestAllLikes()

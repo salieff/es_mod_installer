@@ -138,51 +138,43 @@ class ADMObserver extends ContentObserver
     @Override
     public void onChange(boolean selfChange, Collection<Uri> uris, int flags)
     {
-        Cursor cursor = m_downloadManager.query(new DownloadManager.Query());
-
+        Cursor cursor = m_downloadManager.query(new DownloadManager.Query().setFilterById(m_admId));
         if (!cursor.moveToFirst())
         {
             cursor.close();
             return;
         }
 
-        int idIndex = cursor.getColumnIndex(DownloadManager.COLUMN_ID);
         int localUriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI);
+        String localUri = cursor.getString(localUriIndex);
+        if (!uris.contains(Uri.parse(localUri)))
+        {
+            cursor.close();
+            return;
+        }
+
         int downloadedIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
         int sizeIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
         int statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
         int reasonIndex = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
 
-        do
-        {
-            long id = cursor.getInt(idIndex);
-            if (id != m_admId)
-                continue;
-
-            String localUri = cursor.getString(localUriIndex);
-            if (!uris.contains(Uri.parse(localUri)))
-                continue;
-
-            long downloaded = cursor.getInt(downloadedIndex);
-            long size = cursor.getInt(sizeIndex);
-            int status = cursor.getInt(statusIndex);
-            int reason = cursor.getInt(reasonIndex);
-
-            ADMController.DownloadProgress(m_cppThisPointer, id, downloaded, size);
-
-            // BroadcastReceiver doesn't get ACTION_DOWNLOAD_COMPLETE with STATUS_FAILED for some reason
-            // So we have to send DownloadComplete(FAILED) artificially, here
-            if (status == DownloadManager.STATUS_FAILED)
-            {
-                unregister();
-                m_receiver.unregister();
-                ADMController.DownloadComplete(m_cppThisPointer, id, status, reason);
-            }
-
-            break;
-        } while(cursor.moveToNext());
+        long downloaded = cursor.getInt(downloadedIndex);
+        long size = cursor.getInt(sizeIndex);
+        int status = cursor.getInt(statusIndex);
+        int reason = cursor.getInt(reasonIndex);
 
         cursor.close();
+
+        ADMController.DownloadProgress(m_cppThisPointer, m_admId, downloaded, size);
+
+        // BroadcastReceiver doesn't get ACTION_DOWNLOAD_COMPLETE with STATUS_FAILED for some reason
+        // So we have to send DownloadComplete(FAILED) artificially, here
+        if (status == DownloadManager.STATUS_FAILED)
+        {
+            unregister();
+            m_receiver.unregister();
+            ADMController.DownloadComplete(m_cppThisPointer, m_admId, status, reason);
+        }
     }
 }
 

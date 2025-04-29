@@ -74,11 +74,12 @@ HEADERS += \
     admcontroller.h
 
 DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 USE_FILE32API
-DEFINES += BENCHMARK_DEBUG
+# DEFINES += BENCHMARK_DEBUG
 
 DISTFILES += \
     android/AndroidManifest.xml \
-    android/src/org/salieff/SafAdapter.java
+    android/src/org/salieff/SafAdapter.java \
+    android/src/org/salieff/ADMController.java \
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

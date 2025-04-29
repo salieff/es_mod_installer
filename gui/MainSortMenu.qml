@@ -1,5 +1,5 @@
 import QtQuick 2.15
-import QtQuick.Controls 1.4
+import QtQuick.Controls 1.4 // Old version is used deliberately, because menus from Controls 2.15 are ugly
 import org.salieff.esmodinstaller 1.0
 
 Menu {
