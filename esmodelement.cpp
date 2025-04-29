@@ -30,10 +30,15 @@ ESModElement::ESModElement(QString url, QObject *parent, State state, int progre
 
     connect(&m_asyncUnzipper, &AsyncUnzipper::finished, this, &ESModElement::zipListUnpacked, Qt::QueuedConnection);
     connect(&m_asyncUnzipper, &AsyncUnzipper::progress, this, &ESModElement::unpackProgress, Qt::QueuedConnection);
-    connect(&m_asyncUnzipper, &AsyncUnzipper::overwriteRequest, this, &ESModElement::unzipperOverwriteRequest, Qt::QueuedConnection);
 
     connect(&m_asyncDeleter, &AsyncDeleter::progress, this, &ESModElement::deletionProgress, Qt::QueuedConnection);
     connect(&m_asyncDeleter, &AsyncDeleter::finished, this, &ESModElement::filesDeleted, Qt::QueuedConnection);
+}
+
+ESModElement::~ESModElement()
+{
+    m_asyncUnzipper.wait();
+    m_asyncDeleter.wait();
 }
 
 void ESModElement::Download(void)
@@ -349,16 +354,6 @@ void ESModElement::filesDeleted()
         changeState(Available);
         break;
     }
-}
-
-void ESModElement::unzipperOverwriteRequest(QString fname)
-{
-    QMessageBox::StandardButton b = QMessageBox::warning(NULL, tr("Risk of overwriting"), \
-                                                         tr("File %1 already exists, do you want to overwrite it?").arg(fname), \
-                                                         QMessageBox::Cancel | QMessageBox::Yes | QMessageBox::YesToAll, \
-                                                         QMessageBox::Cancel);
-
-    m_asyncUnzipper.setOverwriteFlags((b == QMessageBox::YesToAll || b == QMessageBox::Yes), b == QMessageBox::YesToAll);
 }
 
 static bool checkLikeResponse(QNetworkReply *rep, QJsonObject &obj)

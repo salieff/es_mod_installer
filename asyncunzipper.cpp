@@ -4,8 +4,7 @@
 #include "asyncunzipper.h"
 #include "safadapter.h"
 
-
-#define UNPACK_BUFFER_SIZE (16*1024)
+#define UNPACK_BUFFER_SIZE (4*1024*1024)
 
 AsyncUnzipper::AsyncUnzipper(QObject *parent)
     : QThread(parent),
@@ -13,9 +12,7 @@ AsyncUnzipper::AsyncUnzipper(QObject *parent)
       m_unpackedSize(0),
       m_progress(0),
       m_abortFlag(false),
-      m_failedFlag(false),
-      m_canOverwrite(false),
-      m_alwaysOverwrite(false)
+      m_failedFlag(false)
 {
 }
 
@@ -29,8 +26,9 @@ bool AsyncUnzipper::unzip(QString zipfile)
     m_abortFlag = false;
     m_failedFlag = false;
     m_errorString.clear();
-    m_canOverwrite = false;
-    m_alwaysOverwrite = false;
+    m_topFolders.clear();
+    m_topFiles.clear();
+    m_foldersToCreate.clear();
 
     start();
     return true;
@@ -38,13 +36,7 @@ bool AsyncUnzipper::unzip(QString zipfile)
 
 bool AsyncUnzipper::aborted()
 {
-    bool ret;
-
-    m_abortMutex.lock();
-    ret = m_abortFlag;
-    m_abortMutex.unlock();
-
-    return ret;
+    return m_abortFlag;
 }
 
 bool AsyncUnzipper::failed()
@@ -59,10 +51,8 @@ QString AsyncUnzipper::errorString()
 
 void AsyncUnzipper::abort()
 {
-    m_abortMutex.lock();
     m_errorString = tr("Aborted by user");
     m_abortFlag = true;
-    m_abortMutex.unlock();
 }
 
 QStringList AsyncUnzipper::unpackedFiles()
@@ -70,28 +60,32 @@ QStringList AsyncUnzipper::unpackedFiles()
     return m_unpackedFiles;
 }
 
-void AsyncUnzipper::setOverwriteFlags(bool ovrw, bool ovrw_always)
-{
-    m_overwriteMutex.lock();
-    m_canOverwrite = ovrw;
-    m_alwaysOverwrite = ovrw_always;
-    m_overwriteCondition.wakeAll();
-    m_overwriteMutex.unlock();
-}
-
 void AsyncUnzipper::run()
 {
-    if (!unpackZip(CALC_SIZE_ONLY))
+    if (!unpackZip(ESTIMATE))
     {
         m_failedFlag = true;
         return;
     }
 
-    if (!unpackZip())
+    deletePreviousInstallation();
+
+    if (!m_foldersToCreate.createFolderTree(m_errorString))
+    {
         m_failedFlag = true;
+        return;
+    }
+
+    m_unpackZipBuffer = new char[UNPACK_BUFFER_SIZE];
+
+    if (!unpackZip(UNPACK))
+        m_failedFlag = true;
+
+    delete[] m_unpackZipBuffer;
+    m_unpackZipBuffer = nullptr;
 }
 
-bool AsyncUnzipper::unpackZip(bool calcSizeOnly)
+bool AsyncUnzipper::unpackZip(bool estimateOnly)
 {
     unzFile ufd = unzOpen2(m_zipFile.toLocal8Bit(), &SafAdapter::MiniZipFileAPI);
     if (ufd == NULL)
@@ -125,9 +119,26 @@ bool AsyncUnzipper::unpackZip(bool calcSizeOnly)
 
         fname.remove(QRegExp("^/*")); // To avoid absolute paths
 
-        if (calcSizeOnly)
+        if (estimateOnly)
         {
             m_totalSize += finfo.uncompressed_size;
+
+            auto foldersList = QFileInfo(fname).dir().path().split('/', Qt::SkipEmptyParts);
+
+            if (foldersList.empty())
+            {
+                m_topFiles.append(fname);
+                if (fname.endsWith(".rpy", Qt::CaseInsensitive))
+                {
+                    m_topFiles.append(fname + "c");
+                    m_topFiles.append(fname + "C");
+                }
+            }
+            else
+            {
+                m_topFolders.insert(foldersList.front());
+                m_foldersToCreate.addFoldersList(foldersList);
+            }
         }
         else
         {
@@ -162,15 +173,8 @@ bool AsyncUnzipper::unpackZip(bool calcSizeOnly)
 
 bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
 {
-    if (!checkOverwrite(fname))
-    {
-        m_errorString = tr("Aborted by user");
-        m_abortFlag = true;
-        return true;
-    }
-
     QFile file;
-    if (!SafAdapter::getCurrentAdapter().CreateQFile(file, fname, QIODevice::WriteOnly | QIODevice::Truncate, SafAdapter::CREATE_FOLDERS))
+    if (!SafAdapter::getCurrentAdapter().CreateQFile(file, fname, QIODevice::WriteOnly | QIODevice::Truncate))
     {
         m_errorString = tr("Can't create file ") + fname + " : " + file.errorString();
         return false;
@@ -179,11 +183,9 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
     m_unpackedFiles << fname;
 
     int unzRet = 0;
-    char buf[UNPACK_BUFFER_SIZE];
-
-    while((unzRet = unzReadCurrentFile(ufd, buf, sizeof(buf))) > 0)
+    while((unzRet = unzReadCurrentFile(ufd, m_unpackZipBuffer, UNPACK_BUFFER_SIZE)) > 0)
     {
-        if (!file.write(buf, unzRet))
+        if (!file.write(m_unpackZipBuffer, unzRet))
         {
             unzRet = -1;
             m_errorString = file.errorString();
@@ -212,15 +214,40 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
     return (unzRet >= 0);
 }
 
-bool AsyncUnzipper::checkOverwrite(QString fname)
+void AsyncUnzipper::deletePreviousInstallation()
 {
-    if (m_alwaysOverwrite || !SafAdapter::getCurrentAdapter().FileExists(fname))
-        return true;
+    for (const auto &file : qAsConst(m_topFiles))
+        SafAdapter::getCurrentAdapter().DeleteFile(file);
 
-    m_overwriteMutex.lock();
-    emit overwriteRequest(fname);
-    m_overwriteCondition.wait(&m_overwriteMutex);
-    m_overwriteMutex.unlock();
+    for (const auto &folder : qAsConst(m_topFolders))
+        SafAdapter::getCurrentAdapter().DeleteFolder(folder);
+}
 
-    return m_canOverwrite;
+
+void AsyncUnzipper::FolderTreeElement::clear()
+{
+    children.clear();
+}
+
+void AsyncUnzipper::FolderTreeElement::addFoldersList(const QStringList &foldersList)
+{
+    if (!foldersList.empty())
+        children[foldersList.front()].addFoldersList(foldersList.mid(1));
+}
+
+bool AsyncUnzipper::FolderTreeElement::createFolderTree(QString &errorString, const QString &rootFolder) const
+{
+    for (const auto &el : qAsConst(children))
+    {
+        if (!SafAdapter::getCurrentAdapter().CreateFolder(rootFolder, el.first))
+        {
+            errorString = tr("Can't create folder ") + rootFolder + "/" + el.first;
+            return false;
+        }
+
+        if (!el.second.createFolderTree(errorString, rootFolder + "/" + el.first))
+            return false;
+    }
+
+    return true;
 }

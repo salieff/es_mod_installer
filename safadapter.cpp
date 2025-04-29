@@ -7,8 +7,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <android/log.h>
-
 #include "safadapter.h"
 #include "safaccessdialog.h"
 
@@ -134,7 +132,7 @@ bool SafAdapter::CreateFoldersRecursively(const QString &foldersPath)
 {
     QString createdFoldersPath;
     auto foldersList = foldersPath.split('/', Qt::SkipEmptyParts);
-    for (const auto &folderName : foldersList)
+    for (const auto &folderName : qAsConst(foldersList))
     {
         if (!FolderExists(createdFoldersPath + "/" + folderName))
             if (!CreateFolder(createdFoldersPath, folderName))
@@ -315,7 +313,7 @@ bool SafAdapter::DeleteEmptyFoldersRecursively(const QString &foldersPath, const
 bool SafAdapter::DeleteFolder(const QString &folderPath)
 {
     if (CanUseNativeAPI())
-        return QDir().rmdir(ConvertToNativePath(folderPath));
+        return QDir(ConvertToNativePath(folderPath)).removeRecursively();
 
     return DeleteFile(folderPath);
 }

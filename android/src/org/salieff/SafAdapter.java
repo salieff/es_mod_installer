@@ -81,9 +81,6 @@ public class SafAdapter
     {
         try
         {
-            if (folderSize(context, rootFolderName + "/" + subFolderName) >= 0)
-                return true;
-
             Uri rootFolderUri = DocumentsContract.buildChildDocumentsUriUsingTree(m_rootUri, DocumentsContract.getTreeDocumentId(m_rootUri) + rootFolderName);
             Uri subFolderUri = DocumentsContract.createDocument(context.getContentResolver(), rootFolderUri, DocumentsContract.Document.MIME_TYPE_DIR, subFolderName);
 
@@ -108,7 +105,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
-            // e.printStackTrace();
+            e.printStackTrace();
         }
 
         return -1;
@@ -119,10 +116,6 @@ public class SafAdapter
         try
         {
             Uri rootFolderUri = DocumentsContract.buildChildDocumentsUriUsingTree(m_rootUri, DocumentsContract.getTreeDocumentId(m_rootUri) + rootFolderName);
-            int fd = openFile(context, rootFolderName, fileName, mode);
-            if (fd >= 0)
-                return fd;
-
             Uri fileUri = DocumentsContract.createDocument(context.getContentResolver(), rootFolderUri, "application/octet-stream", fileName);
             ParcelFileDescriptor fileDiscriptor = context.getContentResolver().openFileDescriptor(fileUri, mode);
             return fileDiscriptor.detachFd();
@@ -144,7 +137,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
-            // e.printStackTrace();
+            e.printStackTrace();
         }
 
         return false;
@@ -167,7 +160,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
-            // e.printStackTrace();
+            e.printStackTrace();
             retValue = -1;
         }
         finally
@@ -199,7 +192,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
-            // e.printStackTrace();
+            e.printStackTrace();
         }
         finally
         {

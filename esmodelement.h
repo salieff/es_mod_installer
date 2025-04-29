@@ -52,6 +52,7 @@ public:
     Q_ENUM(LikeType)
 
     ESModElement(QString url = QString(), QObject *parent = NULL, State state = Unknown, int progress = 100);
+    virtual ~ESModElement();
 
     void Download(void);
     void Abort(void);
@@ -118,7 +119,6 @@ private slots:
     void unpackProgress(int p);
     void deletionProgress(int p);
     void filesDeleted();
-    void unzipperOverwriteRequest(QString fname);
     void allLikesReceived();
     void myLikeReceived();
     void myLikePosted();
