@@ -77,18 +77,9 @@ DEFINES += _LARGEFILE64_SOURCE=1 HAVE_HIDDEN _FILE_OFFSET_BITS=64 USE_FILE32API
 
 DISTFILES += \
     android/AndroidManifest.xml \
-    android/gradle/wrapper/gradle-wrapper.jar \
-    android/gradlew \
-    android/res/values/libs.xml \
-    android/build.gradle \
-    android/gradle/wrapper/gradle-wrapper.properties \
-    android/gradlew.bat \
-    android/assets/help/index.html \
-    android/gradle.properties
+    android/src/org/salieff/SafAdapter.java
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
-
-ANDROID_TARGET_SDK_VERSION = 34
 
 FORMS += \
     safaccessdialog.ui

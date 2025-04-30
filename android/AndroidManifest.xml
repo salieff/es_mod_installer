@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<manifest package="org.salieff.esmodinstaller" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.12" android:versionCode="28" android:installLocation="auto">
+<manifest package="org.salieff.esmodinstaller" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.12" android:versionCode="29" android:installLocation="auto">
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34"/>
+
     <!-- The following comment will be replaced upon deployment with default permissions based on the dependencies of the application.
          Remove the comment if you do not require these default permissions. -->
     <!-- %%INSERT_PERMISSIONS -->
@@ -72,6 +74,5 @@
         <!-- For adding service(s) please check: https://wiki.qt.io/AndroidServices -->
     </application>
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 </manifest>
