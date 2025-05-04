@@ -49,9 +49,16 @@ void ESModElement::Download(void)
     m_asyncUnzipper.wait();
 
     if (m_admController.download(m_uri, zipFile, title, status))
+    {
+#ifdef BENCHMARK_DEBUG
+        m_benchmarkTimer.start();
+#endif
         changeState(Downloading);
+    }
     else
+    {
         changeState(Failed);
+    }
 }
 
 void ESModElement::Abort(void)
@@ -80,6 +87,11 @@ void ESModElement::Delete(void)
 {
     blockGui(ByDelete);
     m_asyncDeleter.wait();
+
+#ifdef BENCHMARK_DEBUG
+    m_benchmarkTimer.start();
+#endif
+
     m_asyncDeleter.deleteFiles(m_localFiles);
 }
 
@@ -174,6 +186,10 @@ void ESModElement::headersReceived()
 
 void ESModElement::zipListUnpacked()
 {
+#ifdef BENCHMARK_DEBUG
+    stopBenchmarkTimer("Unpacking");
+#endif
+
     disconnect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()));
     m_admController.remove();
 
@@ -241,14 +257,25 @@ void ESModElement::filesDownloaded(qint64 adm_id, ADMController::Status adm_stat
     if (adm_status != ADMController::STATUS_SUCCESSFUL)
         return;
 
+#ifdef BENCHMARK_DEBUG
+    stopBenchmarkTimer("Download");
+#endif
+
     m_downloadErrorString.clear();
 
     connect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()), Qt::QueuedConnection);
 
     if (m_asyncUnzipper.unzip(QString("%1%2").arg(ADMController::URIScheme).arg(adm_id)))
+    {
+#ifdef BENCHMARK_DEBUG
+        m_benchmarkTimer.start();
+#endif
         changeState(Unpacking);
+    }
     else
+    {
         changeState(Failed);
+    }
 }
 
 void ESModElement::downloadProgress(qint64, qint64 downloaded, qint64 totalSize)
@@ -269,6 +296,10 @@ void ESModElement::downloadProgress(qint64, qint64 downloaded, qint64 totalSize)
 
 void ESModElement::filesDeleted()
 {
+#ifdef BENCHMARK_DEBUG
+    stopBenchmarkTimer("Deleting");
+#endif
+
     m_localFiles.clear();
     m_localSize = 0;
     m_localTimestamp = 0;
@@ -650,3 +681,10 @@ bool ESModElement::idEquals(ESModElement *el, bool strict)
 
     return (myTitle == title2);
 }
+
+#ifdef BENCHMARK_DEBUG
+void ESModElement::stopBenchmarkTimer(const QString &title)
+{
+    QMessageBox::information(nullptr, title, tr("%1 took %2 seconds").arg(title).arg(m_benchmarkTimer.elapsed() / 1000.0));
+}
+#endif

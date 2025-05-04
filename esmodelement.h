@@ -5,6 +5,10 @@
 #include <QStringList>
 #include <QJsonObject>
 
+#ifdef BENCHMARK_DEBUG
+#include <QElapsedTimer>
+#endif
+
 #include "admcontroller.h"
 #include "asyncunzipper.h"
 #include "asyncdeleter.h"
@@ -146,6 +150,11 @@ private:
     AsyncDeleter m_asyncDeleter;
 
     QString m_uri;
+
+#ifdef BENCHMARK_DEBUG
+    QElapsedTimer m_benchmarkTimer;
+    void stopBenchmarkTimer(const QString &title);
+#endif
 };
 
 #endif // ESMODELEMENT_H
