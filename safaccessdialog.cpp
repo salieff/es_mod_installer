@@ -11,7 +11,7 @@ SafAccessDialog::SafAccessDialog(QWidget *parent) :
     ui->setupUi(this);
 
     auto font = ui->textLabel->font();
-    font.setPixelSize(QGuiApplication::primaryScreen()->size().height() / 30);
+    font.setPixelSize(QGuiApplication::primaryScreen()->size().height() / 50);
     ui->textLabel->setFont(font);
 
     ui->imageLabel->installEventFilter(this);
