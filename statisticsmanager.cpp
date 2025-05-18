@@ -26,7 +26,7 @@ void StatisticsManager::addRequest(const QString &reqStr)
 {
     m_requestQueue << QString("%1&time=%2").arg(reqStr).arg(QDateTime::currentMSecsSinceEpoch() / 1000);
     QNetworkReply *statRep = AsyncDownloader::get(reqStr);
-    connect(statRep, SIGNAL(finished()), this, SLOT(requestFinished()));
+    connect(statRep, &QNetworkReply::finished, this, &StatisticsManager::requestFinished);
 }
 
 void StatisticsManager::deserializeFromJSON(const QJsonArray &reqArr)

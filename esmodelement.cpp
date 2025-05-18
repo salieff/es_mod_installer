@@ -113,7 +113,7 @@ void ESModElement::SendLike(LikeType l)
             .arg(MY_PLATFORM)\
             .arg(l == DislikeMark ? 0 : 1);
     QNetworkReply *setLikeRep = AsyncDownloader::get(setLikeReq);
-    connect(setLikeRep, SIGNAL(finished()), this, SLOT(myLikePosted()));
+    connect(setLikeRep, &QNetworkReply::finished, this, &ESModElement::myLikePosted);
 }
 
 void ESModElement::ToggleFavorite(void)
@@ -194,7 +194,7 @@ void ESModElement::zipListUnpacked()
     stopBenchmarkTimer("Unpacking");
 #endif
 
-    disconnect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()));
+    disconnect(this, &ESModElement::abortProcessing, &m_asyncUnzipper, &AsyncUnzipper::abort);
     m_admController.remove();
 
     m_localFiles << m_asyncUnzipper.unpackedFiles();
@@ -258,7 +258,7 @@ void ESModElement::filesDownloaded(qint64 adm_id, ADMController::Status adm_stat
 
     m_downloadErrorString.clear();
 
-    connect(this, SIGNAL(abortProcessing()), &m_asyncUnzipper, SLOT(abort()), Qt::QueuedConnection);
+    connect(this, &ESModElement::abortProcessing, &m_asyncUnzipper, &AsyncUnzipper::abort, Qt::QueuedConnection);
 
     if (m_asyncUnzipper.unzip(QString("%1%2").arg(ADMController::URIScheme).arg(adm_id)))
     {
@@ -631,11 +631,11 @@ void ESModElement::sendLikesRequests()
             .arg(id)\
             .arg(AsyncDownloader::getDeviceUDID());
     QNetworkReply *myLikeRep = AsyncDownloader::get(myLikeReq);
-    connect(myLikeRep, SIGNAL(finished()), this, SLOT(myLikeReceived()));
+    connect(myLikeRep, &QNetworkReply::finished, this, &ESModElement::myLikeReceived);
 
     QString allLikeReq = QString("%1?operation=query&id=%2").arg(LIKES_CGI_URL).arg(id);
     QNetworkReply *allLikeRep = AsyncDownloader::get(allLikeReq);
-    connect(allLikeRep, SIGNAL(finished()), this, SLOT(allLikesReceived()));
+    connect(allLikeRep, &QNetworkReply::finished, this, &ESModElement::allLikesReceived);
 }
 
 void ESModElement::sendStatistics(bool inst)

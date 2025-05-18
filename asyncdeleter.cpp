@@ -26,9 +26,9 @@ void AsyncDeleter::run()
 
     for (const auto &fname: qAsConst(m_localFiles))
     {
-        auto foldersList = QFileInfo(fname).dir().path().split('/', Qt::SkipEmptyParts);
+        auto topFolder = QFileInfo(fname).dir().path().section('/', 0, 0, QString::SectionSkipEmpty);
 
-        if (foldersList.empty())
+        if (topFolder.isEmpty())
         {
             SafAdapter::getCurrentAdapter().DeleteFile(fname);
             if (fname.endsWith(".rpy", Qt::CaseInsensitive))
@@ -39,10 +39,9 @@ void AsyncDeleter::run()
         }
         else
         {
-            localPaths.insert(foldersList.front());
+            auto [_, success] = localPaths.emplace(topFolder);
+            if (success)
+                SafAdapter::getCurrentAdapter().DeleteFolder(topFolder);
         }
     }
-
-    for (auto const &path : localPaths)
-        SafAdapter::getCurrentAdapter().DeleteFolder(path);
 }

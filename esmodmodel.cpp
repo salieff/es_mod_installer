@@ -29,10 +29,10 @@ ESModModel::ESModModel(QObject *parent)
       m_JsonWriter(this)
 {
     QNetworkReply *rep = AsyncDownloader::get(ES_MOD_INDEX_SERVER, ES_MOD_INDEX_NAME);
-    connect(rep, SIGNAL(finished()), this, SLOT(ESModIndexDownloaded()));
-    connect(rep, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(ESModIndexError(QNetworkReply::NetworkError)));
+    connect(rep, &QNetworkReply::finished, this, &ESModModel::ESModIndexDownloaded);
+    connect(rep, &QNetworkReply::errorOccurred, this, &ESModModel::ESModIndexError);
 
-    connect(StatisticsManager::getInstance(), SIGNAL(saveMe()), this, SLOT(SaveLocalModsDB()));
+    connect(StatisticsManager::getInstance(), &StatisticsManager::saveMe, this, &ESModModel::SaveLocalModsDB);
 }
 
 ESModModel::~ESModModel()
@@ -51,9 +51,9 @@ ESModModel::~ESModModel()
 void ESModModel::addModElement(ESModElement *element)
 {
     m_initialElements << element;
-    connect(element, SIGNAL(stateChanged()), this, SLOT(elementChanged()));
-    connect(element, SIGNAL(saveMe()), this, SLOT(SaveLocalModsDB()));
-    connect(element, SIGNAL(removeMe()), this, SLOT(elementNeedRemove()));
+    connect(element, &ESModElement::stateChanged, this, &ESModModel::elementChanged);
+    connect(element, &ESModElement::saveMe, this, &ESModModel::SaveLocalModsDB);
+    connect(element, &ESModElement::removeMe, this, &ESModModel::elementNeedRemove);
 }
 
 int ESModModel::rowCount(const QModelIndex & parent) const
@@ -291,7 +291,7 @@ void ESModModel::ESModIndexDownloaded()
                                        "В фоне доступно только скачивание! Распаковка и удаление не работают в фоне. "
                                        "Чтобы модификация распаковалась, или удалилась, необходимо держать загрузчик запущенным до окончания операции!\n"
                                        "Так же, распаковка и удаление модификаций на новых версиях Android стали немного быстрее.");
-        QTimer::singleShot(1000, this, SLOT(showDefferedHelp()));
+        QTimer::singleShot(1000, this, &ESModModel::showDefferedHelp);
     }
 
     emit appTitleReceived(QString("Version %1.%2-%3 (%4 mods)")
@@ -486,14 +486,14 @@ void ESModModel::requestAllLikes()
             .arg(LIKES_CGI_URL)\
             .arg(AsyncDownloader::getDeviceUDID());
     QNetworkReply *allLikeRep = AsyncDownloader::get(allLikeReq);
-    connect(allLikeRep, SIGNAL(finished()), this, SLOT(AllLikesReceived()));
+    connect(allLikeRep, &QNetworkReply::finished, this, &ESModModel::AllLikesReceived);
 }
 
 void ESModModel::requestAllStatistics()
 {
     QString allStatReq = QString("%1?operation=queryallstatistics").arg(STATS_CGI_URL);
     QNetworkReply *allStatRep = AsyncDownloader::get(allStatReq);
-    connect(allStatRep, SIGNAL(finished()), this, SLOT(AllStatisticsReceived()));
+    connect(allStatRep, &QNetworkReply::finished, this, &ESModModel::AllStatisticsReceived);
 }
 
 bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
