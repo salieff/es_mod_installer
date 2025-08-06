@@ -19,9 +19,9 @@
 #include "safadapter.h"
 #include "asyncdownloader.h"
 
-#define ES_MOD_INDEX_SERVER "http://51.250.97.106/"
+#define ES_MOD_INDEX_SERVER "http://84.201.165.52/"
 #define ES_MOD_INDEX_NAME "project2.json"
-#define ES_MOD_FILE_SERVER "http://storage.yandexcloud.net/es-mods/mods/"
+#define ES_MOD_FILE_SERVER "http://s3.twcstorage.ru/07660cc4-everlastingmods/mods/"
 
 
 ESModModel::ESModModel(QObject *parent)
@@ -283,14 +283,11 @@ void ESModModel::ESModIndexDownloaded()
 
     if (m_needShowHelp)
     {
-        QMessageBox::information(NULL, "Скачивание в фоне", \
-                                       "Теперь не нужно держать загрузчик запущенным на протяжении всего времени скачивания больших модификаций. "
-                                       "Можно выйти из загрузчика, и заняться чем-то другим, а модификации продолжат скачиваться. "
-                                       "Прогресс скачивания можно наблюдать в шторке уведомлений. "
-                                       "При повторном запуске, загрузчик увидит все скачивания и продолжит их показывать.\n"
-                                       "В фоне доступно только скачивание! Распаковка и удаление не работают в фоне. "
-                                       "Чтобы модификация распаковалась, или удалилась, необходимо держать загрузчик запущенным до окончания операции!\n"
-                                       "Так же, распаковка и удаление модификаций на новых версиях Android стали немного быстрее.");
+        QMessageBox::information(NULL, "Файлы модов в галерее", \
+                                       "Теперь мы создаем в папке с модами маркер .nomedia. "
+                                       "Теоретически, это должно запретить Android-у индексировать картинки, музыку и видео "
+                                       "в папке с модами, и они не должны появляться в галерее (но это неточно).");
+
         QTimer::singleShot(1000, this, &ESModModel::showDefferedHelp);
     }
 
@@ -309,7 +306,7 @@ void ESModModel::ESModIndexError(QNetworkReply::NetworkError code)
     emit esIndexReceived();
 
     QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
-    QMessageBox::critical(NULL, "Index download error", rep->errorString());
+    QMessageBox::critical(NULL, "Index download error", "Проблемы на стороне сервера:\n" + rep->errorString());
 }
 
 void ESModModel::AllLikesReceived()

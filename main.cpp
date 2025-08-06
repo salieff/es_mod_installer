@@ -57,5 +57,8 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("esFavoriteModel", &esFavoriteModel);
     engine.load(QUrl(QStringLiteral("qrc:/gui/main.qml")));
 
+    if (!SafAdapter::getCurrentAdapter().FileExists(".nomedia"))
+        close(SafAdapter::getCurrentAdapter().CreateFile("", ".nomedia", "wt"));
+
     return app.exec();
 }
