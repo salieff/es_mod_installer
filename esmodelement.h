@@ -61,7 +61,6 @@ public:
     void SendLike(LikeType l);
     void ToggleFavorite(void);
 
-    void RequestHeaders();
     QString errorString();
 
     QJsonObject SerializeToDB();
@@ -69,6 +68,7 @@ public:
     bool DeserializeFromNetwork(const QJsonObject &obj);
     bool DeserializeFromAllLikesList(const QJsonObject &obj);
     void DeserializeFromAllStatisticsList(const QJsonObject &obj);
+    void calculateState();
 
     void TryToPickupFrom(QList<ESModElement *> &list, bool strict = false);
 
@@ -108,9 +108,6 @@ public:
 
     int m_modelIndex = -1;
     std::vector<int> m_keywordFilterCounter;
-
-public slots:
-    void headersReceived();
 
 private slots:
     void filesDownloaded(qint64 adm_id, ADMController::Status adm_status, ADMController::Reason adm_reason);

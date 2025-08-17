@@ -20,7 +20,7 @@
 #include "asyncdownloader.h"
 
 #define ES_MOD_INDEX_SERVER "http://84.201.165.52/"
-#define ES_MOD_INDEX_NAME "project2.json"
+#define ES_MOD_INDEX_NAME "project3.json"
 #define ES_MOD_FILE_SERVER "http://s3.twcstorage.ru/07660cc4-everlastingmods/mods/"
 
 
@@ -269,18 +269,19 @@ void ESModModel::ESModIndexDownloaded()
     for(const auto &el: qAsConst(local_elements))
         addModElement(el);
 
+    foreach (ESModElement *el, m_initialElements)
+        el->calculateState();
+
     sortList(m_lastSortMode);
 
     requestAllLikes();
     requestAllStatistics();
 
-    foreach (ESModElement *el, m_elements)
-        el->RequestHeaders();
-
     emit esIndexReceived();
 
     SaveLocalModsDB();
 
+    /*
     if (m_needShowHelp)
     {
         QMessageBox::information(NULL, "Файлы модов в галерее", \
@@ -290,6 +291,7 @@ void ESModModel::ESModIndexDownloaded()
 
         QTimer::singleShot(1000, this, &ESModModel::showDefferedHelp);
     }
+    */
 
     emit appTitleReceived(QString("Version %1.%2-%3 (%4 mods)")
                           .arg(ESM_VERSION_MAJOR)

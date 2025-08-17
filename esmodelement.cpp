@@ -14,7 +14,6 @@
 #elif defined(ANDROID)
     #define MY_PLATFORM "android"
 #else
-//    #define MY_PLATFORM "ios"
     #define MY_PLATFORM "android"
 #endif
 
@@ -123,21 +122,6 @@ void ESModElement::ToggleFavorite(void)
     emit stateChanged();
 }
 
-void ESModElement::RequestHeaders()
-{
-    if (zipFile.isEmpty() || m_uri.isEmpty())
-    {
-        changeState(Installed);
-        return;
-    }
-
-    QNetworkReply *headersReply = AsyncDownloader::head(m_uri, zipFile);
-    connect(headersReply, &QNetworkReply::finished, this, &ESModElement::headersReceived);
-
-    if (m_admController.sync(m_uri, zipFile))
-        changeState(Downloading);
-}
-
 QString ESModElement::errorString()
 {
     if (!m_downloadErrorString.isNull())
@@ -149,43 +133,33 @@ QString ESModElement::errorString()
     return tr("Unknown error");
 }
 
-void ESModElement::headersReceived()
+void ESModElement::calculateState()
 {
-    QNetworkReply *headersReply = dynamic_cast<QNetworkReply *>(sender());
-    headersReply->deleteLater();
-
-    if (headersReply->error() != QNetworkReply::NoError)
+    if (zipFile.isEmpty() || m_uri.isEmpty())
     {
-        m_downloadErrorString = headersReply->errorString();
-
-        if (state == Unknown)
-        {
-            if (m_localFiles.isEmpty())
-                changeState(Failed);
-            else
-                changeState(Installed);
-        }
+        changeState(Installed);
+        return;
     }
-    else
+
+    if (m_admController.sync(m_uri, zipFile))
     {
-        size = headersReply->header(QNetworkRequest::ContentLengthHeader).toDouble();
-        timestamp = headersReply->header(QNetworkRequest::LastModifiedHeader).toDateTime().toTime_t();
-
-        if (state == Unknown)
-        {
-            if (m_localFiles.isEmpty())
-            {
-                changeState(Available);
-            }
-            else
-            {
-                if (timestamp > m_localTimestamp)
-                    changeState(InstalledHasUpdate);
-                else
-                    changeState(InstalledAvailable);
-            }
-        }
+        changeState(Downloading);
+        return;
     }
+
+    if (m_localFiles.isEmpty())
+    {
+        changeState(Available);
+        return;
+    }
+
+    if (timestamp > m_localTimestamp)
+    {
+        changeState(InstalledHasUpdate);
+        return;
+    }
+
+    changeState(InstalledAvailable);
 }
 
 void ESModElement::zipListUnpacked()
@@ -509,41 +483,36 @@ void ESModElement::DeserializeFromDB(const QJsonObject &obj)
         langs << langs_arr[i].toString();
 }
 
+static QJsonValue GetCheckedObjectField(const QJsonObject &json_object, const char *field_name, bool &ret_value, const QString &title = "", int id = -1)
+{
+    QJsonValue json_value = json_object[field_name];
+    if (json_value.isUndefined())
+    {
+        QMessageBox::critical(NULL, title, QObject::tr("There are no %1 field in the mod %2 (%3)!").arg(field_name).arg(title).arg(id));
+        ret_value = false;
+    }
+
+    return json_value;
+}
+
 bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
 {
-    bool myPlatformFound = false;
-    QJsonArray platf_arr = obj["platforms"].toArray();
-    for (int i = 0; i < platf_arr.size(); ++i)
-        if (QString::compare(platf_arr[i].toString().trimmed(), MY_PLATFORM, Qt::CaseInsensitive) == 0)
-        {
-            myPlatformFound = true;
-            break;
-        }
+    bool ret_value = true;
 
-    if (!myPlatformFound)
-        return false;
+    id = GetCheckedObjectField(obj, "idmod", ret_value).toInt(-1);
+    title = GetCheckedObjectField(obj, "title", ret_value).toString("").trimmed();
+    status = GetCheckedObjectField(obj, "status", ret_value).toString("").trimmed();
+    langs = GetCheckedObjectField(obj, "lang", ret_value).toString("").trimmed().split(QRegularExpression("[,\\s]+"), Qt::SkipEmptyParts);
+    infouri = GetCheckedObjectField(obj, "infouri", ret_value).toString("").trimmed();
 
-    id = obj["idmod"].toInt(-1);
-    title = obj["title"].toString().trimmed();
-    status = obj["status"].toString().trimmed();
-    langs = obj["lang"].toString().trimmed().split(QRegularExpression("[,\\s]+"), Qt::SkipEmptyParts);
-    infouri = obj[QString("infouri_") + MY_PLATFORM].toString().trimmed();
+    QJsonObject archive = GetCheckedObjectField(obj, "archive", ret_value).toObject();
 
-    QJsonArray files_arr = obj[QString("files_") + MY_PLATFORM].toArray();
+    zipFile = GetCheckedObjectField(archive, "path", ret_value).toString("").trimmed();
+    size = GetCheckedObjectField(archive, "size", ret_value).toDouble(-1);
 
-    if (files_arr.empty())
-    {
-        QMessageBox::critical(NULL, title, tr("There are no archives in the mod!"));
-        return false;
-    }
+    QDateTime date_time = QDateTime::fromString(GetCheckedObjectField(archive, "timestamp", ret_value).toString("").trimmed(), "yyyy-MM-dd");
+    timestamp = date_time.isValid() ? date_time.toTime_t() : 0;
 
-    if (files_arr.size() > 1)
-    {
-        QMessageBox::critical(NULL, title, tr("There are %1 archives in the mod but only first will be processed!").arg(files_arr.size()));
-        return false;
-    }
-
-    zipFile = files_arr[0].toString().trimmed();
     return true;
 }
 
