@@ -7,54 +7,55 @@ use LWP::UserAgent;
 use JSON;
 use CGI;
 use POSIX;
+use Date::Parse;
 
 binmode(STDOUT,':utf8');
 
 my $mozillaAgent = 'Mozilla/5.0 (Linux; Android 4.4.2; Nexus 5 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.99 Mobile Safari/537.36';
-my $baseUrl = 'http://191.ru/es';
-my $projectUrl = 'project2.json';
-my $allLikesUrl = 'http://salieff-n56vz/cgi-bin/ratingsystem/rating_web.py?operation=queryallmarks&udid=HTMLModsTableGenerator';
+my $baseUrl = 'http://84.201.165.52';
+my $projectUrl = 'project3.json';
+my $allLikesUrl = 'http://84.201.165.52/cgi-bin/ratingsystem/rating_web.py?operation=queryallmarks&udid=HTMLModsTableGenerator';
 my @scoreStringArr = ("1", "1+", "2-", "2", "2+", "3-", "3", "3+", "4-", "4", "4+", "5-", "5", "5+");
 
-sub fileDateSize {
-#	return (1, 1);
+#sub fileDateSize {
+##	return (1, 1);
+#
+#	my $ua = shift;
+#	my $file = shift;
+#
+#	my $req = new HTTP::Request(HEAD => $baseUrl . '/' . $file);
+#	my $res = $ua->request($req);
+#	if ($res->is_error()) {
+#		say STDERR "Can't request data from " . $req->uri() . " : " . $res->error_as_HTML();
+#		return (undef, undef);
+#	}
+#
+#	return ($res->last_modified(), $res->content_length());
+#}
 
-	my $ua = shift;
-	my $file = shift;
-
-	my $req = new HTTP::Request(HEAD => $baseUrl . '/' . $file);
-	my $res = $ua->request($req);
-	if ($res->is_error()) {
-		say STDERR "Can't request data from " . $req->uri() . " : " . $res->error_as_HTML();
-		return (undef, undef);
-	}
-
-	return ($res->last_modified(), $res->content_length());
-}
-
-sub filesDateSizeByPlatform {
-	my $ua = shift;
-	my $pack = shift;
-	my $platform = shift;
-
-	my $newestDate = undef;
-	my $fullSize = undef;
-	for my $file (@{$pack->{'files_' . lc $platform}}) {
-		my ($tmStamp, $size) = fileDateSize($ua, $file);
-		$newestDate = $tmStamp if (!defined($newestDate) || $newestDate < $tmStamp);
-
-		if (defined($size)) {
-			if (!defined($fullSize)) {
-				$fullSize = $size;
-			}
-			else {
-				$fullSize += $size;
-			}
-		}
-	}
-
-	return ($newestDate, $fullSize);
-}
+#sub filesDateSizeByPlatform {
+#	my $ua = shift;
+#	my $pack = shift;
+#	my $platform = shift;
+#
+#	my $newestDate = undef;
+#	my $fullSize = undef;
+#	for my $file (@{$pack->{'files_' . lc $platform}}) {
+#		my ($tmStamp, $size) = fileDateSize($ua, $file);
+#		$newestDate = $tmStamp if (!defined($newestDate) || $newestDate < $tmStamp);
+#
+#		if (defined($size)) {
+#			if (!defined($fullSize)) {
+#				$fullSize = $size;
+#			}
+#			else {
+#				$fullSize += $size;
+#			}
+#		}
+#	}
+#
+#	return ($newestDate, $fullSize);
+#}
 
 sub filesDateSize {
 	my $ua = shift;
@@ -62,17 +63,27 @@ sub filesDateSize {
 
 	my @dates = ();
 	my @sizes = ();
-	for my $platform (@{$pack->{platforms}}) {
-		my ($date, $size) = filesDateSizeByPlatform($ua, $pack, $platform);
 
-		if (defined($date)) {
-			push(@dates, $date);
-		}
-
-		if (defined($size)) {
-			push(@sizes, $size);
-		}
+	my $tmstamp = $pack->{archive}->{timestamp};
+	if (! defined $tmstamp) {
+		push(@dates, "1970-01-01");
 	}
+	else {
+		push(@dates, $pack->{archive}->{timestamp});
+	}
+	push(@sizes, $pack->{archive}->{size});
+
+#	for my $platform (@{$pack->{platforms}}) {
+#		my ($date, $size) = filesDateSizeByPlatform($ua, $pack, $platform);
+#
+#		if (defined($date)) {
+#			push(@dates, $date);
+#		}
+#
+#		if (defined($size)) {
+#			push(@sizes, $size);
+#		}
+#	}
 
 	return (\@dates, \@sizes);
 }
@@ -95,7 +106,8 @@ sub filesDateSizeString {
 	my $newestDate = undef;
 
 	for my $date (@{$dates}) {
-		my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime($date);
+		# my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime($date);
+		my ($sec, $min, $hour, $mday, $mon, $year, $tmzone) = strptime($date);
 		my $dtStr  = sprintf("%02d", $mday) . '.';
 		$dtStr    .= sprintf("%02d", $mon + 1) . '.';
 		$dtStr    .= sprintf("%04d", $year + 1900);
@@ -150,21 +162,22 @@ sub prettyPlatform {
 }
 
 sub platformString {
-	my $pack = shift;
+#	my $pack = shift;
 
-	my $retString = undef;
-	for my $platform (@{$pack->{platforms}}) {
-		if (defined($retString)) {
-			$retString .= ' / ';
-		}
-		else {
-			$retString = '';
-		}
+#	my $retString = undef;
+#	for my $platform (@{$pack->{platforms}}) {
+#		if (defined($retString)) {
+#			$retString .= ' / ';
+#		}
+#		else {
+#			$retString = '';
+#		}
 
-		$retString .= prettyPlatform($platform);
-	}
+#		$retString .= prettyPlatform($platform);
+#	}
 
-	return $retString;
+#	return $retString;
+	return 'android';
 }
 
 sub simplifyVkUrl {
@@ -178,22 +191,26 @@ sub urlsString {
 	my $cgi = shift;
 	my $pack = shift;
 
-	my $retString = undef;
-	for my $platform (@{$pack->{platforms}}) {
-		if (!defined($pack->{'infouri_' . lc $platform})) {
-			next;
-		}
+#	my $retString = undef;
+#	for my $platform (@{$pack->{platforms}}) {
+#		if (!defined($pack->{'infouri_' . lc $platform})) {
+#			next;
+#		}
+#
+#		if (defined($retString)) {
+#			$retString .= ' / ';
+#		}
+#		else {
+#			$retString = '';
+#		}
+#
+#		my $smplUrl = simplifyVkUrl($pack->{'infouri_' . lc $platform});
+#		$retString .= $cgi->a({href=>$smplUrl, target=>"_blank"}, prettyPlatform($platform));
+#	}
 
-		if (defined($retString)) {
-			$retString .= ' / ';
-		}
-		else {
-			$retString = '';
-		}
-
-		my $smplUrl = simplifyVkUrl($pack->{'infouri_' . lc $platform});
-		$retString .= $cgi->a({href=>$smplUrl, target=>"_blank"}, prettyPlatform($platform));
-	}
+	my $retString = '';
+	my $smplUrl = simplifyVkUrl($pack->{'infouri'});
+	$retString .= $cgi->a({href=>$smplUrl, target=>"_blank"}, prettyPlatform('android'));
 
 	return $retString;
 }
@@ -201,27 +218,27 @@ sub urlsString {
 sub statusSortKey {
 	my $pack = shift;
 
-	if ($pack->{status} eq "окончен") {
+	if (index(lc $pack->{status}, "кончен") != -1 || index(lc $pack->{status}, "заверш") != -1) {
 		return 1;
 	}
 
-	if ($pack->{status} eq "в разработке") {
+	if (index(lc $pack->{status}, "в разработке") != -1) {
 		return 2;
 	}
 
-	if ($pack->{status} eq "заморожен") {
+	if (index(lc $pack->{status}, "заморожен") != -1) {
 		return 3;
 	}
 
-	if ($pack->{status} eq "демо") {
+	if (index(lc $pack->{status}, "демо") != -1) {
 		return 4;
 	}
 
-	if ($pack->{status} eq "надстройка") {
+	if (index(lc $pack->{status}, "надстройка") != -1) {
 		return 5;
 	}
 
-	if ($pack->{status} eq "обучаловка") {
+	if (index(lc $pack->{status}, "обучаловка") != -1) {
 		return 6;
 	}
 
@@ -303,8 +320,8 @@ sub scoreForMod {
 					$div2 += $mark->{down};
 				}
 
-				#$scoreIndex = int(scalar(@scoreStringArr) * $div1 / ($div2 + 1)); # [0, arrSize)
-				$scoreIndex = int(scalar(@scoreStringArr) * $div1 * $div1 / ($div2 * $div2 + 1)); # [0, arrSize)
+				$scoreIndex = int(scalar(@scoreStringArr) * $div1 / ($div2 + 1)); # [0, arrSize)
+				#$scoreIndex = int(scalar(@scoreStringArr) * $div1 * $div1 / ($div2 * $div2 + 1)); # [0, arrSize)
 			}
 
 			if ($scoreIndex >= 0) {
@@ -344,10 +361,21 @@ sub main {
 	$q->header(-charset => 'utf-8');
 	print $q->start_html(-style => {'src'=>'mods_table.css'}, -script=>{-type=>'JAVASCRIPT', -src=>'sorttable.js'}, -title => 'Список портированных модов');
 
-	my @headings = ('Название', 'Язык', 'Статус', 'Описание', 'Дата', 'Размер', 'Оценка');
+	my @headings = ({name => 'Название', sort_type => 'sorttable_alpha'},
+			{name => 'Язык',     sort_type => 'sorttable_alpha'},
+			{name => 'Статус',   sort_type => 'sorttable_numeric'},
+			{name => 'Описание', sort_type => 'sorttable_alpha'},
+			{name => 'Дата',     sort_type => 'sorttable_alpha'},
+			{name => 'Размер',   sort_type => 'sorttable_numeric'},
+			{name => 'Оценка',   sort_type => 'sorttable_numeric'});
 
 	print $q->start_table({-class => "sortable"}) . "\n";
-	print $q->Tr($q->th(\@headings)) . "\n";
+#	print $q->Tr($q->th({-class => ["sorttable_alpha", "sorttable_numeric"]}, \@headings)) . "\n";
+	print "<tr>\n";
+	for my $h (@headings) {
+		print $q->th({-class => $h->{sort_type}}, $h->{name}) . "\n";
+	}
+	print "</tr>\n";
 
 	for my $pack (@{$modsList->{packs}}) {
 		my ($dates, $sizes, $sortDate, $sortSize) = filesDateSizeString($ua, $pack);

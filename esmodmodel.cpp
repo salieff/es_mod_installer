@@ -581,7 +581,8 @@ void ESModModel::SaveLocalModsDB()
 }
 
 static const char *statusNamesArr[] = { \
-    "окончен", \
+    "кончен", \
+    "заверш", \
     "в разработке", \
     "заморожен", \
     "демо", \
@@ -596,10 +597,10 @@ static bool lessThanByStatus(ESModElement *a, ESModElement *b)
 
     for (size_t i = 0; i < sizeof(statusNamesArr) / sizeof(statusNamesArr[0]); ++i)
     {
-        if (a->status.compare(statusNamesArr[i], Qt::CaseInsensitive) == 0)
+        if (a->status.contains(statusNamesArr[i], Qt::CaseInsensitive))
             i1 = i;
 
-        if (b->status.compare(statusNamesArr[i], Qt::CaseInsensitive) == 0)
+        if (b->status.contains(statusNamesArr[i], Qt::CaseInsensitive))
             i2 = i;
     }
     if (i1 == i2)

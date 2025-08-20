@@ -483,12 +483,12 @@ void ESModElement::DeserializeFromDB(const QJsonObject &obj)
         langs << langs_arr[i].toString();
 }
 
-static QJsonValue GetCheckedObjectField(const QJsonObject &json_object, const char *field_name, bool &ret_value, const QString &title = "", int id = -1)
+static QJsonValue GetCheckedObjectField(const QJsonObject &json_object, const char *field_name, bool &ret_value, int id = -1, const QString &title = "")
 {
     QJsonValue json_value = json_object[field_name];
     if (json_value.isUndefined())
     {
-        QMessageBox::critical(NULL, title, QObject::tr("There are no %1 field in the mod %2 (%3)!").arg(field_name).arg(title).arg(id));
+        QMessageBox::critical(NULL, title, QObject::tr("There is no %1 field in the mod %2 (%3)!").arg(field_name).arg(title).arg(id));
         ret_value = false;
     }
 
@@ -500,20 +500,20 @@ bool ESModElement::DeserializeFromNetwork(const QJsonObject &obj)
     bool ret_value = true;
 
     id = GetCheckedObjectField(obj, "idmod", ret_value).toInt(-1);
-    title = GetCheckedObjectField(obj, "title", ret_value).toString("").trimmed();
-    status = GetCheckedObjectField(obj, "status", ret_value).toString("").trimmed();
-    langs = GetCheckedObjectField(obj, "lang", ret_value).toString("").trimmed().split(QRegularExpression("[,\\s]+"), Qt::SkipEmptyParts);
-    infouri = GetCheckedObjectField(obj, "infouri", ret_value).toString("").trimmed();
+    title = GetCheckedObjectField(obj, "title", ret_value, id).toString("").trimmed();
+    status = GetCheckedObjectField(obj, "status", ret_value, id, title).toString("").trimmed();
+    langs = GetCheckedObjectField(obj, "lang", ret_value, id, title).toString("").trimmed().split(QRegularExpression("[,\\s]+"), Qt::SkipEmptyParts);
+    infouri = GetCheckedObjectField(obj, "infouri", ret_value, id, title).toString("").trimmed();
 
-    QJsonObject archive = GetCheckedObjectField(obj, "archive", ret_value).toObject();
+    QJsonObject archive = GetCheckedObjectField(obj, "archive", ret_value, id, title).toObject();
 
-    zipFile = GetCheckedObjectField(archive, "path", ret_value).toString("").trimmed();
-    size = GetCheckedObjectField(archive, "size", ret_value).toDouble(-1);
+    zipFile = GetCheckedObjectField(archive, "path", ret_value, id, title).toString("").trimmed();
+    size = GetCheckedObjectField(archive, "size", ret_value, id, title).toDouble(-1);
 
-    QDateTime date_time = QDateTime::fromString(GetCheckedObjectField(archive, "timestamp", ret_value).toString("").trimmed(), "yyyy-MM-dd");
+    QDateTime date_time = QDateTime::fromString(GetCheckedObjectField(archive, "timestamp", ret_value, id, title).toString("").trimmed(), "yyyy-MM-dd");
     timestamp = date_time.isValid() ? date_time.toTime_t() : 0;
 
-    return true;
+    return ret_value;
 }
 
 bool ESModElement::DeserializeFromAllLikesList(const QJsonObject &obj)
