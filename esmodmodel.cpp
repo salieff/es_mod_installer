@@ -20,8 +20,7 @@
 #include "asyncdownloader.h"
 
 #define ES_MOD_INDEX_SERVER "http://84.201.165.52/"
-#define ES_MOD_INDEX_NAME "project3.json"
-#define ES_MOD_FILE_SERVER "http://s3.twcstorage.ru/07660cc4-everlastingmods/mods/"
+#define ES_MOD_INDEX_NAME "project4.json"
 
 
 ESModModel::ESModModel(QObject *parent)
@@ -210,7 +209,6 @@ QHash<int, QByteArray> ESModModel::roleNames() const
 void ESModModel::ESModIndexDownloaded()
 {
     QList<ESModElement *> local_elements;
-    LoadLocalModsDB(local_elements);
 
     QNetworkReply *rep = dynamic_cast<QNetworkReply *>(sender());
     rep->deleteLater();
@@ -235,15 +233,37 @@ void ESModModel::ESModIndexDownloaded()
         {
             QJsonObject obj = doc.object();
 
+            QJsonArray retired_versions = obj["RetiredVersions"].toArray();
+            for (const auto &ret_vers : qAsConst(retired_versions))
+                if (ret_vers.toString() == QString("Version %1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD))
+                {
+                    QMessageBox::critical(NULL, "Слишком старый загрузчик", \
+                                                "К сожалению, ваша версия загрузчика настолько устарела, что он не может скачивать модификации с современных серверов. "
+                                                "Пожалуйста, обновите загрузчик до последней версии.");
+                    QApplication::quit();
+                }
+
+            QJsonArray file_storage_links = obj["fileStorageLinks"].toArray();
+            if (file_storage_links.empty())
+            {
+                QMessageBox::critical(NULL, tr("Bad index"), tr("There is no a fileStorageLinks array in the index, or it's empty"));
+                QApplication::quit();
+            }
+            QString es_mods_file_server("http://");
+            es_mods_file_server.append(file_storage_links[0].toString());
+            es_mods_file_server.append("/mods/");
+
             QString appHelp = obj["appReadMe"].toString();
             if (!appHelp.isEmpty())
                 emit appHelpReceived(appHelp);
 
-            QJsonArray arr = obj["packs"].toArray();
-            for (int i = 0; i < arr.size(); ++i)
+            LoadLocalModsDB(local_elements, es_mods_file_server);
+
+            QJsonArray elements = obj["packs"].toArray();
+            for (const auto &json_element : qAsConst(elements))
             {
-                ESModElement *el = new ESModElement(ES_MOD_FILE_SERVER, this);
-                if (el->DeserializeFromNetwork(arr[i].toObject()))
+                ESModElement *el = new ESModElement(es_mods_file_server, this);
+                if (el->DeserializeFromNetwork(json_element.toObject()))
                 {
                     el->TryToPickupFrom(local_elements, true);
                     addModElement(el);
@@ -495,7 +515,7 @@ void ESModModel::requestAllStatistics()
     connect(allStatRep, &QNetworkReply::finished, this, &ESModModel::AllStatisticsReceived);
 }
 
-bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
+bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l, const QString &es_mods_file_server)
 {
     bool migrateFlag = false;
     QFile f(AsyncJsonWriter::configFileName());
@@ -543,7 +563,7 @@ bool ESModModel::LoadLocalModsDB(QList<ESModElement *> &l)
     QJsonArray arr = obj["packs"].toArray();
     for (int i = 0; i < arr.size(); ++i)
     {
-        ESModElement *el = new ESModElement(ES_MOD_FILE_SERVER, this);
+        ESModElement *el = new ESModElement(es_mods_file_server, this);
         el->DeserializeFromDB(arr[i].toObject());
         l << el;
     }

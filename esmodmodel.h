@@ -109,7 +109,7 @@ protected:
 private:
     void requestAllLikes();
     void requestAllStatistics();
-    bool LoadLocalModsDB(QList<ESModElement *> &l);
+    bool LoadLocalModsDB(QList<ESModElement *> &l, const QString &es_mods_file_server);
     void ReindexElements();
 
     AsyncJsonWriter m_JsonWriter;

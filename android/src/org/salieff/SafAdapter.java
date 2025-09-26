@@ -100,8 +100,8 @@ public class SafAdapter
         {
             Uri rootFolderUri = DocumentsContract.buildChildDocumentsUriUsingTree(m_rootUri, DocumentsContract.getTreeDocumentId(m_rootUri) + rootFolderName);
             Uri fileUri = DocumentsContract.buildChildDocumentsUriUsingTree(m_rootUri, DocumentsContract.getTreeDocumentId(m_rootUri) + rootFolderName + "/" + fileName);
-            ParcelFileDescriptor fileDiscriptor = context.getContentResolver().openFileDescriptor(fileUri, mode);
-            return fileDiscriptor.detachFd();
+            ParcelFileDescriptor fileDescriptor = context.getContentResolver().openFileDescriptor(fileUri, mode);
+            return fileDescriptor.detachFd();
         }
         catch (Exception e)
         {
