@@ -235,7 +235,7 @@ void ESModModel::ESModIndexDownloaded()
 
             QJsonArray retired_versions = obj["RetiredVersions"].toArray();
             for (const auto &ret_vers : qAsConst(retired_versions))
-                if (ret_vers.toString() == QString("Version %1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD))
+                if (ret_vers.toString() == QString("%1.%2-%3").arg(ESM_VERSION_MAJOR).arg(ESM_VERSION_MINOR).arg(ESM_VERSION_BUILD))
                 {
                     QMessageBox::critical(NULL, "Слишком старый загрузчик", \
                                                 "К сожалению, ваша версия загрузчика настолько устарела, что он не может скачивать модификации с современных серверов. "
