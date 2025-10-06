@@ -253,11 +253,11 @@ void ESModModel::ESModIndexDownloaded()
             es_mods_file_server.append(file_storage_links[0].toString());
             es_mods_file_server.append("/mods/");
 
+            LoadLocalModsDB(local_elements, es_mods_file_server);
+
             QString appHelp = obj["appReadMe"].toString();
             if (!appHelp.isEmpty())
                 emit appHelpReceived(appHelp);
-
-            LoadLocalModsDB(local_elements, es_mods_file_server);
 
             QJsonArray elements = obj["packs"].toArray();
             for (const auto &json_element : qAsConst(elements))

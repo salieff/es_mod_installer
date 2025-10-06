@@ -169,5 +169,5 @@ if [ "$(uname)" = "Darwin" ] && [ "$HOME" = "$PWD" ]; then
   cd "$(dirname "$0")"
 fi
 
-JAVACMD='/usr/lib/jvm/java-11/bin/java'
+JAVACMD='/usr/lib/jvm/java-17/bin/java'
 exec "$JAVACMD" "$@"
