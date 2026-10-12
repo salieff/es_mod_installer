@@ -2,6 +2,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMessageBox>
+#include <QWaitCondition>
+#include <QAndroidJniEnvironment>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -74,7 +76,8 @@ void SafAdapter::RequestExternalStorageReadWrite(void)
     {
         QtAndroid::requestPermissionsSync(QStringList({
             "android.permission.READ_EXTERNAL_STORAGE",
-            "android.permission.WRITE_EXTERNAL_STORAGE"
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            "android.permission.POST_NOTIFICATIONS"
         }));
     }
 }
@@ -95,24 +98,75 @@ void SafAdapter::RequestRootUriPermissions(void)
     if (CheckRootUriPermissions())
         return;
 
-    SafAccessDialog safAccessDialog;
-    safAccessDialog.adjustSize();
-    safAccessDialog.showMaximized();
-    safAccessDialog.adjustImage();
-    safAccessDialog.exec();
+    while (true)
+    {
+        SafAccessDialog safAccessDialog;
+        safAccessDialog.adjustSize();
+        safAccessDialog.showMaximized();
+        safAccessDialog.adjustImage();
+        safAccessDialog.exec();
 
-    auto intent = m_javaSafAdapter.callObjectMethod("intentForRootUriPermissionRequest",
-                                                    "()Landroid/content/Intent;");
+        auto intent = m_javaSafAdapter.callObjectMethod("intentForRootUriPermissionRequest",
+                                                        "()Landroid/content/Intent;");
 
-    QtAndroid::startActivity(intent, RootUriPermissionsRequestCode, [this](int receiverRequestCode, int resultCode, const QAndroidJniObject &intent) {
-        if (receiverRequestCode != RootUriPermissionsRequestCode || resultCode != -1)
-            return;
+        QMutex intentMutex;
+        QWaitCondition intentCondition;
+        QString intentGrantedPath;
 
-        m_javaSafAdapter.callMethod<void>("takeRootUriPermission",
-                                          "(Landroid/content/Context;Landroid/content/Intent;)V",
-                                          QtAndroid::androidContext().object(),
-                                          intent.object());
-    });
+        QtAndroid::startActivity(intent, RootUriPermissionsRequestCode,
+                                 [this, &intentMutex, &intentCondition, &intentGrantedPath]
+                                 (int receiverRequestCode, int resultCode, const QAndroidJniObject &intent) {
+                                     QMutexLocker mutexLocker(&intentMutex);
+                                     do
+                                     {
+                                         if (receiverRequestCode != RootUriPermissionsRequestCode)
+                                             break;
+
+                                         if (resultCode != -1)
+                                             break;
+
+                                         if (!intent.isValid())
+                                             break;
+
+                                         QAndroidJniObject uri = intent.callObjectMethod("getData", "()Landroid/net/Uri;");
+                                         if (!uri.isValid())
+                                             break;
+
+                                         QAndroidJniEnvironment env;
+                                         QAndroidJniObject docId = QAndroidJniObject::callStaticObjectMethod(
+                                             "android/provider/DocumentsContract", "getTreeDocumentId",
+                                             "(Landroid/net/Uri;)Ljava/lang/String;", uri.object());
+
+                                         if (env->ExceptionCheck()) // Uri не tree-URI: бросается IllegalArgumentException
+                                         {
+                                             env->ExceptionClear();
+                                             break;
+                                         }
+
+                                         intentGrantedPath = docId.toString();
+
+                                         m_javaSafAdapter.callMethod<void>("takeRootUriPermission",
+                                                                           "(Landroid/content/Context;Landroid/content/Intent;)V",
+                                                                           QtAndroid::androidContext().object(),
+                                                                           intent.object());
+                                     } while (0);
+
+                                     if (intentGrantedPath.isEmpty())
+                                         intentGrantedPath = "ERROR:FAILED!!!";
+
+                                     intentCondition.wakeAll();
+                                 });
+
+        intentMutex.lock();
+        while(intentGrantedPath.isEmpty())
+            intentCondition.wait(&intentMutex);
+        intentMutex.unlock();
+
+        if (intentGrantedPath == "primary:" + m_rootSafPath)
+            break;
+
+        QMessageBox::critical(NULL, "Выбрана неправильная папка", intentGrantedPath);
+    }
 }
 
 bool SafAdapter::CreateFolder(const QString &parentFolder, const QString &subFolder)
@@ -338,6 +392,14 @@ int64_t SafAdapter::FileSize(const QString &fileName)
                 QtAndroid::androidContext().object(),
                 QAndroidJniObject::fromString(FixStartingSlash(fileName)).object<jstring>()
                 );
+}
+
+QString SafAdapter::LastErrorString()
+{
+    if (CanUseNativeAPI())
+        return "";
+
+    return m_javaSafAdapter.callObjectMethod("lastErrorString", "()Ljava/lang/String;").toString();
 }
 
 bool SafAdapter::CanUseNativeAPI(void)

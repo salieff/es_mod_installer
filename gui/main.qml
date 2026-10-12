@@ -53,37 +53,22 @@ ApplicationWindow {
         id: mainLikePanel
     }
 
-    Item {
-        id: mainButtonSelector
-        anchors.fill: parent
-        focus: true
-        Keys.onPressed: {
-            switch(event.key)
-            {
-            case Qt.Key_Menu :
-                mainMenu.popup()
-                break;
-
-            case Qt.Key_Back:
-                if (!hideAllPanels())
-                    Qt.quit()
-                break;
-            }
-
-            event.accepted = true;
+    Shortcut {
+        sequences: ["Back"]
+        onActivated: {
+            if (!hideAllPanels())
+                Qt.quit()
         }
     }
 
     onClosing: {
-        if (hideAllPanels())
-            close.accepted = false
+        close.accepted = false
     }
 
     function hideAllPanels() {
-        if (mainInfoPanel.hide() || mainWebView.hide() || mainLikePanel.hide() || mainTracebackPanel.hide() || mainButtonSelector.activeFocus == false)
+        if (mainInfoPanel.hide() || mainWebView.hide() || mainLikePanel.hide() || mainTracebackPanel.hide())
         {
             mainAppTitle.closeButton.state = "NORMAL"
-            mainButtonSelector.forceActiveFocus()
             return true
         }
 

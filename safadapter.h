@@ -41,6 +41,8 @@ public:
     bool DeleteFile(const QString &fileName);
     int64_t FileSize(const QString &fileName);
 
+    QString LastErrorString(void);
+
     static const bool CREATE_FOLDERS = true;
     static zlib_filefunc_def MiniZipFileAPI;
 

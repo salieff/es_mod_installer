@@ -38,6 +38,16 @@ const QStringList &ESInstalledModModel::SrcLocalFiles(int sind) const
     return smdl->LocalFiles(sind);
 }
 
+int ESInstalledModModel::firstRowWhere(const QString &roleName, const QVariant &value) const
+{
+    const int role = roleNames().key(roleName.toUtf8(), -1);
+    if (role < 0 || rowCount() == 0)
+        return -1;
+
+    const QModelIndexList hits = match(index(0, 0), role, value, 1, Qt::MatchExactly);
+    return hits.isEmpty() ? -1 : hits.first().row();
+}
+
 bool ESInstalledModModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
     QModelIndex ind = sourceModel()->index(source_row, 0, source_parent);

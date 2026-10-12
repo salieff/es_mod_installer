@@ -45,6 +45,7 @@ QNetworkReply * AsyncDownloader::get(QUrl url)
     QNetworkRequest r;
     r.setUrl(url);
     r.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
+    r.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 
     return m_networkManager->get(r);
 }
@@ -64,6 +65,7 @@ QNetworkReply * AsyncDownloader::head(QUrl url)
     QNetworkRequest r;
     r.setUrl(url);
     r.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
+    r.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 
     return m_networkManager->head(r);
 }

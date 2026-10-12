@@ -12,6 +12,7 @@
 #include <QTimer>
 #include <QAndroidJniObject>
 #include <QtAndroid>
+#include <QAndroidJniEnvironment>
 
 #include "version.h"
 #include "esmodmodel.h"
@@ -19,8 +20,8 @@
 #include "safadapter.h"
 #include "asyncdownloader.h"
 
-#define ES_MOD_INDEX_SERVER "http://84.201.165.52/"
-#define ES_MOD_INDEX_NAME "project4.json"
+#define ES_MOD_INDEX_SERVER "http://es-mod-installer-index.duckdns.org/"
+#define ES_MOD_INDEX_NAME "mods/project4.json"
 
 
 ESModModel::ESModModel(QObject *parent)
@@ -301,17 +302,17 @@ void ESModModel::ESModIndexDownloaded()
 
     SaveLocalModsDB();
 
-    /*
     if (m_needShowHelp)
     {
-        QMessageBox::information(NULL, "Файлы модов в галерее", \
-                                       "Теперь мы создаем в папке с модами маркер .nomedia. "
-                                       "Теоретически, это должно запретить Android-у индексировать картинки, музыку и видео "
-                                       "в папке с модами, и они не должны появляться в галерее (но это неточно).");
+        QMessageBox::information(NULL, "Строгая проверка доступа и уведомления", \
+                                       "Теперь приложение не работает, пока не получит доступ к правильной папке с модами, "
+                                       "это исключит ситуации, когда мод скачивается, но не может установиться.\n"
+                                       "Когда приложение закрыто и мод скачался в фоне, теперь появляется уведомление. "
+                                       "Не забудьте нажать на него, чтобы приложение запустилось, "
+                                       "распаковало и установило скачанный мод.");
 
         QTimer::singleShot(1000, this, &ESModModel::showDefferedHelp);
     }
-    */
 
     emit appTitleReceived(QString("Version %1.%2-%3 (%4 mods)")
                           .arg(ESM_VERSION_MAJOR)
@@ -363,7 +364,6 @@ void ESModModel::AllLikesReceived()
     }
 
     QJsonArray arr = obj["marks"].toArray();
-    beginResetModel();
     foreach (ESModElement *el, m_elements)
     {
         for (int i = 0; i < arr.size(); ++i)
@@ -377,7 +377,8 @@ void ESModModel::AllLikesReceived()
             el->dislikemarkscount = 0;
     }
 
-    endResetModel();
+    if (!m_elements.isEmpty())
+        emit dataChanged(index(0), index(m_elements.size() - 1));
 }
 
 void ESModModel::AllStatisticsReceived()
@@ -412,11 +413,12 @@ void ESModModel::AllStatisticsReceived()
     }
 
     QJsonArray arr = obj["statistics"].toArray();
-    beginResetModel();
     for (int i = 0; i < arr.size(); ++i)
         foreach (ESModElement *el, m_elements)
             el->DeserializeFromAllStatisticsList(arr[i].toObject());
-    endResetModel();
+
+    if (!m_elements.isEmpty())
+        emit dataChanged(index(0), index(m_elements.size() - 1));
 }
 
 void ESModModel::Download(int ind)
@@ -454,6 +456,7 @@ void ESModModel::ShowError(int ind)
     if (m_elements[ind]->state != ESModElement::Failed)
         return;
 
+    copyToClipboard(m_elements[ind]->errorString(), tr("Error was copied into clipboard"));
     QMessageBox::critical(NULL, tr("Error"), m_elements[ind]->errorString());
 }
 
@@ -938,4 +941,14 @@ void ESModModel::copyToClipboard(const QString &txt, const QString &msg)
 {
     QApplication::clipboard()->setText(txt);
     emit balloonText(msg);
+}
+
+int ESModModel::firstRowWhere(const QString &roleName, const QVariant &value) const
+{
+    const int role = roleNames().key(roleName.toUtf8(), -1);
+    if (role < 0 || rowCount() == 0)
+        return -1;
+
+    const QModelIndexList hits = match(index(0, 0), role, value, 1, Qt::MatchExactly);
+    return hits.isEmpty() ? -1 : hits.first().row();
 }

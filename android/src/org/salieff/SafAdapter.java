@@ -4,12 +4,12 @@ import android.net.Uri;
 import android.os.Parcelable;
 import android.provider.DocumentsContract;
 import android.content.Intent;
-import android.app.Activity;
 import android.content.Context;
 import android.content.UriPermission;
 import android.os.ParcelFileDescriptor;
 import android.database.Cursor;
 import android.provider.OpenableColumns;
+import android.util.Log;
 import java.net.URLEncoder;
 
 
@@ -17,14 +17,29 @@ public class SafAdapter
 {
     Uri m_rootUri = null;
     String m_safRoot = null;
+    String m_lastErrorString = null;
 
     public SafAdapter(String root)
     {
         m_safRoot = root;
     }
 
+    private String getStackTraceAsString(Throwable throwable)
+    {
+        return "m_rootUri = " + (m_rootUri == null ? "null" : m_rootUri.toString()) + "\n" +
+               "m_safRoot = " + (m_safRoot == null ? "null" : m_safRoot) + "\n" +
+               Log.getStackTraceString(throwable);
+    }
+
+    public String lastErrorString()
+    {
+        return m_lastErrorString;
+    }
+
     public boolean rootUriPermissionGranted(Context context)
     {
+        m_lastErrorString = null;
+
         try 
         {
             for (UriPermission p : context.getContentResolver().getPersistedUriPermissions())
@@ -38,6 +53,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
+            m_lastErrorString = getStackTraceAsString(e);
             e.printStackTrace();
         }
 
@@ -62,10 +78,25 @@ public class SafAdapter
 
     public void takeRootUriPermission(Context context, Intent intent)
     {
+        m_lastErrorString = null;
+
         try
         {
             Uri intentRootUri = intent.getData();
-            if (!intentRootUri.toString().equals("content://com.android.externalstorage.documents/tree/primary%3A" + URLEncoder.encode(m_safRoot, "utf-8")))
+            if (intentRootUri == null || !"com.android.externalstorage.documents".equals(intentRootUri.getAuthority()))
+                return;
+
+            String docId;
+            try
+            {
+                docId = DocumentsContract.getTreeDocumentId(intentRootUri);   // уже декодирован
+            }
+            catch (IllegalArgumentException e)
+            {
+                return;
+            }
+
+            if (!docId.equals("primary:" + m_safRoot))
                 return;
 
             context.getContentResolver().takePersistableUriPermission(intentRootUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -73,12 +104,15 @@ public class SafAdapter
         }
         catch (Exception e)
         {
+            m_lastErrorString = getStackTraceAsString(e);
             e.printStackTrace();
         }
     }
 
     public boolean createFolder(Context context, String rootFolderName, String subFolderName)
     {
+        m_lastErrorString = null;
+
         try
         {
             Uri rootFolderUri = DocumentsContract.buildChildDocumentsUriUsingTree(m_rootUri, DocumentsContract.getTreeDocumentId(m_rootUri) + rootFolderName);
@@ -88,6 +122,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
+            m_lastErrorString = getStackTraceAsString(e);
             e.printStackTrace();
         }
 
@@ -96,6 +131,7 @@ public class SafAdapter
 
     public int openFile(Context context, String rootFolderName, String fileName, String mode)
     {
+        m_lastErrorString = null;
         try
         {
             Uri rootFolderUri = DocumentsContract.buildChildDocumentsUriUsingTree(m_rootUri, DocumentsContract.getTreeDocumentId(m_rootUri) + rootFolderName);
@@ -105,6 +141,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
+            m_lastErrorString = getStackTraceAsString(e);
             e.printStackTrace();
         }
 
@@ -113,15 +150,17 @@ public class SafAdapter
 
     public int createFile(Context context, String rootFolderName, String fileName, String mode)
     {
+        m_lastErrorString = null;
         try
         {
             Uri rootFolderUri = DocumentsContract.buildChildDocumentsUriUsingTree(m_rootUri, DocumentsContract.getTreeDocumentId(m_rootUri) + rootFolderName);
             Uri fileUri = DocumentsContract.createDocument(context.getContentResolver(), rootFolderUri, "application/octet-stream", fileName);
-            ParcelFileDescriptor fileDiscriptor = context.getContentResolver().openFileDescriptor(fileUri, mode);
-            return fileDiscriptor.detachFd();
+            ParcelFileDescriptor fileDescriptor = context.getContentResolver().openFileDescriptor(fileUri, mode);
+            return fileDescriptor.detachFd();
         }
         catch (Exception e)
         {
+            m_lastErrorString = getStackTraceAsString(e);
             e.printStackTrace();
         }
 
@@ -130,6 +169,8 @@ public class SafAdapter
 
     public boolean deleteFile(Context context, String fileName)
     {
+        m_lastErrorString = null;
+
         try
         {
             Uri fileUri = DocumentsContract.buildChildDocumentsUriUsingTree(m_rootUri, DocumentsContract.getTreeDocumentId(m_rootUri) + fileName);
@@ -137,6 +178,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
+            m_lastErrorString = getStackTraceAsString(e);
             e.printStackTrace();
         }
 
@@ -147,6 +189,7 @@ public class SafAdapter
     {
         int retValue = -1;
         Cursor cursor = null;
+        m_lastErrorString = null;
 
         try
         {
@@ -160,6 +203,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
+            m_lastErrorString = getStackTraceAsString(e);
             e.printStackTrace();
             retValue = -1;
         }
@@ -176,6 +220,7 @@ public class SafAdapter
     {
         long retValue = -1;
         Cursor cursor = null;
+        m_lastErrorString = null;
 
         try
         {
@@ -192,6 +237,7 @@ public class SafAdapter
         }
         catch (Exception e)
         {
+            m_lastErrorString = getStackTraceAsString(e);
             e.printStackTrace();
         }
         finally

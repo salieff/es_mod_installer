@@ -3,7 +3,6 @@
 #include <QQuickWindow>
 #include <QQmlContext>
 #include <QtGlobal>
-#include <QMessageBox>
 
 #include <QtWebView>
 #include <QtAndroid>
@@ -21,9 +20,8 @@
 
 int main(int argc, char *argv[])
 {
-    QtWebView::initialize();
-
     QApplication app(argc, argv);
+    QtWebView::initialize();
 
     SafAdapter::RequestExternalStorageReadWrite();
     SafAdapter::getCurrentAdapter();
@@ -59,6 +57,32 @@ int main(int argc, char *argv[])
 
     if (!SafAdapter::getCurrentAdapter().FileExists(".nomedia"))
         close(SafAdapter::getCurrentAdapter().CreateFile("", ".nomedia", "wt"));
+
+    auto push = [](Qt::ApplicationState state) {
+        QAndroidJniObject::callStaticMethod<void>("org/salieff/AppState", "setActive", "(Z)V", jboolean(state == Qt::ApplicationActive));
+
+        if (state != Qt::ApplicationActive)
+            return;
+
+        // Уберем все нотификации
+        QAndroidJniObject nm = QtAndroid::androidContext().callObjectMethod(
+            "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;",
+            QAndroidJniObject::fromString("notification").object<jstring>());   // Context.NOTIFICATION_SERVICE
+
+        if (nm.isValid())
+            nm.callMethod<void>("cancelAll");
+
+        QAndroidJniEnvironment env;
+        if (env->ExceptionCheck()) // на случай ошибки JNI
+        {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
+
+    };
+
+    push(Qt::ApplicationActive);   // начальное состояние
+    QObject::connect(&app, &QGuiApplication::applicationStateChanged, push);
 
     return app.exec();
 }

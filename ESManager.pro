@@ -4,6 +4,9 @@ QT += qml quick widgets network webview quickcontrols2
 
 android {
     QT += androidextras
+    QMAKE_CFLAGS += -Wno-deprecated-non-prototype
+    QMAKE_LFLAGS += -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384
+    include($$ANDROID_SDK_ROOT/android_openssl/openssl.pri)
 }
 
 SOURCES += main.cpp \
@@ -82,6 +85,8 @@ DISTFILES += \
     android/src/org/salieff/ADMController.java \
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+ANDROID_TARGET_SDK_VERSION = 37
+ANDROID_MIN_SDK_VERSION = 21
 
 FORMS += \
     safaccessdialog.ui

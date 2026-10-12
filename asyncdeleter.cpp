@@ -28,7 +28,7 @@ void AsyncDeleter::run()
     {
         auto topFolder = QFileInfo(fname).dir().path().section('/', 0, 0, QString::SectionSkipEmpty);
 
-        if (topFolder.isEmpty())
+        if (topFolder.isEmpty() || topFolder == ".")
         {
             SafAdapter::getCurrentAdapter().DeleteFile(fname);
             if (fname.endsWith(".rpy", Qt::CaseInsensitive))

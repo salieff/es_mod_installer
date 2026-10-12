@@ -100,6 +100,8 @@ public slots:
     void copyTraceback(bool forLog = false);
     void copyToClipboard(const QString &txt, const QString &msg);
 
+    int firstRowWhere(const QString &roleName, const QVariant &value) const;
+
 private slots:
     void showDefferedHelp();
 

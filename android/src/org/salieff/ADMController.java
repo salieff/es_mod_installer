@@ -227,12 +227,10 @@ public class ADMController
         int statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
         int reasonIndex = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
 
-        String syncUrl = Uri.withAppendedPath(Uri.parse(serverUrl), filePath).toString();
-
         do
         {
             String uri = cursor.getString(uriIndex);
-            if (!uri.equals(syncUrl))
+            if (!uri.endsWith("/" + filePath))
                 continue;
 
             m_downloadId = cursor.getInt(idIndex);
@@ -318,8 +316,8 @@ public class ADMController
     {
         try
         {
-            ParcelFileDescriptor fileDiscriptor = downloadManager.openDownloadedFile(id);
-            return fileDiscriptor.detachFd();
+            ParcelFileDescriptor fileDescriptor = downloadManager.openDownloadedFile(id);
+            return fileDescriptor.detachFd();
         }
         catch (Exception e)
         {

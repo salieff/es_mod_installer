@@ -112,10 +112,7 @@ Rectangle {
             font.pointSize: 25
             placeholderText: qsTr("Name filter")
 
-            onAccepted: {
-                esModel.filterByKeywords(searchText.text)
-                mainButtonSelector.forceActiveFocus()
-            }
+            onAccepted: esModel.filterByKeywords(searchText.text)
         }
 
         MMImage {
@@ -128,7 +125,6 @@ Rectangle {
                 onClicked: {
                     searchText.text = ""
                     esModel.filterByKeywords(searchText.text)
-                    mainButtonSelector.forceActiveFocus()
                 }
             }
         }
@@ -140,10 +136,7 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: {
-                    esModel.filterByKeywords(searchText.text)
-                    mainButtonSelector.forceActiveFocus()
-                }
+                onClicked: esModel.filterByKeywords(searchText.text)
             }
 
         }

@@ -27,6 +27,8 @@ public slots:
     void ShowError(int ind);
     void ToggleFavorite(int ind);
 
+    int firstRowWhere(const QString &roleName, const QVariant &value) const;
+
 private:
     bool inverseFilter;
 };

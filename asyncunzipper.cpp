@@ -90,7 +90,7 @@ bool AsyncUnzipper::unpackZip(bool estimateOnly)
     unzFile ufd = unzOpen2(m_zipFile.toLocal8Bit(), &SafAdapter::MiniZipFileAPI);
     if (ufd == NULL)
     {
-        m_errorString = tr("Can't open zip file ") + m_zipFile;
+        m_errorString = tr("Can't open zip file ") + m_zipFile + "\n" + SafAdapter::getCurrentAdapter().LastErrorString();
         return false;
     }
 
@@ -125,7 +125,7 @@ bool AsyncUnzipper::unpackZip(bool estimateOnly)
 
             auto foldersList = QFileInfo(fname).dir().path().split('/', Qt::SkipEmptyParts);
 
-            if (foldersList.empty())
+            if (foldersList.empty() || (foldersList.size() == 1 && foldersList.front() == "."))
             {
                 m_topFiles.append(fname);
                 if (fname.endsWith(".rpy", Qt::CaseInsensitive))
@@ -164,7 +164,7 @@ bool AsyncUnzipper::unpackZip(bool estimateOnly)
 
     if (unzClose(ufd) != UNZ_OK)
     {
-        m_errorString = tr("Can't close zip file ") + m_zipFile;
+        m_errorString = tr("Can't close zip file ") + m_zipFile + "\n" + SafAdapter::getCurrentAdapter().LastErrorString();
         return false;
     }
 
@@ -176,7 +176,7 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
     QFile file;
     if (!SafAdapter::getCurrentAdapter().CreateQFile(file, fname, QIODevice::WriteOnly | QIODevice::Truncate))
     {
-        m_errorString = tr("Can't create file ") + fname + " : " + file.errorString();
+        m_errorString = tr("Can't create file ") + fname + " : " + file.errorString() + "\n" + SafAdapter::getCurrentAdapter().LastErrorString();
         return false;
     }
 
@@ -188,7 +188,7 @@ bool AsyncUnzipper::saveCurrentUnpFile(unzFile ufd, QString fname)
         if (!file.write(m_unpackZipBuffer, unzRet))
         {
             unzRet = -1;
-            m_errorString = file.errorString();
+            m_errorString = file.errorString() + "\n" + SafAdapter::getCurrentAdapter().LastErrorString();
             m_failedFlag = true;
             break;
         }
@@ -241,7 +241,7 @@ bool AsyncUnzipper::FolderTreeElement::createFolderTree(QString &errorString, co
     {
         if (!SafAdapter::getCurrentAdapter().CreateFolder(rootFolder, el.first))
         {
-            errorString = tr("Can't create folder ") + rootFolder + "/" + el.first;
+            errorString = tr("Can't create folder ") + rootFolder + "/" + el.first + "\n" + SafAdapter::getCurrentAdapter().LastErrorString();
             return false;
         }
 

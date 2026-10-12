@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<manifest package="org.salieff.esmodinstaller" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.16" android:versionCode="33" android:installLocation="auto">
-    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="35"/>
+<manifest package="org.salieff.esmodinstaller" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.17" android:versionCode="34" android:installLocation="auto">
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="37"/>
 
     <!-- The following comment will be replaced upon deployment with default permissions based on the dependencies of the application.
          Remove the comment if you do not require these default permissions. -->
@@ -14,7 +14,7 @@
     <application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="ES Mod Installer" android:extractNativeLibs="true" android:icon="@mipmap/icon" android:usesCleartextTraffic="true">
         <activity
             android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density"
-            android:name="org.qtproject.qt5.android.bindings.QtActivity"
+            android:name="org.salieff.MainActivity"
             android:label="ES Mod Installer"
             android:screenOrientation="unspecified"
             android:launchMode="singleTop"
@@ -79,7 +79,14 @@
             <!-- extract android style -->
         </activity>
         <!-- For adding service(s) please check: https://wiki.qt.io/AndroidServices -->
+        <receiver android:name="org.salieff.DownloadCompleteReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
+                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED"/>
+            </intent-filter>
+        </receiver>
     </application>
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 </manifest>

@@ -1,4 +1,5 @@
 #include <QtAndroid>
+#include <QtDebug>
 #include <QAndroidJniEnvironment>
 
 #include "admcontroller.h"
@@ -16,16 +17,23 @@ ADMController::ADMController(QObject *parent)
 
 void ADMController::Initialize()
 {
-    JNINativeMethod methods[] {
-        {"DownloadComplete", "(JJII)V", reinterpret_cast<void *>(ADMController::DownloadCompleteDispatcher)},
-        {"DownloadProgress", "(JJJJ)V", reinterpret_cast<void *>(ADMController::DownloadProgressDispatcher)}
+    static const JNINativeMethod methods[] {
+        {"DownloadComplete", "(JJII)V", reinterpret_cast<void *>(DownloadCompleteDispatcher)},
+        {"DownloadProgress", "(JJJJ)V", reinterpret_cast<void *>(DownloadProgressDispatcher)}
     };
-    QAndroidJniObject javaClass("org/salieff/ADMController");
-    QAndroidJniEnvironment env;
 
-    jclass objectClass = env->GetObjectClass(javaClass.object<jobject>());
-    env->RegisterNatives(objectClass, methods, sizeof(methods) / sizeof(methods[0]));
-    env->DeleteLocalRef(objectClass);
+    QAndroidJniEnvironment env;
+    jclass cls = env.findClass("org/salieff/ADMController");
+
+    if (!cls || env->RegisterNatives(cls, methods, sizeof(methods) / sizeof(methods[0])) < 0)
+    {
+        qWarning() << "Failed to register ADMController native methods";
+        if (env->ExceptionCheck())
+        {
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
+    }
 }
 
 int ADMController::Open(qint64 id)
